@@ -4,8 +4,9 @@
 
 # How untar multiple files for NOAA data
 library(sf)
-library(raster)
 library(dplyr)
+
+library(raster)
 library(rgdal)
 library(plyr)
 library(ggplot2)
@@ -13,7 +14,7 @@ library(ggplot2)
 rm(list=ls())
 
 # Initials
-#data.dir <- paste(tar.dir,"data",sep="/") #location for text files
+data.dir <- "D:/temp" #location for text files
 
 # spatial data
 ##############################################################################
