@@ -90,6 +90,7 @@ fun <- function(y) {
 }
 
 r <- calc(st_pr_yr, fun)
+plot(r)
 
 
 
