@@ -4,6 +4,7 @@
 
 # Create rasterstack of climate data for WRST (NOAA ClimGrid)
 # Run linear regression analysis by pixel
+# Units for raw data: temps in Celsius, precip in mm
 
 
 rm(list = ls())
@@ -24,6 +25,8 @@ bbox<-data.frame(Sp_park@bbox) # get bounding box
 # Read in climate data
 
 pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
+
+# ----  CREATE RASTER STACKS  ----------------------------- #
 
 # Create list of tables
 
@@ -55,22 +58,41 @@ for(i in 1:length(tables)) {
   rasters[[i]] <- x
 }
 
-# Create raster stack
+st <- stack(rasters) # Create raster stack
 
-st <- stack(rasters)
+# Summarize by year
+
+index <- rep(1:96, each = 12) # Because data is provided monthly, need to assign index by year. There are 96 years in the dataset.
+
+precip = function(x){ # Function for calculating mean annual precip from mm to inches
+  (x*12)/25.4
+}
   
+st_pr_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
+st_pr_yr <- calc(st_pr_mean, fun = precip) # then convert to inches
+
+# ------  REGRESSION  -------------------------------------------------- #
+  
+time <- 1:nlayers(st_pr_yr) # all years 1925 - 2020
+
+# Function to calculate slope and p-value
+
+fun <- function(y) {
+  if(all(is.na(y))) {
+    c(NA, NA)
+  } else {
+    m = lm(y ~ time) 
+    s = summary(m)
+    slope = s$coefficients[2]
+    pval =  pf(s$fstatistic[1], s$fstatistic[2], s$fstatistic[3],lower.tail = FALSE)
+    cbind(slope, pval)
+  }
+}
+
+r <- calc(st_pr_yr, fun)
 
 
 
-
-
-
-
-r <- raster(e, ncol=85, nrow=71)
-x <- rasterize(Dfx[, 1:2], r, Dfx[,3])
-plot(x)
-
-projection(x) = CRS("+init=epsg:3338")
 
 # Plot park over raster
 Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338")
