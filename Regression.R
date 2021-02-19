@@ -24,7 +24,7 @@ bbox<-data.frame(Sp_park@bbox) # get bounding box
 
 # Read in climate data
 
-pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
+pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
 
 # ----  CREATE RASTER STACKS  ----------------------------- #
 
@@ -34,7 +34,7 @@ tables <- list()
 
 for(i in 1:length(pnt.list)){
   t = read.table(paste(data.dir, pnt.list[i], sep = '/'))
-  colnames(t) = c("Lat","Lon","PrecipC")
+  colnames(t) = c("Lat","Lon","TaveC")
   tt = subset(t, Lat >= bbox["y","min"] & Lat <= bbox["y","max"] &
                  Lon >=bbox["x","min"] & Lon<=bbox["x","max"])
   tables[[i]] = tt 
@@ -50,7 +50,7 @@ for(i in 1:length(tables)) {
   proj4string(df) = "+proj=longlat +datum=WGS84 +no_defs " #same proj4string used in NPS_boundary_centroids.shp
   df = spTransform(df, CRSobj = "+init=epsg:3338") #reproj sp obj
   y = data.frame(df@coords)
-  y$PrecipC<-df$PrecipC
+  y$TaveC<-df$TaveC
   df = as.matrix(y)
   e = extent(df[,1:2])
   r =  raster(e, ncol=85, nrow=71)
@@ -68,12 +68,12 @@ precip = function(x){ # Function for calculating mean annual precip from mm to i
   (x*12)/25.4
 }
   
-st_pr_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
-st_pr_yr <- calc(st_pr_mean, fun = precip) # then convert to inches
+st_tave_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
+st_tave_yr <- calc(st_tave_mean, fun = mean) # then convert to inches
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_pr_yr) # all years 1925 - 2020
+time <- 1:nlayers(st_tave_mean) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -89,7 +89,7 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_pr_yr, fun)
+r <- calc(st_tave_mean, fun)
 plot(r)
 
 
