@@ -99,6 +99,20 @@ fun <- function(y) {
 r <- calc(st_fahr, fun)
 plot(r)
 
+# -- PLOTTING ---------------------------------------------------------- #
+
+# Reclassify raster so that values <= 0.05 -> 1 or else NA
+slope <- subset(r, 1)
+
+pval <- subset(r, 2)
+pval[pval > 0.05] <- NA # Make values NA that are greater than 0.05
+
+sig_tmax <- mask(slope, pval)
+
+
+
+rcl <- reclassify(pval, c(-Inf, 0.05, 1,  0.05, Inf, 0))
+
 Tave <- subset(r, 1)
 
 
