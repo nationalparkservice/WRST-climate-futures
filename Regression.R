@@ -6,12 +6,22 @@
 # Run linear regression analysis by pixel
 # Units for raw data: temps in Celsius, precip in mm
 
+library(sf)
+library(sp)
+library(dplyr)
+library(raster)
 
 rm(list = ls())
 
-# ---   INITIALS  ---------------------------------------- #
+# ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
+pnt.list<-list.files(path=data.dir, pattern=".tmax.alaska") #list all files by var
+var <- "Tmax"
+
+
+# ---   INITIALS  ---------------------------------------- #
+
 site = "WRST"
 
 # read in parks shapefile
@@ -22,9 +32,6 @@ Sp_park <- as_Spatial(park) # park <- st_transform(park, st_crs(epsg))
 
 bbox<-data.frame(Sp_park@bbox) # get bounding box
 
-# Read in climate data
-
-pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
 
 # ----  CREATE RASTER STACKS  ----------------------------- #
 
@@ -34,7 +41,7 @@ tables <- list()
 
 for(i in 1:length(pnt.list)){
   t = read.table(paste(data.dir, pnt.list[i], sep = '/'))
-  colnames(t) = c("Lat","Lon","TaveC")
+  colnames(t) = c("Lat","Lon", var)
   tt = subset(t, Lat >= bbox["y","min"] & Lat <= bbox["y","max"] &
                  Lon >=bbox["x","min"] & Lon<=bbox["x","max"])
   tables[[i]] = tt 
@@ -50,7 +57,7 @@ for(i in 1:length(tables)) {
   proj4string(df) = "+proj=longlat +datum=WGS84 +no_defs " #same proj4string used in NPS_boundary_centroids.shp
   df = spTransform(df, CRSobj = "+init=epsg:3338") #reproj sp obj
   y = data.frame(df@coords)
-  y$TaveC<-df$TaveC
+  y$var<-df@data
   df = as.matrix(y)
   e = extent(df[,1:2])
   r =  raster(e, ncol=85, nrow=71)
@@ -68,12 +75,12 @@ precip = function(x){ # Function for calculating mean annual precip from mm to i
   (x*12)/25.4
 }
   
-st_tave_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
-st_tave_yr <- calc(st_tave_mean, fun = mean) # then convert to inches
+st_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
+st_fahr <- calc(st_mean, fun = function(x){x*9/5 + 32}) # then convert to Fahrenheit
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_tave_mean) # all years 1925 - 2020
+time <- 1:nlayers(st_mean) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -83,15 +90,16 @@ fun <- function(y) {
   } else {
     m = lm(y ~ time) 
     s = summary(m)
-    slope = s$coefficients[2]
+    slope = s$coefficients[2] * 100 # change per 100 years
     pval =  pf(s$fstatistic[1], s$fstatistic[2], s$fstatistic[3],lower.tail = FALSE)
     cbind(slope, pval)
   }
 }
 
-r <- calc(st_tave_mean, fun)
+r <- calc(st_fahr, fun)
 plot(r)
 
+Tave <- subset(r, 1)
 
 
 
