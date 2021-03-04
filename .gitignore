@@ -28,3 +28,4 @@ vignettes/*.pdf
 .Renviron
 data
 WRST-climate-futures.Rproj
+output

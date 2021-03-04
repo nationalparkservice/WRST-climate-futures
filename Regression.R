@@ -16,8 +16,8 @@ rm(list = ls())
 # ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
-pnt.list<-list.files(path=data.dir, pattern=".tmax.alaska") #list all files by var
-var <- "Tmax"
+pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
+var <- "Tave"
 
 
 # ---   INITIALS  ---------------------------------------- #
@@ -32,6 +32,20 @@ Sp_park <- as_Spatial(park) # park <- st_transform(park, st_crs(epsg))
 
 bbox<-data.frame(Sp_park@bbox) # get bounding box
 
+out <- './output' 
+if(dir.exists(out) == FALSE){
+  dir.create(out)
+}
+
+maps <- './output/maps' 
+if(dir.exists(maps) == FALSE){
+  dir.create(maps)
+}
+
+ras <- './output/rasters' 
+if(dir.exists(ras) == FALSE){
+  dir.create(ras)
+}
 
 # ----  CREATE RASTER STACKS  ----------------------------- #
 
@@ -74,13 +88,21 @@ index <- rep(1:96, each = 12) # Because data is provided monthly, need to assign
 precip = function(x){ # Function for calculating mean annual precip from mm to inches
   (x*12)/25.4
 }
-  
+
+# Calculate annual means: output = rasterstack with 1 layer per year
+
 st_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
 st_fahr <- calc(st_mean, fun = function(x){x*9/5 + 32}) # then convert to Fahrenheit
 
+# Calculate overall mean: output = single raster with overall mean values
+
+ras_mean <- calc(st_fahr, fun = mean)
+plot(ras_mean)
+#writeRaster(ras_mean, filename = './output/rasters/Tmean_val.tif')
+
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_mean) # all years 1925 - 2020
+time <- 1:nlayers(st_fahr) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -107,17 +129,20 @@ slope <- subset(r, 1)
 pval <- subset(r, 2)
 pval[pval > 0.05] <- NA # Make values NA that are greater than 0.05
 
-sig_tmax <- mask(slope, pval)
+sig <- mask(slope, pval)
 
-
-
-rcl <- reclassify(pval, c(-Inf, 0.05, 1,  0.05, Inf, 0))
-
-Tave <- subset(r, 1)
-
-
+plot(sig)
 
 # Plot park over raster
-Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338")
+Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Albers
+plot(Sp_park, add = TRUE)
+
+
+writeRaster(sig, file = "./output/rasters/tave_delta.tif") # save tmax raster
+
+
+
+
+
 
 
