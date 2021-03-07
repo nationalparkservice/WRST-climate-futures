@@ -10,14 +10,15 @@ library(sf)
 library(sp)
 library(dplyr)
 library(raster)
+library(rasterVis)
 
 rm(list = ls())
 
 # ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
-pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
-var <- "Tave"
+pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
+var <- "pr"
 
 
 # ---   INITIALS  ---------------------------------------- #
@@ -81,28 +82,38 @@ for(i in 1:length(tables)) {
 
 st <- stack(rasters) # Create raster stack
 
+index <- rep(1:96, each = 12)
+
 # Summarize by year
-
-index <- rep(1:96, each = 12) # Because data is provided monthly, need to assign index by year. There are 96 years in the dataset.
-
-precip = function(x){ # Function for calculating mean annual precip from mm to inches
-  (x*12)/25.4
-}
 
 # Calculate annual means: output = rasterstack with 1 layer per year
 
-st_mean <- stackApply(st, indices = index, fun = mean, na.rm = TRUE) # get annual mean first
+st_mean <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = mean, na.rm = TRUE) # get annual mean first
+
+st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
+plot(st_sum[[1]])
+
+
+st_mean_pr_tot <- calc(st_sum, fun = mean)
+plot(st_mean_pr_tot)
+
+
 st_fahr <- calc(st_mean, fun = function(x){x*9/5 + 32}) # then convert to Fahrenheit
+
+st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
 
 # Calculate overall mean: output = single raster with overall mean values
 
-ras_mean <- calc(st_fahr, fun = mean)
+ras_mean <- calc(st_in, fun = mean)
 plot(ras_mean)
-#writeRaster(ras_mean, filename = './output/rasters/Tmean_val.tif')
+
+png('mean_total_precip_mm.png')
+plot(st_mean_pr_tot)
+dev.off()
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_fahr) # all years 1925 - 2020
+time <- 1:nlayers(st_in) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -118,7 +129,7 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_fahr, fun)
+r <- calc(st_in, fun)
 plot(r)
 
 # -- PLOTTING ---------------------------------------------------------- #
@@ -138,8 +149,7 @@ Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Alb
 plot(Sp_park, add = TRUE)
 
 
-writeRaster(sig, file = "./output/rasters/tave_delta.tif") # save tmax raster
-
+writeRaster(sig, file = "./output/rasters/precip_delta.tif") # save raster of significant slope values
 
 
 
