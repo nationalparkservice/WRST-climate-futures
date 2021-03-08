@@ -22,8 +22,8 @@ latlong = CRS('+init=EPSG:4326') # Lat/Long
 
 # Base map from Natural Earth - https://www.naturalearthdata.com/downloads/50m-cross-blend-hypso/50m-cross-blended-hypso-with-shaded-relief-and-water/
 
-topo <- stack('C:/Users/adillon/Documents/ArcGIS/HYP_50M_SR_W/HYP_50M_SR_W/HYP_50M_SR_W.tif') # read in as stack so can see RBG layers
-ext <- extent(-147, -139, 59.3, 64) # extent defined by lat/long
+topo <- stack('./data/spatial-data/HYP_HR_SR_W/HYP_HR_SR_W/HYP_HR_SR_W.tif') # read in as stack so can see RBG layers
+ext <- extent(-147, -139, 59.3, 63) # extent defined by lat/long
 
 ak <- crop(topo, ext)
 plotRGB(ak)
@@ -53,23 +53,24 @@ plot(Sp_park, add = TRUE)
 
 # Raster data
 
-r <- raster('./output/rasters/Tmean_val.tif')
+r <- raster('./output/rasters/Tmin_val.tif')
 plot(r)
 
 crs(r) <- aa
 
-original_par <- par()
+# Plot
 
-png('./output/maps/Tave.png')
+# Tave color palette = viridis (n = 7)
+# Tave delta = Lajolla (n = 7)
+# Precip mean = Oslo (n = 7)
+# Precip delta = Blues 3 (n = 4)
 
-plotRGB(ak2, axes = TRUE, main = "Title") 
-par(col.axis = "white", col.lab = "white", tck = 0)
-box(col = "white")
 
+png('./output/maps/Tmin_val.png')
 
+plotRGB(ak2) 
 plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend = FALSE, add = TRUE) 
 plot(Sp_park, add = TRUE) + 
-par(original_par)
 plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Deg F", line = 1)) 
 
 
