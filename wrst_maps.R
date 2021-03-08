@@ -12,6 +12,7 @@ library(ggplot2)
 library(rasterVis)
 library(colorspace)
 library(RStoolbox)
+library(maptools)
 
 
 site = "WRST"
@@ -75,17 +76,20 @@ basemap +
 
 
 
-map <- levelplot(r, par.settings = BuRdTheme, margin = FALSE, scales = list(draw = FALSE))  
+#map <- levelplot(r, par.settings = BuRdTheme, margin = FALSE, scales = list(draw = FALSE))  
 
+arrow <- layout.north.arrow(type = 2)
+Narrow1 <- maptools::elide(arrow, shift = c(extent(ak2)[2],extent(ak2)[3]))
 
-l <-levelplot(r, par.settings = BuRdTheme, margin = FALSE, scales = list(draw = FALSE))  
 
 png('./output/maps/Tave.png')
 
-plotRGB(ak2) + 
-  plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend = FALSE, add = TRUE) + 
+plotRGB(ak2) 
+  plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend = FALSE, add = TRUE) 
   plot(Sp_park, add = TRUE) + 
-  plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Deg F", line = 1))
+  plot(r, col = hcl.colors(n = 7, palette = "viridis", alpha = 0.5), legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Deg F", line = 1)) 
+  plot(Narrow1, add = TRUE)
+
 
 dev.off()
 
