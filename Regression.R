@@ -108,7 +108,9 @@ plot(st_mean_pr_tot)
 
 st_fahr <- calc(st_mean, fun = function(x){x*9/5 + 32}) # then convert to Fahrenheit
 
-st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
+st_sum_in <- calc(st_sum, fun = function(x){((x)/25.4)})
+plot(st_in)
+
 
 # Calculate overall mean: output = single raster with overall mean values
 
@@ -121,7 +123,7 @@ dev.off()
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_in) # all years 1925 - 2020
+time <- 1:nlayers(st_sum_in) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -137,7 +139,7 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_in, fun)
+r <- calc(st_sum_in, fun)
 plot(r)
 
 # -- PLOTTING ---------------------------------------------------------- #
