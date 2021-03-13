@@ -15,15 +15,16 @@ library(ggplot2)
 library(grid)
 library(cowplot)
 library(reshape2)
+library(zoo)
 
 rm(list = ls())
 
 # ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
-pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
+pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
 #tmax, tmin, tave, prcp
-var <- "prcp"
+var <- "tave"
 
 plotDir<-"C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/"
 
@@ -110,28 +111,28 @@ plot(ras_mean)
 
 ##################################
 
-###############################
-##### Run for only precip
-st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
-plot(st_sum[[1]]) #
-
-st_mean_pr_tot <- calc(st_sum, fun = mean)
-plot(st_mean_pr_tot)
-
-st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
-plot(st_in)
+# ###############################
+# ##### Run for only precip
+# st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
+# plot(st_sum[[1]]) #
+# 
+# st_mean_pr_tot <- calc(st_sum, fun = mean)
+# plot(st_mean_pr_tot)
+# 
+# st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
+# plot(st_in)
 
 
 # Calculate overall mean: output = single raster with overall mean values
 
-ras_mean <- calc(st_in, fun = mean)
-plot(ras_mean)
+# ras_mean <- calc(st_in, fun = mean)
+# plot(ras_mean)
 
 #######################
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_in) # all years 1925 - 2020
+time <- 1:nlayers(st_fahr) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -147,7 +148,7 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_in, fun)
+r <- calc(st_fahr, fun)
 plot(r)
 
 # -- PLOTTING ---------------------------------------------------------- #
@@ -168,7 +169,7 @@ plot(Sp_park, add = TRUE)
 
 
 # writeRaster(sig, file = "./output/rasters/precip_delta.tif") # save raster of significant slope values
-writeRaster(sig, file = paste(plotDir,"/Rasters/precip_delta.tif",sep=""),overwrite=TRUE) # save raster of significant slope values
+writeRaster(sig, file = paste(plotDir,"/Rasters/tmean_delta.tif",sep=""),overwrite=TRUE) # save raster of significant slope values
 
 # -- TIME SERIES REGRESSION ---------------------------------------------- #
 # create dfs from rasters -- run parsing script, create dataframe from cell avgs, save
@@ -348,6 +349,7 @@ lmPptP2 <- lm(yrAvgs$prcpP2~cYr)
 # make table of coefficients
 probStar <- function(pVal){
   probStar <- "NS"
+  if(pVal < 0.10)probStar <- "."
   if(pVal < 0.05)probStar <- "*"
   if(pVal < 0.01)probStar <- "**"
   if(pVal < 0.001)probStar <- "***"
@@ -404,17 +406,17 @@ doP2 <- "YES"  # Should a separate regression be calculate for the period after 
 
 PlotName = "Annual Means Lines Regressions"
 
-a <- ggplot(yrAvgs) +	geom_smooth(method = lm, aes(cYr, tmax), na.rm=TRUE,linetype=if(summary(lmTmax)$coefficients[2,4]<0.05) {
+a <- ggplot(yrAvgs) +	geom_smooth(method = lm, aes(cYr, tmax), na.rm=TRUE,linetype=if(summary(lmTmax)$coefficients[2,4]<0.1) {
   1
 } else{2}) +
   geom_line(aes(cYr, tmax), na.rm=TRUE) + geom_point(aes(cYr, tmax), na.rm=TRUE) +
   ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") +
   scale_x_continuous(breaks=c(1930, 1950, 1970, 1990, 2010)) +
   geom_line(aes(cYr, rTmax), colour = 'brown', size=1)  # rolling mean
-if(doP1 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP1), na.rm=TRUE,linetype=if(summary(lmTmaxP1)$coefficients[2,4]<0.05) {
+if(doP1 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP1), na.rm=TRUE,linetype=if(summary(lmTmaxP1)$coefficients[2,4]<0.1) {
   1
 } else{2})
-if(doP2 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP2), na.rm=TRUE,linetype=if(summary(lmTmaxP2)$coefficients[2,4]<0.05) {
+if(doP2 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP2), na.rm=TRUE,linetype=if(summary(lmTmaxP2)$coefficients[2,4]<0.1) {
   1
 } else{2})
 a
@@ -422,16 +424,16 @@ a
 b <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tmin), na.rm=TRUE) + geom_point(aes(cYr, tmin), na.rm=TRUE) +
   ylab(expression(paste(Tmin, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y= 13.5, label = "B")) +
-  geom_smooth(aes(cYr, tmin), method="lm", na.rm=TRUE,linetype=if(summary(lmTmin)$coefficients[2,4]<0.05) {
+  geom_smooth(aes(cYr, tmin), method="lm", na.rm=TRUE,linetype=if(summary(lmTmin)$coefficients[2,4]<0.1) {
     1
   } else{2}) +
   scale_x_continuous(breaks=c(1930, 1950, 1970, 1990, 2010)) +
   geom_line(aes(cYr, rTmin), colour = 'brown', size=1)
 
-if(doP1 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP1), na.rm=TRUE,linetype=if(summary(lmTminP1)$coefficients[2,4]<0.05) {
+if(doP1 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP1), na.rm=TRUE,linetype=if(summary(lmTminP1)$coefficients[2,4]<0.1) {
   1
 } else{2})
-if(doP2 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP2), na.rm=TRUE,linetype=if(summary(lmTminP2)$coefficients[2,4]<0.05) {
+if(doP2 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP2), na.rm=TRUE,linetype=if(summary(lmTminP2)$coefficients[2,4]<0.1) {
   1
 } else{2})
 b
@@ -439,34 +441,35 @@ b
 c <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tave), na.rm=TRUE) + geom_point(aes(cYr, tave), na.rm=TRUE) +
   ylab(expression(paste(Tavg, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y= 13.5, label = "B")) +
-  geom_smooth(aes(cYr, tave), method="lm", na.rm=TRUE,linetype=if(summary(lmTmean)$coefficients[2,4]<0.05) {
+  geom_smooth(aes(cYr, tave), method="lm", na.rm=TRUE,linetype=if(summary(lmTmean)$coefficients[2,4]<0.1) {
     1
   } else{2}) +
   geom_line(aes(cYr, rTmean), colour = 'brown', size=1) +
   scale_x_continuous(breaks=c(1930, 1950, 1970, 1990, 2010))
 
-if(doP1 == "YES")c <- c + geom_smooth(method = lm, aes(cYr, taveP1), na.rm=TRUE,linetype=if(summary(lmTmeanP1)$coefficients[2,4]<0.05) {
+if(doP1 == "YES")c <- c + geom_smooth(method = lm, aes(cYr, taveP1), na.rm=TRUE,linetype=if(summary(lmTmeanP1)$coefficients[2,4]<0.1) {
   1
 } else{2})
-if(doP2 == "YES") c <- c + geom_smooth(method = lm, aes(cYr, taveP2), na.rm=TRUE,linetype=if(summary(lmTmeanP2)$coefficients[2,4]<0.05) {
+if(doP2 == "YES") c <- c + geom_smooth(method = lm, aes(cYr, taveP2), na.rm=TRUE,linetype=if(summary(lmTmeanP2)$coefficients[2,4]<0.1) {
   1
 } else{2}) 
 
 d <- ggplot(data=yrAvgs) + geom_line(aes(cYr, prcp), na.rm=TRUE) + geom_point(aes(cYr, prcp), na.rm=TRUE) +
   ylab("Precip (in/yr)") + xlab("") +
   # geom_text(aes(x=1895, y=350, label = "C")) +
-  geom_smooth(aes(cYr, prcp), method="lm", na.rm=TRUE,linetype=if(summary(lmPpt)$coefficients[2,4]<0.05) {
+  geom_smooth(aes(cYr, prcp), method="lm", na.rm=TRUE,linetype=if(summary(lmPpt)$coefficients[2,4]<0.1) {
     1
   } else{2}) +
   geom_line(aes(cYr, rPpt), colour = 'brown', size=1) +
   scale_x_continuous(breaks=c(1930, 1950, 1970, 1990, 2010))
 
-if(doP1 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, prcpP1), na.rm=TRUE,linetype=if(summary(lmPptP1)$coefficients[2,4]<0.05) {
+if(doP1 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, prcpP1), na.rm=TRUE,linetype=if(summary(lmPptP1)$coefficients[2,4]<0.1) {
   1
 } else{2})
-if(doP2 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, prcpP2), na.rm=TRUE,linetype=if(summary(lmPptP2)$coefficients[2,4]<0.05) {
+if(doP2 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, prcpP2), na.rm=TRUE,linetype=if(summary(lmPptP2)$coefficients[2,4]<0.1) {
   1
 } else{2}) 
+
 rm(lmPpt,lmPptP1,lmPptP2,lmTmax,lmTmaxP1,lmTmaxP2,lmTmin,lmTminP1,lmTminP2,lmTmean,lmTmeanP1,lmTmeanP2)
 rm(regsTmax, regsTmin, regsTmean, regsPpt, lmTable)
 
