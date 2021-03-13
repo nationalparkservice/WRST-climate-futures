@@ -21,11 +21,11 @@ rm(list = ls())
 # ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
-pnt.list<-list.files(path=data.dir, pattern=".tmin.alaska") #list all files by var
+pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
 #tmax, tmin, tave, prcp
-var <- "tmin"
+var <- "prcp"
 
-plotDir<-"C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/Timeseries/"
+plotDir<-"C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/"
 
 
 # ---   INITIALS  ---------------------------------------- #
@@ -41,20 +41,20 @@ Sp_park <- as_Spatial(park) # park <- st_transform(park, st_crs(epsg))
 
 bbox<-data.frame(Sp_park@bbox) # get bounding box
 
-out <- './output' 
-if(dir.exists(out) == FALSE){
-  dir.create(out)
-}
-
-maps <- './output/maps' 
-if(dir.exists(maps) == FALSE){
-  dir.create(maps)
-}
-
-ras <- './output/rasters' 
-if(dir.exists(ras) == FALSE){
-  dir.create(ras)
-}
+# out <- './output' 
+# if(dir.exists(out) == FALSE){
+#   dir.create(out)
+# }
+# 
+# maps <- './output/maps' 
+# if(dir.exists(maps) == FALSE){
+#   dir.create(maps)
+# }
+# 
+# ras <- './output/rasters' 
+# if(dir.exists(ras) == FALSE){
+#   dir.create(ras)
+# }
 
 # ----  CREATE RASTER STACKS  ----------------------------- #
 
@@ -94,36 +94,44 @@ index <- rep(1:96, each = 12)
 
 # Summarize by year
 
+###############################
+##### Run for only tempvar
 # Calculate annual means: output = rasterstack with 1 layer per year
 
 st_mean <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = mean, na.rm = TRUE) # get annual mean first
-
-st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
 plot(st_mean[[1]])
-
-
-st_mean_pr_tot <- calc(st_sum, fun = mean)
-plot(st_mean_pr_tot)
-
-
 st_fahr <- calc(st_mean, fun = function(x){x*9/5 + 32}) # then convert to Fahrenheit
-
-st_sum_in <- calc(st_sum, fun = function(x){((x)/25.4)})
-plot(st_in)
-
+plot (st_fahr)
 
 # Calculate overall mean: output = single raster with overall mean values
 
 ras_mean <- calc(st_fahr, fun = mean)
 plot(ras_mean)
 
-png('mean_total_precip_mm.png')
+##################################
+
+###############################
+##### Run for only precip
+st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
+plot(st_sum[[1]]) #
+
+st_mean_pr_tot <- calc(st_sum, fun = mean)
 plot(st_mean_pr_tot)
-dev.off()
+
+st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
+plot(st_in)
+
+
+# Calculate overall mean: output = single raster with overall mean values
+
+ras_mean <- calc(st_in, fun = mean)
+plot(ras_mean)
+
+#######################
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_sum_in) # all years 1925 - 2020
+time <- 1:nlayers(st_in) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -139,7 +147,7 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_sum_in, fun)
+r <- calc(st_in, fun)
 plot(r)
 
 # -- PLOTTING ---------------------------------------------------------- #
@@ -148,7 +156,7 @@ plot(r)
 slope <- subset(r, 1)
 
 pval <- subset(r, 2)
-pval[pval > 0.05] <- NA # Make values NA that are greater than 0.05
+pval[pval > 0.1] <- NA # Make values NA that are greater than 0.05
 
 sig <- mask(slope, pval)
 
@@ -159,19 +167,21 @@ Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Alb
 plot(Sp_park, add = TRUE)
 
 
-writeRaster(sig, file = "./output/rasters/precip_delta.tif") # save raster of significant slope values
+# writeRaster(sig, file = "./output/rasters/precip_delta.tif") # save raster of significant slope values
+writeRaster(sig, file = paste(plotDir,"/Rasters/precip_delta.tif",sep=""),overwrite=TRUE) # save raster of significant slope values
 
 # -- TIME SERIES REGRESSION ---------------------------------------------- #
 # create dfs from rasters -- run parsing script, create dataframe from cell avgs, save
 
 # yr<-seq(1925,2020,1)
-# 
-# # m_pr<-mask(st_in,Sp_park)
-# # pr<-data.frame(prcp=cellStats(m_pr,stat='mean'),year=yr)
-# # row.names(pr)<-NULL
-# # write.csv(pr,"prcp.csv",row.names=F)
-# 
 # Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Albers
+# 
+# m_pr<-mask(st_in,Sp_park)
+# pr<-data.frame(prcp=cellStats(m_pr,stat='mean'),year=yr)
+# row.names(pr)<-NULL
+# write.csv(pr,"prcp.csv",row.names=F)
+
+
 # m_temp<-mask(st_fahr,Sp_park)
 # temp<-data.frame(tmin=cellStats(m_temp,stat='mean'),year=yr)
 # row.names(temp)<-NULL
