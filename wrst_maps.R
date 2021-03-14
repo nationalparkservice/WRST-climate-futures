@@ -13,11 +13,15 @@ library(rasterVis)
 library(colorspace)
 library(RStoolbox)
 library(maptools)
+library(RColorBrewer)
 
 
 site = "WRST"
 aa <- CRS('+init=EPSG:3338') # Alaska Albers
 latlong = CRS('+init=EPSG:4326') # Lat/Long
+
+PlotIn <- "C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/Rasters/"
+PlotOut <- "C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/Maps/"
 
 
 # Base map from Natural Earth - https://www.naturalearthdata.com/downloads/50m-cross-blend-hypso/50m-cross-blended-hypso-with-shaded-relief-and-water/
@@ -52,28 +56,193 @@ plot(Sp_park, add = TRUE)
 #lines <- dplyr::filter(lab, adm0_right == "United States of America")
 #ak_ca <- lines[2,]
 
-# Raster data
 
-r <- raster('C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/Rasters/precip_delta.tif')
+################################# PLOTS #############################################
+
+###################################
+# Precipitation
+###################################
+# Mean
+r <- raster(paste(PlotIn,'Precip_mean.tif',sep=""))
+r<-mask(r,Sp_park)
 plot(r)
 
 crs(r) <- aa
 
-# Plot
+# Precip mean
+col=hcl.colors(n = 9, palette = "Oslo", alpha = 0.7)[3:9]
+barplot(1/sqrt(1:length(col)), col = col)
 
-# Tave color palette = viridis (n = 7)
-# Tave delta = Lajolla (n = 7)
-# Precip mean = Oslo (n = 7)
-# Precip delta = Blues 2 (n = 4)
-
-
-png('C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/Maps/Precip_delta.png')
+png(paste(PlotOut,'Precip_mean.png',sep=""))
 
 plotRGB(ak2) 
-plot(r, col = hcl.colors(n = 4, palette = "Blue-Yellow", alpha = 0.5,rev = TRUE),  legend = FALSE, add = TRUE) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
 plot(Sp_park, add = TRUE) + 
-plot(r, col = hcl.colors(n = 4, palette = "Blue-Yellow", alpha = 0.5, rev = TRUE), legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Precip (in)", line = 1)) 
+plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Precip (in)", line = 1)) 
 
+dev.off()
+
+
+########################
+# Delta
+
+r <- raster(paste(PlotIn,'precip_delta.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Precip delta
+col=hcl.colors(n = 7, palette = "Blue-Yellow", alpha = 0.7, rev=TRUE)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Precip_delta.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text = "Precip (in)", line = 1)) 
+
+dev.off()
+
+
+###################################
+# Tmax
+###################################
+# Mean
+r <- raster(paste(PlotIn,'Tmax_val.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp mean
+col=hcl.colors(n = 7, palette = "Viridis", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmax_mean.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text =  expression("Temperature ("*~degree*F*")"), line = 1)) 
+
+dev.off()
+
+
+########################
+# Delta
+
+r <- raster(paste(PlotIn,'tmax_delta.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp delta
+col=hcl.colors(n = 7, palette = "Lajolla", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmax_delta.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+  plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text = expression("Temperature ("*~degree*F*")"), line = 1)) 
+
+dev.off()
+
+
+###################################
+# Tmin
+###################################
+# Mean
+r <- raster(paste(PlotIn,'Tmin_val.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp mean
+col=hcl.colors(n = 7, palette = "Viridis", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmin_mean.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+  plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text =  expression("Temperature ("*~degree*F*")"), line = 1)) 
+
+dev.off()
+
+
+########################
+# Delta
+
+r <- raster(paste(PlotIn,'tmin_delta.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp delta
+col=hcl.colors(n = 7, palette = "Lajolla", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmin_delta.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+  plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text = expression("Temperature ("*~degree*F*")"), line = 1)) 
+
+dev.off()
+
+
+###################################
+# Tmean
+###################################
+# Mean
+r <- raster(paste(PlotIn,'Tmean_val.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp mean
+col=hcl.colors(n = 7, palette = "Viridis", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmean_mean.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+  plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text =  expression("Temperature ("*~degree*F*")"), line = 1)) 
+
+dev.off()
+
+
+########################
+# Delta
+
+r <- raster(paste(PlotIn,'tmean_delta.tif',sep=""))
+r<-mask(r,Sp_park)
+plot(r)
+
+crs(r) <- aa
+
+# Temp delta
+col=hcl.colors(n = 7, palette = "Lajolla", alpha = 0.5)
+barplot(1/sqrt(1:length(col)), col = col)
+
+png(paste(PlotOut,'Tmean_delta.png',sep=""))
+
+plotRGB(ak2) 
+plot(r, col = col,  legend = FALSE, add = TRUE) 
+plot(Sp_park, add = TRUE) + 
+  plot(r, col = col, legend.only = TRUE, horizontal = TRUE, legend.args = list(text = expression("Temperature ("*~degree*F*")"), line = 1)) 
 
 dev.off()
 
