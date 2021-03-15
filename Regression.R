@@ -275,15 +275,15 @@ TitleSize = theme_get()$plot.title$size  ##Needed for cowplot layouts
 
 # Gulf
 
-tave<-read.csv("./output/csvs/tave_gulf.csv")
-prcp<-read.csv("./output/csvs/pr_gulf.csv")
-tmax<-read.csv("./output/csvs/tmax_gulf.csv")
-tmin<-read.csv("./output/csvs/tmin_gulf.csv")
+tave<-read.csv("./output/csvs/tave_int.csv")
+prcp<-read.csv("./output/csvs/pr_int.csv")
+tmax<-read.csv("./output/csvs/tmax_int.csv")
+tmin<-read.csv("./output/csvs/tmin_int.csv")
 
-tave$tave <- tave$temp_gulf
-tmin$tmin <- tmin$temp_gulf
-tmax$tmax <- tmax$temp_gulf
-prcp$prcp <- prcp$pr_gulf
+tave$tave <- tave$temp_int
+tmin$tmin <- tmin$temp_int
+tmax$tmax <- tmax$temp_int
+prcp$prcp <- prcp$pr_int
 
 cYr <- BeginYr:EndYr
 yrAvgs <- data.frame(cYr, tave$tave, tmin$tmin, tmax$tmax, prcp$prcp)
