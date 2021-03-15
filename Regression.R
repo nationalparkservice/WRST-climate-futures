@@ -22,12 +22,12 @@ rm(list = ls())
 # ---   USER INPUTS -------------------------------------- #
 
 data.dir <- "D:/nClimGrid" 
-pnt.list<-list.files(path=data.dir, pattern=".tave.alaska") #list all files by var
+pnt.list<-list.files(path=data.dir, pattern=".prcp.alaska") #list all files by var
 #tmax, tmin, tave, prcp
 
-var <- "tave"
+var <- "prcp"
 
-#plotDir<-"C:/Users/achildress/DOI/NPS-NRSS-CCRP-FC Science Adaptation - Documents/General/RSS Stuff/Parks/WRST/2.0 CF and Scenario Development/Historical/"
+plotDir <- "./output/plots" # AKD PlotDir
 
 
 # ---   INITIALS  ---------------------------------------- #
@@ -115,21 +115,21 @@ plot(st_fahr)
 
 # Calculate overall mean: output = single raster with overall mean values
 
-ras_mean <- calc(st_fahr, fun = mean)
-plot(ras_mean)
+#ras_mean <- calc(st_fahr, fun = mean)
+#plot(ras_mean)
 
 ##################################
 
 # ###############################
 # ##### Run for only precip
-# st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
+st_sum <- stackApply(st, indices = c(rep(1:96, each = 12)), fun = sum, na.rm = TRUE) # get total annual precip
 # plot(st_sum[[1]]) #
 # 
 # st_mean_pr_tot <- calc(st_sum, fun = mean)
 # plot(st_mean_pr_tot)
 # 
-# st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
-# plot(st_in)
+st_in <- calc(st_sum, fun = function(x){((x)/25.4)})
+plot(st_in)
 
 
 # Calculate overall mean: output = single raster with overall mean values
@@ -141,7 +141,7 @@ plot(ras_mean)
 
 # ------  REGRESSION  -------------------------------------------------- #
   
-time <- 1:nlayers(st_fahr) # all years 1925 - 2020
+time <- 1:nlayers(st_in) # all years 1925 - 2020
 
 # Function to calculate slope and p-value
 
@@ -157,13 +157,13 @@ fun <- function(y) {
   }
 }
 
-r <- calc(st_fahr, fun)
-plot(r)
+# <- calc(st_fahr, fun)
+#plot(r)
 
 # -- PLOTTING ---------------------------------------------------------- #
 
 # Reclassify raster so that values <= 0.05 -> 1 or else NA
-slope <- subset(r, 1)
+#slope <- subset(r, 1)
 
 #pval <- subset(r, 2)
 #pval[pval > 0.1] <- NA # Make values NA that are greater than 0.05
@@ -173,8 +173,8 @@ slope <- subset(r, 1)
 #plot(sig)
 
 # Plot park over raster
-Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Albers
-plot(Sp_park, add = TRUE)
+#Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Albers
+#plot(Sp_park, add = TRUE)
 
 
 # writeRaster(sig, file = "./output/rasters/precip_delta.tif") # save raster of significant slope values
@@ -185,8 +185,19 @@ plot(Sp_park, add = TRUE)
 
 yr<-seq(1925,2020,1)
 Sp_park<-spTransform(Sp_park,CRSobj = "+init=epsg:3338") # project to Alaska Albers
-# 
-# m_pr<-mask(st_in,Sp_park)
+
+
+# Precip 
+
+m_pr <- mask(st_in, Sp_park)
+plot(m_pr)
+
+pr_gulf <- mask(m_pr, div_gulf)
+plot(pr_gulf)
+
+pr_int <- mask(m_pr, div_int)
+plot(pr_int)
+
 # pr<-data.frame(prcp=cellStats(m_pr,stat='mean'),year=yr)
 # row.names(pr)<-NULL
 # write.csv(pr,"prcp.csv",row.names=F)
@@ -202,20 +213,31 @@ plot(temp_int)
 
 # Write csv's
 
+pr_gulf_df <- data.frame(pr_gulf = cellStats(pr_gulf, stat = 'mean'), year = yr)
+pr_int_df <- data.frame(pr_int = cellStats(pr_int, stat = 'mean'), year = yr)
+
+row.names(pr_gulf_df)<-NULL
+row.names(pr_int_df) <- NULL 
+
 temp_gulf_df <-data.frame(temp_gulf=cellStats(temp_gulf,stat='mean'),year=yr)
 temp_int_df <- data.frame(temp_int = cellStats(temp_int, stat = 'mean', year = yr))
 
 row.names(temp_gulf_df)<-NULL
 row.names(temp_int_df) <- NULL 
 
-write.csv(temp_gulf_df,"./output/csvs/tave_gulf.csv",row.names=F)
-write.csv(temp_int_df, "./output/csvs/tave_int.csv", row.names = FALSE)
+write.csv(temp_gulf_df,"./output/csvs/tmax_gulf.csv",row.names=F)
+write.csv(temp_int_df, "./output/csvs/tmax_int.csv", row.names = FALSE)
+
+write.csv(pr_int_df, "./output/csvs/pr_int.csv", row.names = FALSE)
+write.csv(pr_gulf_df, "./output/csvs/pr_gulf.csv", row.names = FALSE)
+
+# ---  PLOTS ----------------------------------------- #      
 
 # read in csvs
 #prcp<-read.csv("prcp.csv")
 #tmax<-read.csv("tmax.csv")
 #tmin<-read.csv("tmin.csv")
-tave<-read.csv("./output/csvs/tave_gulf.csv")
+#tave<-read.csv("./output/csvs/tave_gulf.csv")
 
 # -- TIME SERIES FROM PRISM SCRIPTS
 beginRefYr = 1925
@@ -254,6 +276,14 @@ TitleSize = theme_get()$plot.title$size  ##Needed for cowplot layouts
 # Gulf
 
 tave<-read.csv("./output/csvs/tave_gulf.csv")
+prcp<-read.csv("./output/csvs/pr_gulf.csv")
+tmax<-read.csv("./output/csvs/tmax_gulf.csv")
+tmin<-read.csv("./output/csvs/tmin_gulf.csv")
+
+tave$tave <- tave$temp_gulf
+tmin$tmin <- tmin$temp_gulf
+tmax$tmax <- tmax$temp_gulf
+prcp$prcp <- prcp$pr_gulf
 
 cYr <- BeginYr:EndYr
 yrAvgs <- data.frame(cYr, tave$tave, tmin$tmin, tmax$tmax, prcp$prcp)
