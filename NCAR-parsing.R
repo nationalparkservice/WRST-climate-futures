@@ -15,6 +15,10 @@ Lat = 62.23494 #park centroid lat
 Lon = -142.572 #park centroid lon
 cLon = Lon + 360 #Adjusts negative lon. values 
 
+# read in parks shapefile
+nps_boundary <- st_read('C:/Users/achildress/OneDrive - DOI/Documents/GIS/nps_boundary_centroids/nps_boundary_centroids.shp')
+park <- filter(nps_boundary, UNIT_CODE == "WRST") # subset to WRST only
+Sp_park <- as_Spatial(park[1,])
 
 
 # MET parsing
@@ -26,6 +30,7 @@ x<-nc_open(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"))
 lon <- ncvar_get(x, "longitude") # read in lon
 lat <- ncvar_get(x, "latitude")
 tmax <- ncvar_get(x, "tmax") #working w/ tmax b/c pcp returns too many 0s
+tmax[200,73,] #returns tmax data for lon 200,lat 73, all time (365)
 
 
 # this chunk of code from Method 2, here https://gis.stackexchange.com/questions/390148/handle-curvilinear-rotated-grid-netcdf-file-in-r
@@ -36,16 +41,20 @@ ts<-as.POSIXct(nc.get.time.series(x))
 dum_var <- ncvar_get(x, req_var,start=c(1,1,1),count = c(-1,-1,1)) 
 coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
 
+coords$lat.distance<-abs(coords$lat - Lat)
+coords$lon.distance<-abs(coords$lon -cLon)
+
+coords$index<-coords$lat.distance*coords$lon.distance
+
+Index = coords$id[which.min(coords$index)]
+
 Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
 Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
 # Note these don't work because data are a matrix, not index so don't identify same cell
 
-coords$id[which.min(abs(coords$lat - Lat) & abs(coords$lon - cLon))] #does not work - idea is to try to identify ID with lat and lon closest to var
-
 data_out <- rep(0,length(ts)) #create zeros vector to output the average value
 
-
-id <-c(Lat_index, Lon_index) # c(Lat_index,Lon_index) # index of cells within the mask shapefile
+id <-c(Index) # c(Lat_index,Lon_index) # index of cells within the mask shapefile -- single value if single cell, multi values if multi cells
 
 for (i in 1:length(id)) {
   
@@ -57,11 +66,11 @@ for (i in 1:length(id)) {
   
   pt_data <- ncvar_get(x, req_var,  
                        start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
-  data_out <- data_out+pt_data #sum data to be averaged after the loop
+  data_out <- data_out+pt_data #sum data to be averaged after the loop ## Doesn't work if NA values
 }
+data_out
 
 nc_close(x)
-
 
 ####### Stars method
 # Can set stars objs as curvilinear -- couldn't figure out how to subset data
@@ -103,6 +112,7 @@ ggplot()  +
   geom_sf(data = world, color = "black", fill = "white") +
   geom_stars(data = sst, alpha = 0.75) +
   coord_sf(ylim = c(min(cf$latitude),max(cf$latitude)), xlim = c(min(cf$longitude),max(cf$longitude))) +
+  # geom_point(data=Sp_park) +
   scale_fill_viridis() +
   theme(panel.border = element_rect(colour = "black", fill = NA))
 
@@ -120,21 +130,43 @@ which.min(abs(as.numeric(unlist(lat.right))))
 lon.matrix<-as.data.frame(cf[[2]])
 
 ## Next step - try converting park_centroid.shp to st obj and using it to extract cell?
+St_park<-st_as_sf(park[1,])
+crs(St_park) <- "+proj=longlat +datum=WGS84 +no_defs"
+st_ext<-st_extract(sst, St_park) #doesn't work 
 
+# Curvilinear subset from https://r-spatial.github.io/stars/articles/stars1.html
+library(dplyr) # loads slice generic
+prec_slice = slice(prec, index = 17, along = "time")
+plot(prec_slice, border = NA, breaks = qu_0_omit(prec_slice[[1]]), reset = FALSE)
+nc = sf::read_sf(system.file("gpkg/nc.gpkg", package = "sf"), "nc.gpkg")
+plot(st_geometry(nc), add = TRUE, reset = FALSE, col = NA, border = 'red')
 
 ##### RASTER OPTION
 
 
 # Haven't made much headway here can just read in netcdf as a brick and plot it
 y = brick(ncvar_get(x, "tmax"))
+crs(y)
 plot(y[[200]]) #change # and can see that it's changing the date, which defines the layers
+z=stack(y)
+plot(z[[1]])
+
+crs(Sp_park) <-"+init=epsg:3338"
+crs(z) <- "+init=epsg:3338"
+
+r<-mask(y,Sp_park) #subsets but cells are NA, indicating it's wrong cell
+
+bbox<-data.frame(Sp_park@bbox)
+bbox[1,]<-bbox[1,] + 365
+dfx<-subset(, Lat >= bbox["y","min"] & Lat <= bbox["y","max"] &
+              Lon >=bbox["x","min"] & Lon<=bbox["x","max"]) #doesn't work with small parks, need to fix
 
 
 y.raster<-raster(y[[200]]) # can't figure out how to extract single raster from brick
 
 
 # None of this shit worked
-# crs(y) <- "+proj=longlat +datum=WGS84 +no_defs"
+crs(y) <- "+proj=longlat +datum=WGS84 +no_defs"
 # crs(y) <- "+init=epsg:3338"
 # projectRaster(y,crs = "+init=epsg:3338")
 # 
