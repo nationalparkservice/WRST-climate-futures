@@ -1,38 +1,92 @@
-library(ncdf4)
-library(reshape2)
-library(raster)
 library(stars)
 library(dplyr)
-library('ncdf4.helpers')
 library('maptools')
 library(ggplot2) #for plotting
 library(units) # for dropping units
+library(tidyverse)
+library(starsdata)
+library(viridis)
 
 
 rm(list=ls())
 
-Lat = 62.23494 #park centroid lat
-Lon = -142.572 #park centroid lon
-cLon = Lon + 360 #Adjusts negative lon. values 
-
-# read in parks shapefile
-nps_boundary <- st_read('C:/Users/achildress/OneDrive - DOI/Documents/GIS/nps_boundary_centroids/nps_boundary_centroids.shp')
-park <- filter(nps_boundary, UNIT_CODE == "WRST") # subset to WRST only
-Sp_park <- as_Spatial(park[1,])
+#Lat = 62.23494 #park centroid lat
+#Lon = -142.572 #park centroid lon
+#cLon = Lon + 360 #Adjusts negative lon. values 
 
 
 # MET parsing
-data.dir<-"C:/Users/achildress/Documents/NCAR-test/met/" #location data file
+data.dir<-"./data/met/" #location data file
 
 ######## Method working with .nc object and 'flattening' 
-x<-nc_open(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4")) 
+#x<-nc_open(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4")) 
+
+#lon <- ncvar_get(x, "longitude") # read in lon
+#lat <- ncvar_get(x, "latitude")
+#tmax <- ncvar_get(x, "tmax") #working w/ tmax b/c pcp returns too many 0s
+
 
 ####### Stars method
-# Can set stars objs as curvilinear -- couldn't figure out how to subset data
-# s<-read_ncdf(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"), curvilinear = c("longitude", "latitude"),var="tmax")
 
+# Can set stars objs as curvilinear -- couldn't figure out how to subset data
+
+# Example from https://r-spatial.github.io/stars/articles/stars4.html#curvilinear-grids-1
+
+#install.packages("starsdata", repos = "http://pebesma.staff.ifgi.de", type = "source") # Example curvilinear data
+
+# --- EXAMPLE DATA (curvilinear) ------------------------------------------------------------ #
+
+(s5p = system.file("sentinel5p/S5P_NRTI_L2__NO2____20180717T120113_20180717T120613_03932_01_010002_20180717T125231.nc", package = "starsdata")) # sample data
+
+nit.c = read_stars(s5p, sub = "//PRODUCT/SUPPORT_DATA/DETAILED_RESULTS/nitrogendioxide_summed_total_column",
+                   curvilinear = c("//PRODUCT/longitude", "//PRODUCT/latitude"), driver = NULL)
+
+if (inherits(nit.c[[1]], "units")) {
+  threshold = units::set_units(9e+36, mol/m^2)
+} else {
+  threshold = 9e+36
+}
+nit.c[[1]][nit.c[[1]] > threshold] = NA
+st_crs(nit.c) = 4326
+nit.c
+
+# --------- END EXAMPLE DATA ------------------------------------------------------------------------------------------ #
+
+s<-read_stars(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"), sub = 'tmax', curvilinear = c("longitude", "latitude"))
+
+st_crs(s) = 4326
+s
+
+plot(s)
+
+# plot arrays by time 
+
+t1 <- s[,,,1] # time 1 
+t2 <- s[,,,2] # time 2
+t100 <- s[,,,100] # time 100
+
+subset_x <- s[1,]
+
+plot(t100)
+
+test <- filter(s, slice_head) # need to expand grid to 62491 to use this filtering method. Maybe see how Amber did it in her code. 
+
+prod(dim(s)) # 62491
+st_dimensions(s)
+x_dims <- st_get_dimension_values(s, 'x', max = TRUE)
+
+test <- st_redimension(s, new_dims = prod(dim(s))) # error: summary operation prod not allowed 
+
+# Look at ncdf file 
+
+x<-nc_open(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"))
+
+x
+
+# Amber's example: plotting 
 
 # Try example from https://www.mattreusswig.com/post/use-stars-to-visualize-curvilinear-netcdf-rasters/
+
 sst <- read_ncdf(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"), var = c("tmax"))
 cf  <- read_ncdf(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"), var = c("latitude", "longitude"))
 sst
@@ -67,14 +121,15 @@ ggplot()  +
   geom_sf(data = world, color = "black", fill = "white") +
   geom_stars(data = sst, alpha = 0.75) +
   coord_sf(ylim = c(min(cf$latitude),max(cf$latitude)), xlim = c(min(cf$longitude),max(cf$longitude))) +
-  # geom_point(data=Sp_park) +
   scale_fill_viridis() +
   theme(panel.border = element_rect(colour = "black", fill = NA))
 
 # According to https://r-spatial.org/r/2018/03/22/stars2.html - this allows you to subset stars obj. Didn't work for me
-pol <- sst %>% st_bbox() %>% st_as_sfc() %>% st_centroid() %>% st_buffer(10)
-sst <- sst[,,1]
+pol <- sst %>% st_bbox() %>% st_as_sfc() %>% st_centroid() %>% st_buffer(10) # I think this only works with regular grids, not curvilinear. Or maybe would work after being redimensioned
+sst2 <- sst[,,1]
 plot(sst[pol])
+
+plot(sst)
 
 ## How extract data from sst?
 s<-as.data.frame(sst[[1]]) # creates df from tmax. When looking @ df can see that only need to identify cells to extract from grid. Need index for lat/lon
@@ -85,19 +140,11 @@ which.min(abs(as.numeric(unlist(lat.right))))
 lon.matrix<-as.data.frame(cf[[2]])
 
 ## Next step - try converting park_centroid.shp to st obj and using it to extract cell?
-St_park<-st_as_sf(park[1,])
-crs(St_park) <- "+proj=longlat +datum=WGS84 +no_defs"
-st_ext<-st_extract(sst, St_park) #doesn't work 
 
-# Curvilinear subset from https://r-spatial.github.io/stars/articles/stars1.html
-library(dplyr) # loads slice generic
-prec_slice = slice(prec, index = 17, along = "time")
-plot(prec_slice, border = NA, breaks = qu_0_omit(prec_slice[[1]]), reset = FALSE)
-nc = sf::read_sf(system.file("gpkg/nc.gpkg", package = "sf"), "nc.gpkg")
-plot(st_geometry(nc), add = TRUE, reset = FALSE, col = NA, border = 'red')
+
+# ----- HAVEN'T TRIED THIS ------------------------------------------------ #
 
 ##### RASTER OPTION
-
 
 # Haven't made much headway here can just read in netcdf as a brick and plot it
 y = brick(ncvar_get(x, "tmax"))
@@ -118,13 +165,3 @@ dfx<-subset(, Lat >= bbox["y","min"] & Lat <= bbox["y","max"] &
 
 
 y.raster<-raster(y[[200]]) # can't figure out how to extract single raster from brick
-
-
-# None of this shit worked
-crs(y) <- "+proj=longlat +datum=WGS84 +no_defs"
-# crs(y) <- "+init=epsg:3338"
-# projectRaster(y,crs = "+init=epsg:3338")
-# 
-# rast.lon<-raster(paste0(data.dir,"ACCESS1-3_rcp45_BCSD_met_1950.nc4"),varname="longitude")
-# y2<-projectRaster(y[[1]],crs = "+init=epsg:3338") #reproj sp obj
-# y[[1]]
