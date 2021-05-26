@@ -11,7 +11,7 @@ library(units) # for dropping units
 
 rm(list=ls())
 
-Lat = 62.23494 #park centroid lat
+Lat = 62.23494 #park centroid lat -- if doing multiple sites, read in points file
 Lon = -142.572 #park centroid lon
 cLon = Lon + 360 #Adjusts negative lon. values 
 
