@@ -68,25 +68,17 @@ Index = coords$id[which.min(coords$index)]
 Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
 Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
 
-file.data <- rep(0,length(ts)) #create zeros vector to output the average value
-
-id <-c(Index) # c(Lat_index,Lon_index) # index of cells within the mask shapefile -- single value if single cell, multi values if multi cells
-
 req_var<-names(x$var)[4] #tmax UPDATE THIS TO 
 
-for (j in 1:length(id)) {
-  
-  pt_id <- id[j]
   #convert linear ind to r and c index
-  rc <- arrayInd(pt_id,dim(dum_var)) #get row and column index
+  rc <- arrayInd(Index,dim(dum_var)) #get row and column index
   
   #get the variable at the required location for all time steps.
   
   pt_data <- ncvar_get(x, req_var,  
                        start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
-  file.data <- file.data+pt_data #sum data to be averaged after the loop ## Doesn't work if NA values
+  
   # add other variables in output here
-}
 data<-rbind(data,file.data)
 
 nc_close(x)
