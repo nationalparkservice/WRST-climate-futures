@@ -12,7 +12,12 @@ library(units) # for dropping units
 rm(list=ls())
 
 ######### MET parsing - file location ######### 
-data.dir<-"C:/Users/achildress/Documents/NCAR-test/met/" #location data file
+# data.dir<-"C:/Users/achildress/Documents/NCAR-test/met/" #location data file
+data.dir <- "D:/AK/met"
+vic.dir <- "D:/AK/vic_hydro"
+GCMs <- as.list(list.dirs(path = data.dir, full.names = FALSE, recursive = FALSE))
+
+GCMs[which(GCMs %in% c("daymet","monthly"))] <- NULL
 
 RCPs <- c("rcp45", "rcp85")
 
@@ -29,25 +34,28 @@ cLon = Lon + 360 #Adjusts negative lon. values
 
 ######### Create df for data ######### 
 # GCM, rcp, date, pcp, tmax, tmin
-data<-as.data.frame(matrix(data=NA,nrow=0,ncol=6))
-names(data)<-c("Date","GCM","rcp","tmax","tmin","pcp")
+daily<-as.data.frame(matrix(data=NA,nrow=0,ncol=6))
+names(daily)<-c("Date","GCM","rcp","tmax","tmin","pcp")
 
-
-for (R in RCPs){
+for (G in 1:length(GCMs)){
+  gcm = GCMs[G]
+for (R in 1:length(RCPs)){
 rcp = RCPs[R]
+path = paste(data.dir,gcm,rcp,sep="/")
 
-file.list<-list.files(path=paste0(data.dir, rcp), pattern=".nc4") #list all files in folder
+file.list<-list.files(path=path, pattern=".nc4") #list all files in folder
 
-# Extract model names from RCP 
-GCMs<-sub("\\_.*", "", file.list) 
+
+# # Extract model names from RCP 
+# GCMs<-sub("\\_.*", "", file.list) 
 
 ######## Method working with .nc object and 'flattening' for point location
 for (file in length(file.list)){
-gcm = sub("\\_.*", "", file.list[file])
+# gcm = sub("\\_.*", "", file.list[file.list])
 # year<-sub('.*[_]([^.]+)[.].*', "\\1", file.list[file]) #syntax explanation https://stackoverflow.com/questions/23518325/how-to-extract-substring-between-patterns-and-in-r
 
 
-x<-nc_open(paste0(paste0(data.dir, rcp, "/", file.list[file]))) 
+x<-nc_open(paste0(path, "/", file.list[file])) 
 
 lon <- ncvar_get(x, "longitude") 
 lat <- ncvar_get(x, "latitude")
@@ -88,11 +96,80 @@ Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that
                    start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
   
   # add other variables in output here
-data<-rbind(data,df)
+daily<-rbind(daily,df)
 
 nc_close(x)
-}
-}
+}}}
 rm(df)
+rm(x)
 
-data$GCM <- paste(data$GCM, data$rcp, sep=".")
+daily$GCM <- paste(data$GCM, data$rcp, sep=".")
+
+
+############# DAYMET EXTRACTION
+daymet<-as.data.frame(matrix(data=NA,nrow=0,ncol=6))
+names(daymet)<-c("Date","GCM","rcp","tmax","tmin","pcp")
+   
+path = paste(data.dir,gcm,rcp,sep="/")
+    
+file.list<-list.files(path=path, pattern=".nc4") #list all files in folder
+    
+######## Method working with .nc object and 'flattening' for point location
+    for (file in length(file.list)){
+      # gcm = sub("\\_.*", "", file.list[file.list])
+      # year<-sub('.*[_]([^.]+)[.].*', "\\1", file.list[file]) #syntax explanation https://stackoverflow.com/questions/23518325/how-to-extract-substring-between-patterns-and-in-r
+      
+      
+      x<-nc_open(paste0(path, "/", file.list[file])) 
+      
+      lon <- ncvar_get(x, "longitude") 
+      lat <- ncvar_get(x, "latitude")
+      
+      # this chunk of code from Method 2, here https://gis.stackexchange.com/questions/390148/handle-curvilinear-rotated-grid-netcdf-file-in-r
+      # it flattens the grid by converting coordinate to vectors
+      
+      ts<-as.POSIXct(nc.get.time.series(x))
+      df <- as.data.frame(matrix(NA,length(ts),0))  # dummy df
+      df$Date <- ts
+      
+      df$GCM <- gcm
+      df$rcp <- rcp
+      
+      
+      dum_var <- ncvar_get(x, "tmax",start=c(1,1,1),count = c(-1,-1,1)) 
+      coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
+      
+      coords$lat.distance<-abs(coords$lat - Lat)
+      coords$lon.distance<-abs(coords$lon -cLon)
+      
+      coords$index<-coords$lat.distance*coords$lon.distance
+      
+      Index = coords$id[which.min(coords$index)]
+      
+      Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
+      Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
+      
+      #convert linear ind to r and c index
+      rc <- arrayInd(Index,dim(dum_var)) #get row and column index
+      
+      #get the variables at the required location for all time steps.
+      df$tmax<- ncvar_get(x, "tmax",  
+                          start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
+      df$tmin<- ncvar_get(x, "tmin",  
+                          start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
+      df$pcp <- ncvar_get(x, "pcp",  
+                          start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
+      
+      # add other variables in output here
+      daily<-rbind(daily,df)
+      
+      nc_close(x)
+    }}}
+rm(df)
+rm(x)
+############# VIC EXTRACTION
+
+
+
+
+
