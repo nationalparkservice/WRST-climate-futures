@@ -75,14 +75,11 @@ dum_var <- ncvar_get(x, "tmax",start=c(1,1,1),count = c(-1,-1,1))
 coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
 
 coords$lat.distance<-abs(coords$lat - Lat)
-coords$lon.distance<-abs(coords$lon -cLon)
+coords$lon.distance<-abs(coords$lon - cLon)
 
 coords$index<-coords$lat.distance*coords$lon.distance
 
 Index = coords$id[which.min(coords$index)]
-
-Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
-Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
 
   #convert linear ind to r and c index
   rc <- arrayInd(Index,dim(dum_var)) #get row and column index
@@ -140,15 +137,12 @@ file.list<-list.files(path=path, pattern=".nc") #list all files in folder
       coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
       
       coords$lat.distance<-abs(coords$lat - Lat)
-      coords$lon.distance<-abs(coords$lon -Lon)
+      coords$lon.distance<-abs(coords$lon - Lon)
       
       coords$index<-coords$lat.distance*coords$lon.distance
       
       Index = coords$id[which.min(coords$index)]
-      
-      Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
-      Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
-      
+
       #convert linear ind to r and c index
       rc <- arrayInd(Index,dim(dum_var)) #get row and column index
       
@@ -214,14 +208,12 @@ for (G in 1:length(GCMs)){
     coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
     
     coords$lat.distance<-abs(coords$lat - Lat)
-    coords$lon.distance<-abs(coords$lon -cLon)
+    coords$lon.distance<-abs(coords$lon - Lon)
     
     coords$index<-coords$lat.distance*coords$lon.distance
     
     Index = coords$id[which.min(coords$index)]
-    
-    Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
-    Lon_index = as.numeric(which.min(abs(coords$lon -Lon)))#returns cell index that is closest to Lon var
+
     
     #convert linear ind to r and c index
     rc <- arrayInd(Index,dim(dum_var)) #get row and column index
@@ -268,15 +260,12 @@ for (G in 1:length(GCMs)){
   coords<-data.frame(id=1:length(lon),lon=as.vector(lon), lat=as.vector(lat)) #index values match up to 
   
   coords$lat.distance<-abs(coords$lat - Lat)
-  coords$lon.distance<-abs(coords$lon -cLon)
+  coords$lon.distance<-abs(coords$lon - Lon)
   
   coords$index<-coords$lat.distance*coords$lon.distance
   
   Index = coords$id[which.min(coords$index)]
-  
-  Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
-  Lon_index = as.numeric(which.min(abs(coords$lon -Lon)))#returns cell index that is closest to Lon var
-  
+
   #convert linear ind to r and c index
   rc <- arrayInd(Index,dim(dum_var)) #get row and column index
   
@@ -326,9 +315,6 @@ coords$index<-coords$lat.distance*coords$lon.distance
 
 Index = coords$id[which.min(coords$index)]
 
-Lat_index = as.numeric(which.min(abs(coords$lat - Lat))) #returns cell index that is closest to Lat var
-Lon_index = as.numeric(which.min(abs(coords$lon -cLon)))#returns cell index that is closest to Lon var
-
 #convert linear ind to r and c index
 rc <- arrayInd(Index,dim(dum_var)) #get row and column index
 
@@ -345,8 +331,6 @@ df3$SWE <- ncvar_get(x, "SWE",
                         start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
 df3$WATER_ERROR <- ncvar_get(x, "WATER_ERROR",  
                            start=c(rc[1],rc[2],1),count=c(1,1,-1)) #-1 read all time_steps
-
-# add other variables in output here
 
 nc_close(x)
 df <- merge(df,df3,by=c("Date","GCM","rcp"))
