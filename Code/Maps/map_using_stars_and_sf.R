@@ -50,6 +50,26 @@ test <- st_transform(test, 3338)
 plot(test, border = NA, reset = FALSE)
 plot(st_geometry(wrst), add = TRUE)
 
+#######################################################################################
+
+# Nothing works. Asked question on Stack Overflow
+
+# Subsetting stars objects: 
+  # first argument selects attributes
+  # second argument selects first dimension
+  # third argument selects second dimension
+
+plot(test[wrst])
 
 
+nc %>% st_transform(3338) %>% st_bbox() %>% st_as_stars -> new
 
+nc %>% st_warp(new) -> warp
+
+# NOTE: curvilinear grids cannot be cropped because they are not regular.
+
+i <- st_intersects(test, wrst, sparse = TRUE)
+
+c <- st_crop(test, wrst)
+
+w <- test %>% st_warp(dest = test, method = "near")
