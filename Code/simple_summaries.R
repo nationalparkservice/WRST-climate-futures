@@ -64,9 +64,13 @@ drop_units <- function(x) {
 
 drop_units(st[[1]]) -> st2 # st[[1] is where units are defined
 
-st2 <- st_as_stars(st2) # turn back into stars object, now there are no units
+st2 <- st_as_stars(st2) # turn back into stars object, now there are no units but attribute has lost its name
 
-# m
+st2 <- setNames(st2, "tmax") # name attribute
+
+# mutate - create an attribute that is temperature in Fahrenheit
+
+st2 %>% mutate(tmaxF = tmax * (9/5) + 32) -> stF
 
 
 
