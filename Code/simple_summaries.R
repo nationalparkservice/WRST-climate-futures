@@ -81,7 +81,6 @@ stF %>% slice(time, 100) -> day100F
 plot(day100F) # plots upside-down but still looks ok. Maybe later look into preserving lat/long (or reassigning) through units functions. 
 
 
-
 # Aggregate
 
 by_t = "1 year"
