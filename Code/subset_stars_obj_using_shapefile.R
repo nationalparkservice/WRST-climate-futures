@@ -2,25 +2,18 @@
 ###   SPATIAL SUBSET USING STARS AND SF  #######
 ################################################
 
+# Stars object can be subsetted spatially using a shapefile or by cell indices
+
 # https://www.cgd.ucar.edu/cms/eaton/netcdf/NCAR-CSM.html # about NCAR netCDF data
 
-#library(raster)
-#library(ncdf4)
-#library('ncdf4.helpers')
-#library('maptools') 
 library(sf)
 library(stars)
 library(dplyr)
 
-# Stars objects can be subsetted by specifying dimensions/attributes like this:
-
-  # first argument selects attributes
-  # second argument selects first dimension
-  # third argument selects second dimension
-
-# Stars objects can also be subsetted spatially using a shapefile, as this script demonstrates
-
 rm(list = ls())
+
+
+######## SUBSET STARS OBJECT BY SHAPEFILE #################################################################
 
 source("./Code/shift_longitude.R") # to convert negative longitudes to 360 for sf objects
 
@@ -66,4 +59,24 @@ plot(test[wrst])
 ex <- test[wrst]
 plot(ex)
 
+#### SUBSET STARS OBJECT USING CELL INDICES ##########################################################################
 
+# Stars objects can be subsetted by specifying dimensions/attributes like this:
+
+# first argument selects attributes
+# second argument selects first dimension
+# third argument selects second dimension and so forth
+
+st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "tmax", curvilinear = c("longitude", "latitude")) # I don't know whether this will work when read in using read_ncdf
+st
+
+# slice - slices a sub-array out of the cube; this is done by specifying the dimension on which to act, and slice number
+# MUST BE DIMENSION, NOT ATTRIBUTE
+
+st %>% slice(time, 100) -> day100
+day100
+
+# Subset using indices
+
+day100["tmax", 1:299, 1:100] -> sub # WORKS! But we have to figure out how cell indexes correspond to lat and long
+plot(sub)

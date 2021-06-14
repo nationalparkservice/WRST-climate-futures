@@ -13,6 +13,7 @@ library(ncmeta)
 library(ggplot2)
 library(tmap)
 library(tmaptools)
+library(units)
 
 
 rm(list = ls())
@@ -55,28 +56,29 @@ wrst <- st_transform(wrst, 3338) # NAD83 Alaska Albers
 st<- st_transform(st, 3338)
 
 # To remove units
+# Problem is this removes all units, including lat/long
 
-drop_units <- function(x) { 
-  class(x) <- setdiff(class(x), "units")
-  attr(x, "units") <- NULL
-  x
-}
+# Solves some units issues: https://github.com/r-spatial/mapview/issues/338
 
 drop_units(st[[1]]) -> st2 # st[[1] is where units are defined
 
-st2 <- st_as_stars(st2) # turn back into stars object, now there are no units but attribute has lost its name
+st2 <- st_as_stars(st2) # turn back into stars object, now there are no units but attribute has lost its name. Also lat/long have lost units. 
 
 st2 <- setNames(st2, "tmax") # name attribute
 
-# mutate - create an attribute that is temperature in Fahrenheit
+# mutate - create an attribute (temp in Fahrenheit)
 
 st2 %>% mutate(tmaxF = tmax * (9/5) + 32) -> stF
 
+st %>% mutate(tmaxF = tmax * (9/5) + 32) -> test
 
+# select - can select attributes, i.e. tempC or tempF
 
+stF %>% select(tmaxF) -> tmaxF # now tempF only
 
+stF %>% slice(time, 100) -> day100F
 
-
+plot(day100F) # plots upside-down but still looks ok. Maybe later look into preserving lat/long (or reassigning) through units functions. 
 
 
 
