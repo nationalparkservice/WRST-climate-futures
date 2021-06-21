@@ -13,8 +13,9 @@ rm(list=ls())
 
 ######### MET parsing - file location ######### 
 # data.dir<-"C:/Users/achildress/Documents/NCAR-test/met/" #location data file
-data.dir <- "D:/AK/met"
-vic.dir <- "D:/AK/vic_hydro"
+data.dir <- "E:/ClimateData/NCAR_AK/met"
+vic.dir <- "E:/ClimateData/NCAR_AK/vic_hydro"
+Out.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/"
 GCMs <- as.list(list.dirs(path = data.dir, full.names = FALSE, recursive = FALSE))
 
 GCMs[which(GCMs %in% c("daymet","monthly"))] <- NULL
@@ -100,7 +101,7 @@ nc_close(x)
 rm(df)
 rm(x)
 
-daily$GCM <- paste(data$GCM, data$rcp, sep=".")
+daily$GCM <- paste(daily$GCM, daily$rcp, sep=".")
 
 
 ############# DAYMET EXTRACTION
@@ -342,7 +343,8 @@ vic<-rbind(vic,df)
 rm(df1,df2,df3)
 rm(x)
 
-daily$GCM <- paste(data$GCM, data$rcp, sep=".")
+vic$GCM <- paste(vic$GCM, vic$rcp, sep=".")
 
-
+setwd(Out.dir)
+save.image(paste("WRST_centroid","_init_parsed.RData",sep=""))
 
