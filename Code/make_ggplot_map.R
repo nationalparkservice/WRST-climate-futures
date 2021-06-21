@@ -15,7 +15,7 @@ st_slice <- slice(st, index = 17, along = "time")
 
 # This makes a nice plot
 
-ggplot() + # NOTE: takes a LONG ass time because 365 days
+ggplot() + 
   geom_stars(data = st_slice, alpha = 0.8) + 
   #facet_wrap("time") + 
   scale_fill_viridis() + 
@@ -25,5 +25,16 @@ ggplot() + # NOTE: takes a LONG ass time because 365 days
   theme(legend.key.width = unit(2, "cm"))
 
 st_slice
+
+slice_wrst <- st_slice[wrst]
+
+ggplot() + 
+  geom_stars(data = slice_wrst, alpha = 0.8) + 
+  #facet_wrap("time") + 
+  scale_fill_viridis() + 
+  #coord_equal() + 
+  theme_map() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(2, "cm"))
 
 test
