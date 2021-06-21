@@ -11,9 +11,11 @@ library(dplyr)
 library(tidyr)
 library(ncmeta)
 library(ggplot2)
+library(ggthemes)
 library(tmap)
 library(tmaptools)
 library(units)
+library(viridis)
 
 
 rm(list = ls())
@@ -79,6 +81,7 @@ stF %>% slice(time, 100) -> day100F
 
 plot(day100F) # plots upside-down but still looks ok. Maybe later look into preserving lat/long (or reassigning) through units functions. 
 
+
 # ----- DPLYR FUNCTIONS ----------------------------------------------------- #
 
 # Aggregate
@@ -86,6 +89,17 @@ plot(day100F) # plots upside-down but still looks ok. Maybe later look into pres
 # First crop
 
 st_wrst <- st[wrst]
+
+# See what plot of AK looks like when cropped
+
+ggplot() + 
+  geom_stars(data = st_wrst, alpha = 0.8) + 
+  #facet_wrap("time") + 
+  scale_fill_viridis() + 
+  #coord_equal() + 
+  theme_map() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(2, "cm"))
 
 by_t = "1 year"
 
