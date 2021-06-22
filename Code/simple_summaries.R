@@ -33,7 +33,7 @@ source("./Code/shift_longitude.R") # to convert negative longitudes to 360 for s
 
 # Stars
 
-st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "tmax", curvilinear = c("longitude", "latitude"))
+st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "ppt", curvilinear = c("longitude", "latitude"))
 st
 
 st1 <- st_set_dimensions(st, 3, values = as.character(st_get_dimension_values(st, 3))) # In st1, time now has a value. Not sure what is gained by this, but seems like might be important to know. 
