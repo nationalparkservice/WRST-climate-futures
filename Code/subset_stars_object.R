@@ -31,8 +31,11 @@ test <- slice(nc, index = 17, along = "time") # Random slice just to see if plot
 
 # park shapefile 
 
-nps <- st_read('./data/spatial-data/nps_boundary/nps_boundary.shp')
+nps <- st_read('./data/spatial-data/nps_boundary/nps_boundary.shp') # where file is located on Annie's computer
 wrst <- dplyr::filter(nps, UNIT_CODE == "WRST")
+
+# saveRDS(wrst, file = 'data/wrst.Rds') # save wrst shapefile to repo so anyone can access it
+# wrst <- readRDS('./data/wrst.Rds')
 
 wrst <- st_shift_longitude(wrst) # to convert negative longitudes to 360 degree longitudes (to match NCAR data) https://rdrr.io/cran/sf/src/R/shift_longitude.R
 
