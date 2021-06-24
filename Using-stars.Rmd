@@ -110,7 +110,7 @@ ggplot() +
 
 ```
 
-The resolution is course because the underlying data are recorded in 20 km x 20 km cells.
+The resolution is course because the underlying data are recorded in 12 km x 12 km cells.
 
 
 ## Combining multiple NetCDF files
@@ -170,7 +170,7 @@ If you want to save the stars object for later use, you can do that using the co
 
 ## Raster math
 
-Summarizing data within a single stars object (e.g., fut) can be accomplished using `stars::st_apply()`. The third argument is the function desired, so can be any calculation in the same way `FUN` is specified in other R operations. Here, I am using `mean` to find the mean tmax value for each pixel. This can be conceptualized similarly to a rasterstack or brick, where each layer represents a time period (in this case, each layer = 1 day, for a total of 11322 layers) and the function is applied "vertically" through the layers. The result is then a stars object with a single layer representing the 
+Summarizing data within a single stars object (e.g., fut) can be accomplished using `stars::st_apply()`. The third argument is the function desired, so can be any calculation in the same way `FUN` is specified in other R operations. Here, I am using `mean` to find the mean tmax value for each pixel. This can be conceptualized similarly to a rasterstack or brick, where each layer represents a time period (in this case, each layer = 1 day, for a total of 11322 layers) and the function is applied "vertically" through the layers. The result is then a stars object with a single layer representing the mean.
 
 ```{r}
 
@@ -181,6 +181,31 @@ fut_mean <- st_apply(fut, c("x", "y"), mean) # mean tmax value for each pixel. S
 
  To contrast future metrics with historical ones, you will need to follow all these instructions for the historical years (and model/rcp) of interest. Once you have two stars objects, you can easily calculate the change by simply subtracting the rasters from one another like so: `change <- fut_mean - hist_mean`. The end product will be a stars object with a single 'layer' that can be plotted in ggplot2 as above. 
 
+
+## Summarizing data into dataframes for non-spatial analyses
+
+Data can be easily retrieved from stars and analyzed via regular dataframes. To convert a stars object to a dataframe, you need only the `as.data.frame()` function. 
+
+```{r}
+
+wrst_df <- as.data.frame(st_wrst)
+head(wrst_df)
+
+```
+
+
+From there, data can be aggregated using any standard methods. I am providing an example of aggregating data by time such that a single daily mean tmax is produced across all park pixels: 
+
+```{r}
+
+daily_mean_tmax <- wrst_df %>%
+  na.omit() %>%
+  group_by(time) %>%
+  summarise(mean_tmax = mean(tmax))
+
+head(daily_mean_tmax)
+
+```
 
 
 ## Further notes
