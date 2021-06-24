@@ -33,8 +33,15 @@ source("./Code/shift_longitude.R") # to convert negative longitudes to 360 for s
 
 # Stars
 
-st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "ppt", curvilinear = c("longitude", "latitude"))
+st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "tmax", curvilinear = c("longitude", "latitude"))
 st
+
+
+
+# try writing to file
+
+write_stars(st, "test.nc4")
+read_stars("test.nc4") # works
 
 st1 <- st_set_dimensions(st, 3, values = as.character(st_get_dimension_values(st, 3))) # In st1, time now has a value. Not sure what is gained by this, but seems like might be important to know. 
 st1
@@ -140,10 +147,4 @@ ggplot() + # same as aggregate; low resolution
   theme(legend.position = "bottom") +
   theme(legend.key.width = unit(2, "cm"))
 
-# st_extract will extract values at point locations but does not work for curvilinear grids
 
-centroids <- st_read('./data/spatial-data/nps_boundary_centroids/nps_boundary_centroids.shp')
-wrst_centroid <- filter(centroids, UNIT_CODE == "WRST")
-wrst_centroid <- st_transform(wrst_centroid, 3338)
-
-tmax_centroid <- st_intersects(test4, wrst_centroid)

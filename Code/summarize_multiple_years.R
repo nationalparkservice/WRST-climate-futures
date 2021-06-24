@@ -79,7 +79,7 @@ test <- st_apply(hist, c("x", "y"), mean) # mean value for each pixel
 
 # Plot
 
-ggplot() + # same as aggregate; low resolution
+ggplot() + 
   geom_stars(data = test, alpha = 0.8) + 
   #facet_wrap("time") + 
   scale_fill_viridis() + 

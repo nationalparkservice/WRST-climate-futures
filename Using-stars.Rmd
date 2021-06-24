@@ -1,0 +1,165 @@
+---
+title: "Using Stars"
+author: "Annie Kellner"
+date: "6/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r echo=FALSE}
+rm(list = ls())
+
+library(stars)
+library(dplyr)
+```
+
+
+## A little bit about stars objects
+
+Stars objects can be created using a single file (e.g., one NetCDF) or multiple files (e.g., a folder of NetCDF's). The advantage to using the package stars is that metadata within the spatial objects can be manipulated using tidyverse syntax. Stars also accommodates complex data that may be (for example) multidimensional or curvilinear. 
+
+This document uses data from NCAR from the WRST RSS to illustrate basic functions within the stars package. First, let's import a single NetCDF and take a look at the way data are structured in stars. Please note I have used the function `stars::read_stars()`to import this file. The function `stars::read_ncdf()` can also be used. The imported objects look identical, but there are some quirky differences in functionality. It is easy to convert one to the other, however, as I have done in the script called *summarize_multiple_years.R*. If you get errors in your code, it may be worth switching between these formats to see if the problem resolves. 
+
+```{r import-file, warning=FALSE}
+
+st <- read_stars("./data/met/ACCESS1-3_rcp45_BCSD_met_1950.nc4", sub = "tmax", curvilinear = c("longitude", "latitude"))
+st
+```
+
+You can see that this data has 1 attribute (tmax) and three dimensions (x, y, and time). Attributes and dimensions are interchangeable and malleable as I will demonstrate later. Columns describing dimensions are as follows: 
+
+
+**field**   |   **Meaning**
+----------- |   -----------
+from        |   origin index 
+to          |   final index 
+offset      |   start value for dimension (if regular; curvilinear x/y's are not a regular grid so will be 'NA')
+delta       |   step size for dimension (if regular, as above)
+refsys      |   geographic reference system
+point       |   logical (T/F): whether cells refer to points or intervals. Is NA for this data (not sure why it's not FALSE)
+values      |   sequence of values if grid is irregular (as WRST data is)
+
+  
+## Subsetting data
+
+Stars objects can be subsetted spatially using shapefiles or numerically using cell indices. I will proceed by spatially subsetting data using a park shapefile, but you can refer to *subset_stars_object.R* to see how to subset using cell indices. 
+
+First, load the park shapefile. I saved this as a .Rds file so it could be easily accessed from GitHub for this tutorial. It was created using `sf::st_read()`. Sf and stars play nicely together, as they were created by the same person. 
+
+```{r}
+
+wrst <- readRDS('./data/wrst.Rds') 
+
+wrst <- st_shift_longitude(wrst) # script that changes longitudes in an sf object to 360 (rather than use negative numbers; this matches the NCAR data format)
+
+plot(st_geometry(wrst)) # quick plot 
+
+```
+
+
+Make sure the shapefile lines up with the stars object appropriately.
+
+```{r}
+
+# Project if desired; I think everything still works if left as lat/long
+
+wrst <- st_transform(wrst, 3338) # NAD83 Alaska Albers
+st<- st_transform(st, 3338)
+
+# Slice a single day from the stars object and overlay wrst to make sure everything lines up
+
+day1 <- slice(st, along = time, 1)
+
+plot(day1, border = NA, reset = FALSE) # reset = FALSE keeps the plot 'open' for more layers
+plot(st_geometry(wrst), add = TRUE) 
+
+```
+
+Success! Subsetting is now very simple. The entire stars object can be subsetted using the same syntax. I am using the single slice here for illustrative purposes. The plot is small using the basic `plot()` function. 
+
+```{r}
+
+st_wrst <- day1[wrst] 
+plot(st_wrst)
+
+```
+
+Visualization is improved using ggplot. 
+
+```{r}
+
+ggplot() + 
+  geom_stars(data = st_wrst, alpha = 0.8) + 
+  scale_fill_viridis() + 
+  theme_map() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(2, "cm"))
+
+```
+
+
+## Summarizing data across multiple NetCDF files
+
+It is essential to increase R's memory limit when you work with multiple NetCDF files. You can check how much memory R is allocated by calling the function `memory.limit()`. To increase the limit, use this code: `memory.limit(size = 60000)`. The memory limit will be reset when the R session is terminated. 60000 is an arbitrary number that worked on my machine. This can be adjusted depending on the RAM/memory of the machine running the analysis.  
+
+To easily load multiple relevant NetCDF files (e.g., all 'historical' files from a specific model/RCP), I find it easiest to manually move the files from one folder into another, from which you will load file names using the function `list.files()` After creating a vector of file names, you will read each .nc4 file in separately such that you create a list of n stars objects (n = numbers of years of data). 
+
+```{r}
+
+file_list = list.files(path = "C:/Users/adillon/Documents/RSS/WRST/Test/met/Historical", pattern = '.nc4', full.names = TRUE) # MIROC5 RCP4.5 years 1950 - 2000
+
+l <- list() # Create a list to put the stars objects into
+
+for(i in 1:length(file_list)){
+  l[[i]] <- read_ncdf(file_list[i], var = "tmax", curvilinear = c("longitude", "latitude"), proxy = TRUE) # need to read in as ncdf or coordinate system does not translate (not sure why)
+}
+
+```
+
+
+Next, you will crop each stars object separately in order to create a similar list to the one above. After cropping, you need to convert each object using the `stars::st_as_stars()` function. This step is necessary to concatenate the list items into a single stars object. The single object enables 'raster math' (at a later step). 
+
+```{r}
+
+cropped <- list() # create list for cropped stars objects
+
+for(i in 1:length(l)){ # add cropped stars objects to a new list
+  nc = l[[i]]
+  nc = st_transform(nc, st_crs(wrst))
+  nc_crop = nc[wrst]
+  cropped[[i]] = nc_crop
+}
+
+cropped_st <- list()
+
+for(i in 1:length(cropped)){
+  cropped_st[[i]] <- st_as_stars(cropped[[i]])
+}
+
+```
+
+Now you will combine each list item from `cropped` into a single stars object.
+
+```{r}
+
+rm(crop_test, cropped, l, nc, nc_crop, nps, wrst) # remove large objects to free up memory
+
+hist <- Reduce(c, cropped_st) # combine into single stars object 
+
+```
+
+-- talk about data structure
+
+
+
+
+
+
+
+
+
