@@ -23,6 +23,7 @@ library(viridis)
 
 ```
 
+*NOTE: I recommend running this chunk by chunk, because some chunks of code will take a long time (several minutes) to run. Eval can also be set to false for time-consuming chunks. I considered storing everything as RData objects, but decided it was more instructive to keep the data raw. The only data stored as an R object is the park shapefile.*
 
 ## A little bit about stars objects
 
@@ -41,13 +42,13 @@ You can see that this data has 1 attribute (tmax) and three dimensions (x, y, an
 
 **field**   |   **Meaning**
 ----------- |   -----------
-from        |   origin index 
-to          |   final index 
+from        |   origin index (e.g., 1)
+to          |   final index (e.g., 365 for one year of daily data)
 offset      |   start value for dimension (if regular; curvilinear x/y's are not a regular grid so will be 'NA')
 delta       |   step size for dimension (if regular, as above)
 refsys      |   geographic reference system
 point       |   logical (T/F): whether cells refer to points or intervals. Is NA for this data (not sure why it's not FALSE)
-values      |   sequence of values if grid is irregular (as WRST data is)
+values      |   sequence of values if grid is irregular (as NCAR data is)
 
   
 ## Subsetting data
@@ -67,7 +68,7 @@ plot(st_geometry(wrst)) # quick plot
 ```
 
 
-Make sure the shapefile lines up with the stars object appropriately.
+Make sure the shapefile lines up with the stars object appropriately:
 
 ```{r}
 
@@ -94,7 +95,7 @@ plot(st_wrst)
 
 ```
 
-Visualization is improved using ggplot. 
+Visualization is improved using ggplot: 
 
 ```{r}
 
@@ -114,18 +115,18 @@ The resolution is course because the underlying data are recorded in 20 km x 20 
 
 ## Summarizing data across multiple NetCDF files
 
-It is essential to increase R's memory limit when you work with multiple NetCDF files. You can check how much memory R is allocated by calling the function `memory.limit()`. To increase the limit, use this code: `memory.limit(size = 60000)`. The memory limit will be reset when the R session is terminated. 60000 is an arbitrary number that worked on my machine. This can be adjusted depending on the RAM/memory of the machine running the analysis.  
+It is essential to increase R's memory limit when you work with multiple NetCDF files. You can check how much memory R is allocated by calling the function `memory.limit()`. To increase the limit, use this code: `memory.limit(size = 60000)`. The memory limit will be reset when the R session is terminated. 60000 is an arbitrary number that worked on my machine. This number can be adjusted depending on the RAM/memory of the machine running the analysis.  
 
-To easily load multiple relevant NetCDF files (e.g., all 'historical' files from a specific model/RCP), I find it easiest to manually move the files from one folder into another, from which you will load file names using the function `list.files()` After creating a vector of file names, you will read each .nc4 file in separately such that you create a list of n stars objects (n = numbers of years of data). 
+To easily load multiple relevant NetCDF files (e.g., all 'historical' files from a specific model/RCP), I find it easiest to manually move the files from one folder into another, from which you will load file names using the function `list.files()` After creating a vector of file names, you will read each .nc4 file in separately such that you create a list of n stars objects (n = number of years of data, or individual NetCDF files). 
 
-```{r}
+```{r Read ncdf into list, message=FALSE, warning=FALSE}
 
-file_list = list.files(path = "C:/Users/adillon/Documents/RSS/WRST/Test/met/Historical", pattern = '.nc4', full.names = TRUE) # MIROC5 RCP4.5 years 1950 - 2000
+file_list = list.files(path = "C:/Users/adillon/Documents/RSS/WRST/Test/met/Future", pattern = '.nc4', full.names = TRUE) # MIROC5 RCP4.5 years 2025 - 2055
 
 l <- list() # Create a list to put the stars objects into
 
 for(i in 1:length(file_list)){
-  l[[i]] <- read_ncdf(file_list[i], var = "tmax", curvilinear = c("longitude", "latitude"), proxy = TRUE) # need to read in as ncdf or coordinate system does not translate (not sure why)
+  l[[i]] <- read_ncdf(file_list[i], var = "tmax", curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
 }
 
 ```
@@ -133,7 +134,7 @@ for(i in 1:length(file_list)){
 
 Next, you will crop each stars object separately in order to create a similar list to the one above. After cropping, you need to convert each object using the `stars::st_as_stars()` function. This step is necessary to concatenate the list items into a single stars object. The single object enables 'raster math' (at a later step). 
 
-```{r}
+```{r Crop and convert ncdf, message=FALSE, warning=FALSE}
 
 cropped <- list() # create list for cropped stars objects
 
@@ -156,13 +157,14 @@ Now you will combine each list item from `cropped` into a single stars object.
 
 ```{r}
 
-rm(crop_test, cropped, l, nc, nc_crop, nps, wrst) # remove large objects to free up memory
+rm(cropped, l, nc, nc_crop, day1, wrst, st, st_wrst) # remove large objects to free up memory
 
-hist <- Reduce(c, cropped_st) # combine into single stars object 
+fut <- Reduce(c, cropped_st) # combine into single stars object 
+
+fut
 
 ```
 
--- talk about data structure
 
 
 
