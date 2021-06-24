@@ -59,7 +59,7 @@ First, load the park shapefile. I saved this as a .Rds file so it could be easil
 
 ```{r}
 
-wrst <- readRDS('./data/wrst.Rds') 
+wrst <- readRDS('./wrst.Rds') 
 
 wrst <- st_shift_longitude(wrst) # script that changes longitudes in an sf object to 360 (rather than use negative numbers; this matches the NCAR data format)
 
