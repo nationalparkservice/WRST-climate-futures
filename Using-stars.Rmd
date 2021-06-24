@@ -11,11 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r echo=FALSE}
+```{r load libraries, echo=FALSE, message=FALSE, warning=FALSE}
+
 rm(list = ls())
 
 library(stars)
 library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(viridis)
+
 ```
 
 
@@ -49,7 +54,7 @@ values      |   sequence of values if grid is irregular (as WRST data is)
 
 Stars objects can be subsetted spatially using shapefiles or numerically using cell indices. I will proceed by spatially subsetting data using a park shapefile, but you can refer to *subset_stars_object.R* to see how to subset using cell indices. 
 
-First, load the park shapefile. I saved this as a .Rds file so it could be easily accessed from GitHub for this tutorial. It was created using `sf::st_read()`. Sf and stars play nicely together, as they were created by the same person. 
+First, load the park shapefile. I saved this as a .Rds file so it could be easily accessed from GitHub for this tutorial. It was created using `sf::st_read()` and `dplyr::filter()`. Sf and stars play nicely together, as they were created by the same person. 
 
 ```{r}
 
@@ -95,12 +100,16 @@ Visualization is improved using ggplot.
 
 ggplot() + 
   geom_stars(data = st_wrst, alpha = 0.8) + 
+  geom_sf(data = wrst, aes(), fill = NA) + 
   scale_fill_viridis() + 
   theme_map() +
   theme(legend.position = "bottom") +
-  theme(legend.key.width = unit(2, "cm"))
+  theme(legend.key.width = unit(2, "cm")) + 
+  ggtitle("Tmax in WRST on January 1, 1950 (MIROC 5)")
 
 ```
+
+The resolution is course because the underlying data are recorded in 20 km x 20 km cells.
 
 
 ## Summarizing data across multiple NetCDF files
