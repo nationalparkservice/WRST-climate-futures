@@ -113,7 +113,7 @@ ggplot() +
 The resolution is course because the underlying data are recorded in 20 km x 20 km cells.
 
 
-## Summarizing data across multiple NetCDF files
+## Combining multiple NetCDF files
 
 It is essential to increase R's memory limit when you work with multiple NetCDF files. You can check how much memory R is allocated by calling the function `memory.limit()`. To increase the limit, use this code: `memory.limit(size = 60000)`. The memory limit will be reset when the R session is terminated. 60000 is an arbitrary number that worked on my machine. This number can be adjusted depending on the RAM/memory of the machine running the analysis.  
 
@@ -165,11 +165,27 @@ fut
 
 ```
 
+If you want to save the stars object for later use, you can do that using the code `write_stars(fut, "./data/fut_MIROC5")` (of course, the second argument is the file name, so this would change depending on personal organizational preference). The stars object can then be read in via `stars::read_stars()`. 
+
+
+## Raster math
+
+Summarizing data within a single stars object (e.g., fut) can be accomplished using `stars::st_apply()`. The third argument is the function desired, so can be any calculation in the same way `FUN` is specified in other R operations. Here, I am using `mean` to find the mean tmax value for each pixel. This can be conceptualized similarly to a rasterstack or brick, where each layer represents a time period (in this case, each layer = 1 day, for a total of 11322 layers) and the function is applied "vertically" through the layers. The result is then a stars object with a single layer representing the 
+
+```{r}
+
+fut_mean <- st_apply(fut, c("x", "y"), mean) # mean tmax value for each pixel. Second argument is the dimensions over which the function is applied. 
+
+```
+
+
+ To contrast future metrics with historical ones, you will need to follow all these instructions for the historical years (and model/rcp) of interest. Once you have two stars objects, you can easily calculate the change by simply subtracting the rasters from one another like so: `change <- fut_mean - hist_mean`. The end product will be a stars object with a single 'layer' that can be plotted in ggplot2 as above. 
 
 
 
+## Further notes
 
-
+Something to note is that I filtered the variable of interest (tmax, here) before creating the stars object. If the variable was not specified, stars would create an object with as many attributes as variables contained in the data (e.g., tmax + tmin + precip = 3). I parceled tmax out in the interest of saving computing power when creating large stars objects, but if you are dealing with fewer years or substantial computing power, it's probably better to go through this process once and then `dplyr::select()` variables
 
 
 
