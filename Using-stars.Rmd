@@ -185,7 +185,13 @@ fut_mean <- st_apply(fut, c("x", "y"), mean) # mean tmax value for each pixel. S
 
 ## Further notes
 
-Something to note is that I filtered the variable of interest (tmax, here) before creating the stars object. If the variable was not specified, stars would create an object with as many attributes as variables contained in the data (e.g., tmax + tmin + precip = 3). I parceled tmax out in the interest of saving computing power when creating large stars objects, but if you are dealing with fewer years or substantial computing power, it's probably better to go through this process once and then `dplyr::select()` variables
+**On specifying variables to extract from NetCDF's**
+
+I filtered the variable of interest (tmax, here) when creating the initial list of stars objects. If the variable was not specified, stars would create an object with as many attributes as variables contained in the data (e.g., tmax + tmin + precip = 3). I parceled tmax out in the interest of saving computing power when creating large stars objects, but if you are dealing with fewer years or substantial computing power, it's probably better to go through this process once and then `dplyr::select()` variables like so: `st %>% select(tmax) -> st_tmax`
+
+**On manipulating variables**
+
+Attributes and dimensions of stars objects are quite malleable. Attributes can be changed to dimensions and vice-versa, and also altered, added, or removed. Changing Celsius to Fahrenheit, for example, would simply require adding an attribute using tidy's `mutate()` function like so: `st %>% mutate(tmaxF = tmax * (9/5) + 32) -> stF`. Then this new attribute could be selected using `select()` as above. If converting between attributes and dimensions is required, please see *simple_summaries.R*. 
 
 
 
