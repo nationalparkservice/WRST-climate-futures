@@ -9,6 +9,8 @@ library(data.table)
 library(zoo)
 library(cowplot)
 library(ggbiplot)
+library(ggplot2)
+library(ggrepel)
 
 rm(list=ls())
 
@@ -60,6 +62,9 @@ Baseline_Means$MAM_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Baseline_
 Baseline_Means$JJA_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Baseline_all,Month %in% c(6,7,8)),mean)[,2]*30
 Baseline_Means$SON_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Baseline_all,Month %in% c(9,10,11)),mean)[,2]*30
 
+Baseline_Means$Tmean_F <- aggregate(TmeanCustom~GCM,data=Baseline_all,mean)[,2]
+Baseline_Means$Precip_in <- aggregate(PrecipCustom~GCM,data=Baseline_all,mean)[,2]*365
+
 # Format water.balance df
 water.balance$Year <- format(as.Date(water.balance$Date, format="%Y-%m-%d"),"%Y")
 water.balance$Month <- as.numeric(format(as.Date(water.balance$Date, format="%Y-%m-%d"),"%m"))
@@ -100,6 +105,9 @@ Future_Means$DJF_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Future_all,
 Future_Means$MAM_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Future_all,Month %in% c(3,4,5)),mean)[,2]*30
 Future_Means$JJA_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Future_all,Month %in% c(6,7,8)),mean)[,2]*30
 Future_Means$SON_Precip_in <- aggregate(PrecipCustom~GCM,data=subset(Future_all,Month %in% c(9,10,11)),mean)[,2]*30
+
+Future_Means$Tmean_F <- aggregate(TmeanCustom~GCM,data=Future_all,mean)[,2]
+Future_Means$Precip_in <- aggregate(PrecipCustom~GCM,data=Future_all,mean)[,2]*365
 
 #Snow depth -- max water.balance$SWE
 # Annual max SWE
@@ -142,5 +150,104 @@ rownames(WRST.pca.x)[which.max(WICA.pca.x$PC1)]
 rownames(WRST.pca.x)[which.min(WRST.pca.x$PC2)]
 rownames(WRST.pca.x)[which.max(WRST.pca.x$PC2)]
 
+# Scatterplots
+#ggplot theme to control formatting parameters for plots with month on the x-axis
+PlotTheme = theme(axis.text=element_text(size=20),    #Text size for axis tick mark labels
+                  axis.title.x=element_blank(),               #Text size and alignment for x-axis label
+                  axis.title.y=element_text(size=24, vjust=0.5,  margin=margin(t=20, r=20, b=20, l=20)),              #Text size and alignment for y-axis label
+                  plot.title=element_text(size=26,face="bold",hjust=0.5, margin=margin(t=20, r=20, b=20, l=20)),      #Text size and alignment for plot title
+                  legend.title=element_text(size=24),                                                                    #Text size of legend category labels
+                  legend.text=element_text(size=22),                                                                   #Text size of legend title
+                  legend.position = "bottom")                                                                            #Legend position
 
+
+head(T1_Deltas)
+Longx<- "annual average temperature (F)"
+Longy<- "annual average precipitation (in)"
+x <- "Tmean_F"
+y <- "Precip_in"
+
+xvar= T1_Deltas$Tmean_F
+yvar= T1_Deltas$Precip_in
+
+xvar25 = as.numeric(quantile(xvar, .25))
+xvaravg = as.numeric(mean(xvar))
+xvar75 = as.numeric(quantile(xvar, .75))
+
+yvar25 = as.numeric(quantile(yvar, .25))
+yvaravg = as.numeric(mean(yvar))
+yvar75 = as.numeric(quantile(yvar, .75))
+
+## Color only scenarios using
+
+dualscatter = ggplot(T1_Deltas, aes(xvar, yvar,col,  xmin=xvar25, xmax=xvar75, ymin=yvar25, ymax=yvar75))
+dualscatter  + geom_text_repel(hjust=0,vjust=0,aes(label=GCM))  +
+  geom_point(size=4) +
+  geom_rect(color = "black", alpha=0) + 
+  geom_hline(aes(yintercept=mean(yvar)),linetype=2) + 
+  geom_vline(aes(xintercept=mean(xvar)),linetype=2) + 
+  labs(title =paste("WRST Changes in climate means in 2040 by GCM run\n", Longx," vs. ",Longy,sep=""), 
+       x = paste("Changes in ",Longx,sep=""), 
+       y = paste("Changes in ",Longy,sep=""))
+
+
+
+
+Longx<- "annual max SWE (mm)"
+Longy<- "annual water balance (mm)"
+x <- "Annual_max_SWE"
+y <- "water_balance"
+
+xvar= T1_Deltas$Annual_max_SWE
+yvar= T1_Deltas$water_balance
+
+xvar25 = as.numeric(quantile(xvar, .25))
+xvaravg = as.numeric(mean(xvar))
+xvar75 = as.numeric(quantile(xvar, .75))
+
+yvar25 = as.numeric(quantile(yvar, .25))
+yvaravg = as.numeric(mean(yvar))
+yvar75 = as.numeric(quantile(yvar, .75))
+
+## Color only scenarios using
+
+dualscatter = ggplot(T1_Deltas, aes(xvar, yvar,col,  xmin=xvar25, xmax=xvar75, ymin=yvar25, ymax=yvar75))
+dualscatter  + geom_text_repel(hjust=0,vjust=0,aes(label=GCM))  +
+  geom_point(size=4) +
+  geom_rect(color = "black", alpha=0) + 
+  geom_hline(aes(yintercept=mean(yvar)),linetype=2) + 
+  geom_vline(aes(xintercept=mean(xvar)),linetype=2) + 
+  labs(title =paste("WRST Changes in climate means in 2040 by GCM run\n", Longx," vs. ",Longy,sep=""), 
+       x = paste("Changes in ",Longx,sep=""), 
+       y = paste("Changes in ",Longy,sep=""))
+
+
+
+Longx<- "shoulder season snow (mm)"
+Longy<- "summer precip (in)"
+x <- "MAM.SON_SWE"
+y <- "JJA_Precip_in"
+
+xvar= T1_Deltas$MAM.SON_SWE
+yvar= T1_Deltas$JJA_Precip_in
+
+xvar25 = as.numeric(quantile(xvar, .25))
+xvaravg = as.numeric(mean(xvar))
+xvar75 = as.numeric(quantile(xvar, .75))
+
+yvar25 = as.numeric(quantile(yvar, .25))
+yvaravg = as.numeric(mean(yvar))
+yvar75 = as.numeric(quantile(yvar, .75))
+
+## Color only scenarios using
+
+dualscatter = ggplot(T1_Deltas, aes(xvar, yvar,col,  xmin=xvar25, xmax=xvar75, ymin=yvar25, ymax=yvar75))
+dualscatter  + geom_text_repel(hjust=0,vjust=0,aes(label=GCM))  +
+  geom_point(size=4) +
+  geom_rect(color = "black", alpha=0) + 
+  geom_hline(aes(yintercept=mean(yvar)),linetype=2) + 
+  geom_vline(aes(xintercept=mean(xvar)),linetype=2) + 
+  labs(title =paste("WRST Changes in climate means in 2040 by GCM run\n", Longx," vs. ",Longy,sep=""), 
+       x = paste("Changes in ",Longx,sep=""), 
+       y = paste("Changes in ",Longy,sep=""))
 
