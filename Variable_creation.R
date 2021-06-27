@@ -7,6 +7,8 @@ library(reshape2)
 library(WriteXLS)
 library(data.table)
 library(zoo)
+library(cowplot)
+library(ggbiplot)
 
 rm(list=ls())
 
@@ -114,3 +116,31 @@ Future_Means$water_balance <- aggregate(WATER_BALANCE~GCM,Future_WF,mean)[,2]
 ## T1 Deltas
 T1_Deltas <- Baseline_Means
 T1_Deltas[,2:length(T1_Deltas)] <- Future_Means[,2:length(Future_Means)] - Baseline_Means[,2:length(Baseline_Means)]
+
+####################### PCA TO SELECT TWO MODELS
+head(T1_Deltas)
+T1_rownames <- T1_Deltas[,-1]
+rownames(T1_rownames) <- T1_Deltas[,1]
+
+WRST.pca <- prcomp(T1_rownames[,c(1:11)], center = TRUE,scale. = TRUE)
+
+head(WRST.pca$rotation)
+head(WRST.pca$x)
+summary(WRST.pca)
+
+str(WRST.pca)
+
+
+ggbiplot(WRST.pca, labels=rownames(T1_rownames))
+
+WRST.pca.x<-as.data.frame(WRST.pca$x)
+
+# This method doesn't return the exact models we selected,
+# but we may not have selected the most divergent models
+rownames(WRST.pca.x)[which.min(WRST.pca.x$PC1)]
+rownames(WRST.pca.x)[which.max(WICA.pca.x$PC1)]
+rownames(WRST.pca.x)[which.min(WRST.pca.x$PC2)]
+rownames(WRST.pca.x)[which.max(WRST.pca.x$PC2)]
+
+
+
