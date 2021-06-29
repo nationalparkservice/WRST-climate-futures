@@ -1,0 +1,171 @@
+---
+title: "Summarizing T1 metrics for whole climate region"
+author: "Amber Runyon"
+date: "6/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r load libraries, echo=FALSE, message=FALSE, warning=FALSE}
+
+rm(list = ls())
+
+library(stars)
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(viridis)
+
+```
+
+*NOTE: Run chunk by chunk*
+
+```{r}
+
+shape.directory <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/Boundary_shapefiles/"
+
+wrst <- readRDS('./wrst.Rds') 
+
+wrst <- st_shift_longitude(wrst) # script that changes longitudes in an sf object to 360 (rather than use negative numbers; this matches the NCAR data format)
+
+plot(st_geometry(wrst)) # quick plot 
+
+```
+
+
+Make sure the shapefile lines up with the stars object appropriately:
+
+```{r}
+
+# Project if desired; I think everything still works if left as lat/long
+
+wrst <- st_transform(wrst, 3338) # NAD83 Alaska Albers
+st<- st_transform(st, 3338)
+
+# Slice a single day from the stars object and overlay wrst to make sure everything lines up
+
+day1 <- slice(st, along = time, 1)
+
+plot(day1, border = NA, reset = FALSE) # reset = FALSE keeps the plot 'open' for more layers
+plot(st_geometry(wrst), add = TRUE) 
+
+```
+
+Success! Subsetting is now very simple. The entire stars object can be subsetted using the same syntax. I am using the single slice here for illustrative purposes. The plot is small using the basic `plot()` function. 
+
+```{r}
+
+st_wrst <- day1[wrst] 
+```
+
+The resolution is course because the underlying data are recorded in 12 km x 12 km cells.
+
+
+```{r Read ncdf into list, message=FALSE, warning=FALSE}
+memory.limit(size = 60000)
+
+file_list = list.files(path = "C:/Users/adillon/Documents/RSS/WRST/Test/met/Future", pattern = '.nc4', full.names = TRUE) # MIROC5 RCP4.5 years 2025 - 2055
+
+l <- list() # Create a list to put the stars objects into
+
+for(i in 1:length(file_list)){
+  l[[i]] <- read_ncdf(file_list[i], var = "tmax", curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+}
+
+```
+
+
+Next, you will crop each stars object separately in order to create a similar list to the one above. After cropping, you need to convert each object using the `stars::st_as_stars()` function. This step is necessary to concatenate the list items into a single stars object. The single object enables 'raster math' (at a later step). 
+
+```{r Crop and convert ncdf, message=FALSE, warning=FALSE}
+
+cropped <- list() # create list for cropped stars objects
+
+for(i in 1:length(l)){ # add cropped stars objects to a new list
+  nc = l[[i]]
+  nc = st_transform(nc, st_crs(wrst))
+  nc_crop = nc[wrst]
+  cropped[[i]] = nc_crop
+}
+
+cropped_st <- list()
+
+for(i in 1:length(cropped)){
+  cropped_st[[i]] <- st_as_stars(cropped[[i]])
+}
+
+```
+
+Now you will combine each list item from `cropped` into a single stars object.
+
+```{r}
+
+rm(cropped, l, nc, nc_crop, day1, wrst, st, st_wrst) # remove large objects to free up memory
+
+fut <- Reduce(c, cropped_st) # combine into single stars object 
+
+fut
+
+```
+
+If you want to save the stars object for later use, you can do that using the code `write_stars(fut, "./data/fut_MIROC5")` (of course, the second argument is the file name, so this would change depending on personal organizational preference). The stars object can then be read in via `stars::read_stars()`. 
+
+
+## Raster math
+
+Summarizing data within a single stars object (e.g., fut) can be accomplished using `stars::st_apply()`. The third argument is the function desired, so can be any calculation in the same way `FUN` is specified in other R operations. Here, I am using `mean` to find the mean tmax value for each pixel. This can be conceptualized similarly to a rasterstack or brick, where each layer represents a time period (in this case, each layer = 1 day, for a total of 11322 layers) and the function is applied "vertically" through the layers. The result is then a stars object with a single layer representing the mean.
+
+```{r}
+
+fut_mean <- st_apply(fut, c("x", "y"), mean) # mean tmax value for each pixel. Second argument is the dimensions over which the function is applied. 
+
+```
+
+
+ To contrast future metrics with historical ones, you will need to follow all these instructions for the historical years (and model/rcp) of interest. Once you have two stars objects, you can easily calculate the change by simply subtracting the rasters from one another like so: `change <- fut_mean - hist_mean`. The end product will be a stars object with a single 'layer' that can be plotted in ggplot2 as above. 
+
+
+## Summarizing data into dataframes for non-spatial analyses
+
+Data can be easily retrieved from stars and analyzed via regular dataframes. To convert a stars object to a dataframe, you need only the `as.data.frame()` function. 
+
+```{r}
+
+wrst_df <- as.data.frame(st_wrst)
+head(wrst_df)
+
+```
+
+
+From there, data can be aggregated using any standard methods. I am providing an example of aggregating data by time such that a single daily mean tmax is produced across all park pixels: 
+
+```{r}
+
+daily_mean_tmax <- wrst_df %>%
+  na.omit() %>%
+  group_by(time) %>%
+  summarise(mean_tmax = mean(tmax))
+
+head(daily_mean_tmax)
+
+```
+
+
+## Further notes
+
+**On specifying variables to extract from NetCDF's**
+
+I filtered the variable of interest (tmax, here) when creating the initial list of stars objects. If the variable was not specified, stars would create an object with as many attributes as variables contained in the data (e.g., tmax + tmin + precip = 3). I parceled tmax out in the interest of saving computing power when creating large stars objects, but if you are dealing with fewer years or substantial computing power, it's probably better to go through this process once and then `dplyr::select()` variables like so: `st %>% select(tmax) -> st_tmax`
+
+**On manipulating variables**
+
+Attributes and dimensions of stars objects are quite malleable. Attributes can be changed to dimensions and vice-versa, and also altered, added, or removed. Changing Celsius to Fahrenheit, for example, would simply require adding an attribute using tidy's `mutate()` function like so: `st %>% mutate(tmaxF = tmax * (9/5) + 32) -> stF`. Then this new attribute could be selected using `select()` as above. If converting between attributes and dimensions is required, please see *simple_summaries.R*. 
+
+
+
+
