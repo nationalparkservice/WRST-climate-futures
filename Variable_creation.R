@@ -11,6 +11,7 @@ library(cowplot)
 library(ggbiplot)
 library(ggplot2)
 library(ggrepel)
+library(tidyverse)
 
 rm(list=ls())
 
@@ -36,22 +37,31 @@ months=factor(c("January","February","March","April","May","June","July","August
 head(daily)
 head(water.balance)
 
-daily$GCM <- paste(daily$GCM,daily$rcp,sep=".")
+## Convert to tidy
+daily <- as_tibble(daily)
+daily <- daily %>% unite("GCM", GCM, rcp, sep=".", remove = FALSE)
 
-daily$TmaxCustom <- (daily$tmax * 9/5) + 32
-daily$TminCustom <- (daily$tmax * 9/5) + 32
-daily$TmeanCustom <- (daily$TmaxCustom + daily$TminCustom) / 2
-daily$PrecipCustom <- daily$pcp / 25.4
+daily <- daily %>%
+  mutate(TmaxCustom = (tmax *9/5) +32) %>%
+  mutate(TminCustom = (tmin *9/5) +32) %>%
+  mutate(TmeanCustom = (TmaxCustom + TminCustom) / 2) %>%
+  mutate(PrecipCustom = pcp / 25.4) 
 
 daily$Year <- format(as.Date(daily$Date, format="%Y-%m-%d"),"%Y")
 daily$Month <- as.numeric(format(as.Date(daily$Date, format="%Y-%m-%d"),"%m"))
 
-Baseline_all <- subset(daily, Year < 2000)
-Future_all <- subset(daily, Year >= CF.mean - (Range/2) & Year <= (CF.mean + (Range/2)))
+Baseline_all <- daily %>% filter(Year < 2000)
+Future_all <- daily %>% filter( Year >= CF.mean -  (Range/2) & Year <= (CF.mean + (Range/2)))
+
 
 # Baseline_Means
 GCMs <- unlist(unique(daily$GCM))
-Baseline_Means <- data.frame(GCM = GCMs)
+Baseline_Means <- tibble(GCM = GCMs)
+Baseline_Means
+
+# Baseline_Means$DJF_Tmean_F <- # Same as aggregate but longer -- what is advantage?
+#   (Baseline_all %>% filter(Month %in% c(1,2,12)) %>% group_by(GCM) %>% summarize(mean = mean(TmeanCustom)))[,2]
+
 Baseline_Means$DJF_Tmean_F <- aggregate(TmeanCustom~GCM,data=subset(Baseline_all,Month %in% c(1,2,12)),mean)[,2]
 Baseline_Means$MAM_Tmean_F <- aggregate(TmeanCustom~GCM,data=subset(Baseline_all,Month %in% c(3,4,5)),mean)[,2]
 Baseline_Means$JJA_Tmean_F <- aggregate(TmeanCustom~GCM,data=subset(Baseline_all,Month %in% c(6,7,8)),mean)[,2]
