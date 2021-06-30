@@ -5,6 +5,8 @@ date: "6/22/2021"
 output: html_document
 ---
 
+[Helpful multi-page vignette](https://r-spatial.github.io/stars/articles/)
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
