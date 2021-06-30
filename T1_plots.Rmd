@@ -94,7 +94,7 @@ MAM_hist_85 <- list()
 for(i in 1:length(cropped_st_hist_85)){
   s = cropped_st_hist_85[[i]]
   s = select(s, pcp)
-  MAM_hist_85[[i]] = s[,,,3:5]
+  MAM_hist_85[[i]] = s[,,,3:5] # index begins with attributes and continues through dimensions. i.e., [pcp, x, y, time]
 }
 
 hist_MAM_pcp_85 <- Reduce(c, MAM_hist_85)
