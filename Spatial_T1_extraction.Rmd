@@ -98,11 +98,22 @@ rm(cropped, l, nc, nc_crop, wrst) # remove large objects to free up memory
 
 hist <- Reduce(c, cropped_st) # combine into single stars object 
 
-hist %>%
-  filter(time < "1950-03-01")
+hist_mean <- st_apply(hist, c("x", "y"), mean) # mean tmax value for each pixel. Second argument is the dimensions over which the function is applied.
 
+# Extract MAM
+MAM <- list()
 
-hist_mean <- st_apply(hist, c("x", "y"), mean) # mean tmax value for each pixel. Second argument is the dimensions over which the function is applied. 
+for(i in 1:length(cropped_st)){
+  s = cropped_st[[i]]
+  s = select(s, tmax)
+  MAM[[i]] = s[,,,3:5]
+}
+
+MAM <- Reduce(c, MAM) # combine into single stars obj
+
+MAM_mean <- st_apply(MAM, c("x","y"),mean)
+
+hist <- Reduce(c, cropped_st) # combine into single stars object
 
 wrst_df <- as.data.frame(st_wrst)
 head(wrst_df)
