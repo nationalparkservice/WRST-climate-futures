@@ -48,7 +48,7 @@ st1
 
 
 # I do not see a difference between reading in as stars v. ncdf. 
-#Vignette says read_ncdf does not convert time values in proper R format. Both look to be POSIXct.
+#Vignette says read_ncdf does not convert time values in proper R format. 
 
 
 # Park shapefile
