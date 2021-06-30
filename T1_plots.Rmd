@@ -1,0 +1,186 @@
+---
+title: "T1_plots"
+author: "Annie Kellner"
+date: "6/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(stars)
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(viridis)
+library(lemon)
+```
+
+
+```{r Load data - WRST}
+
+wrst <- readRDS('./wrst.Rds') 
+wrst <- st_transform(wrst, 3338) # NAD83 Alaska Albers
+
+```
+
+```{r Load netcdf data}
+
+# Select models and list files
+
+file_names_rcp45 <- list.files(path = "D:/AK/met/monthly/BCSD/ACCESS1-3/rcp45", pattern = '.nc', full.names = TRUE) # rcp45
+file_names_rcp85 <- list.files(path = 'D:/AK/met/monthly/BCSD/MPI-ESM-MR/rcp85', pattern = '.nc', full.names = TRUE) # rcp85
+
+hist_files_rcp45 <- file_names_rcp45[1:51] # 1950 - 2000
+fut_files_rcp45 <- file_names_rcp45[76:106] # 2025 - 2055
+
+hist_files_rcp85 <- file_names_rcp85[1:51] # 1950 - 2000
+fut_files_rcp85 <- file_names_rcp85[76:106] # 2025 - 2055
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+hist_filelist <- hist_files_rcp45
+fut_filelist <- fut_files_rcp45
+
+source('./Code/Create_stars_objects_for_plots.R')
+
+cropped_st_hist_45 <- cropped_st_hist
+cropped_st_fut_45 <- cropped_st_fut
+
+rm(cropped, l, nc, nc_crop, cropped_st_fut, cropped_st_hist, cropped_fut, cropped_hist)
+
+hist_filelist <- hist_files_rcp85
+fut_filelist <- fut_files_rcp85
+
+source('./Code/Create_stars_objects_for_plots.R')
+
+cropped_st_hist_85 <- cropped_st_hist
+cropped_st_fut_85 <- cropped_st_fut
+
+rm(cropped, l, nc, nc_crop, cropped_st_fut, cropped_st_hist, cropped_fut, cropped_hist)
+
+```
+
+The products now loaded in the environment should be four lists of stars objects containing all combinations of future, historical, and RCP scenarios. 
+
+## Spring Precip
+
+```{r}
+
+# Filter months and variable of interest
+
+# RCP 45
+
+# Historical 
+
+MAM_hist_45 <- list()
+
+for(i in 1:length(cropped_st_hist_45)){
+  s = cropped_st_hist_45[[i]]
+  s = select(s, pcp)
+  MAM_hist_45[[i]] = s[,,,3:5]
+}
+
+hist_MAM_pcp_45 <- Reduce(c, MAM_hist_45)
+
+sum_hist_pcp_45 <- st_apply(hist_MAM_pcp_45, c("x", "y"), sum) # find sum
+
+MAM_hist_85 <- list()
+
+for(i in 1:length(cropped_st_hist_85)){
+  s = cropped_st_hist_85[[i]]
+  s = select(s, pcp)
+  MAM_hist_85[[i]] = s[,,,3:5]
+}
+
+hist_MAM_pcp_85 <- Reduce(c, MAM_hist_85)
+
+sum_hist_pcp_85 <- st_apply(hist_MAM_pcp_45, c("x", "y"), sum) # find sum
+
+# Future
+
+MAM_fut_45 <- list()
+
+for(i in 1:length(cropped_st_fut_45)){
+  s = cropped_st_fut_45[[i]]
+  s = select(s, pcp)
+  MAM_fut_45[[i]] = s[,,,3:5]
+}
+
+fut_MAM_pcp_45 <- Reduce(c, MAM_fut_45)
+
+sum_fut_pcp_45 <- st_apply(fut_MAM_pcp_45, c("x", "y"), sum) # find sum
+
+delta_MAM_pcp_45 <- sum_fut_pcp_45 - sum_hist_pcp_45
+
+# RCP 85
+
+# Historical 
+
+MAM_hist_85 <- list()
+
+for(i in 1:length(cropped_st_hist_85)){
+  s = cropped_st_hist_85[[i]]
+  s = select(s, pcp)
+  MAM_hist_85[[i]] = s[,,,3:5]
+}
+
+hist_MAM_pcp_85 <- Reduce(c, MAM_hist_85)
+
+sum_hist_pcp_85 <- st_apply(hist_MAM_pcp_85, c("x", "y"), sum) # find sum
+
+MAM_hist_85 <- list()
+
+for(i in 1:length(cropped_st_hist_85)){
+  s = cropped_st_hist_85[[i]]
+  s = select(s, pcp)
+  MAM_hist_85[[i]] = s[,,,3:5]
+}
+
+hist_MAM_pcp_85 <- Reduce(c, MAM_hist_85)
+
+sum_hist_pcp_85 <- st_apply(hist_MAM_pcp_85, c("x", "y"), sum) # find sum
+
+# Future
+
+MAM_fut_85 <- list()
+
+for(i in 1:length(cropped_st_fut_85)){
+  s = cropped_st_fut_85[[i]]
+  s = select(s, pcp)
+  MAM_fut_85[[i]] = s[,,,3:5]
+}
+
+fut_MAM_pcp_85 <- Reduce(c, MAM_fut_85)
+
+sum_fut_pcp_85 <- st_apply(fut_MAM_pcp_85, c("x", "y"), sum) # find sum
+
+delta_MAM_pcp_85 <- sum_fut_pcp_85 - sum_hist_pcp_85
+
+# Plot
+
+gg45 <- ggplot() + 
+  geom_stars(data = delta_MAM_pcp_45, alpha = 0.8) + 
+  geom_sf(data = wrst, aes(), fill = NA) + 
+  scale_fill_viridis() + 
+  theme_map() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(2, "cm")) + 
+
+
+gg85 <- ggplot() + 
+  geom_stars(data = delta_MAM_pcp_85, alpha = 0.8) + 
+  geom_sf(data = wrst, aes(), fill = NA) + 
+  scale_fill_viridis() + 
+  theme_map() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(2, "cm")) + 
+ 
+
+side_by_side <- grid_arrange_shared_legend(gg45, gg85)
+```
+
