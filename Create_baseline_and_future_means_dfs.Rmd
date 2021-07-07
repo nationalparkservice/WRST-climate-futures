@@ -1,0 +1,114 @@
+---
+title: "Creating Baseline and Future Means for all GCM/RCP projections"
+author: "Annie Kellner"
+date: "7/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Initials
+
+```{r Initials, message=FALSE, warning=FALSE}
+
+library(stars)
+library(sf)
+library(dplyr)
+
+```
+
+## Load Spatial Data
+
+```{r}
+
+data.dir <- "D:/AK/met"
+vic.dir <- "D:/NCAR_AK/vic_hydro"
+
+# Spatial
+
+shp <- st_read('./data/spatial-data/Boundary_shapefiles/wrst_mtns.shp') # Wrangell Mountains
+shp <- st_transform(shp, 3338)
+plot(st_geometry(shp))
+
+
+```
+
+## MET
+
+# Baseline
+
+```{r}
+
+Baselines <- data.frame(GCM = GCMs)
+
+#Baselines<-as.data.frame(matrix(data=NA,nrow=0,ncol=6))
+#names(Baselines)<-c("GCM","rcp","DJT_TmeanF","pcp") # maybe
+
+GCMs <- list.files(path = 'D:/AK/met/monthly/BCSD')
+RCPs <- c("rcp45", "rcp85")
+
+for (G in 1:length(GCMs)){
+ gcm = GCMs[1]
+ for(R in 1:length(RCPs[R])){
+   rcp = RCPs[1]
+  path = paste(data.dir, "monthly/BCSD", gcm, rcp, sep = '/')
+  file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
+ }
+
+hist_filelist = file.list[1:51]
+fut_filelist = file.list[76:106]
+
+source('./Code/Create_stars_objects_for_plots.R') # products: cropped_st_hist; cropped_st_fut
+
+# Seasonal Precip
+
+hist_MAM_pcp <- list()
+
+for(H in 1:length(cropped_st_hist)){
+  s = cropped_st_hist[[H]]
+  s = select(s, pcp)
+  hist_MAM_pcp[[H]] = s[,,,3:5]
+}
+
+fut_MAM_pcp <- list()
+
+for(F in 1:length(cropped_st_fut)){
+  s = cropped_st_fut[[F]]
+  s = select(s, pcp)
+  fut_MAM_pcp[[F]] = s[,,,3:5]
+}
+
+hist_MAM_pcp_stars <- Reduce(c, hist_MAM_pcp)
+hist_MAM_pcp_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_MAM_pcp_stars
+
+fut_MAM_pcp_stars <- Reduce(c, fut_MAM_pcp) 
+fut_MAM_pcp_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_MAM_pcp_stars
+
+sum_hist_pcp <- st_apply(hist_MAM_pcp_stars, c("x", "y"), sum) # find sum
+sum_fut_pcp <- st_apply(fut_MAM_pcp_stars, c("x", "y"), sum)
+
+delta <- sum_fut_pcp - sum_hist_pcp
+
+
+
+
+######### SEASONAL TMEAN
+energy.balance<-as.data.frame(matrix(data=NA,nrow=0,ncol=length(eb.variables)+3))
+names(energy.balance)<-c("Date","GCM","rcp",eb.variables)
+
+for (G in 1:length(GCMs)){
+  gcm = GCMs[G]
+  for (R in 1:length(RCPs)){
+    rcp = RCPs[R]
+    path = paste(vic.dir,"monthly/BCSD",gcm,rcp,sep="/")
+    print(paste("extracting", gcm,rcp,sep="."))
+
+    file.list<-list.files(path=path, pattern=".nc") #list all files in folder
+    eb.file.list <- file.list[grep("eb", file.list)]
+
+
+```
+
+
