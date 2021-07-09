@@ -1,6 +1,6 @@
-for (G in 1:1){
+for (G in 1:2){
   gcm = GCMs[G]
-  for(R in 1:1){
+  for(R in 1:2){
     rcp = RCPs[R]
     path = paste(data.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
@@ -109,8 +109,8 @@ for (G in 1:1){
  
   #### Add values to Means dfs
   # index for df
-  index <- which(gcm %in% GCMs) * which(rcp %in% RCPs)
-  
+  index <- match(gcm, GCMs) * match(rcp, RCPs)
+
   Baseline_Means$GCM[index] = gcm
   Baseline_Means$RCP[index] = rcp
   Baseline_Means$MAM_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
