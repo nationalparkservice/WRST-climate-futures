@@ -4,9 +4,21 @@ for (G in 1:2){
     rcp = RCPs[R]
     path = paste(data.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
-    
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
+    
+    model.dir <- paste0(plot.dir,gcm,".",rcp)
+    dir.create(model.dir,showWarnings=FALSE)
+    
+    # index for df
+    index <- match(gcm, GCMs) * match(rcp, RCPs)
+    
+    Baseline_Means$GCM[index] = gcm
+    Baseline_Means$RCP[index] = rcp
+    Future_Means$GCM[index] = gcm
+    Future_Means$RCP[index] = rcp
+    Deltas$GCM[index] = gcm
+    Deltas$RCP[index] = rcp
   
     ############################################################################
     ##    CREATE STARS OBJECTS FOR T1 PLOTS   ##################################
@@ -74,10 +86,359 @@ for (G in 1:2){
     
     #Tmean
     
-    #Precip
+    var = "Tmean (F)"
+    hist_var <- list()
     
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      hist_var[[H]] = s[,,,] #all months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      fut_var[[F]] = s[,,,] #all months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+    
+    mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+    mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$Tmean_F[index] = mean(mean_hist$mean, na.rm=TRUE)
+    Future_Means$Tmean_F[index] = mean(mean_fut$mean, na.rm=TRUE)
+    Deltas$Tmean_F[index] = mean(delta$mean, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+
+
+    #Precip
+    var = "Precip (in)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s = select(s, pcp)
+      hist_var[[H]] = s[,,,] #set for months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s = select(s, pcp)
+      fut_var[[F]] = s[,,,] #set for months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+    
+    sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
+    sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+    delta <- sum_fut - sum_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
+    Future_Means$Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
+    Deltas$Precip_in[index] = mean(delta$sum, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+
+    
+    #Seasonal Tmean
+    
+    var = "DJF Tmean (F)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      hist_var[[H]] = s[,,,c(1:2,12)] #all months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      fut_var[[F]] = s[,,,c(1:2,12)] #all months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+    
+    mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+    mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$DJF_TmeanF[index] = mean(mean_hist$mean, na.rm=TRUE)
+    Future_Means$DJF_TmeanF[index] = mean(mean_fut$mean, na.rm=TRUE)
+    Deltas$DJF_TmeanF[index] = mean(delta$mean, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+    
+    var = "MAM Tmean (F)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      hist_var[[H]] = s[,,,3:5] #all months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      fut_var[[F]] = s[,,,3:5] #all months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+    
+    mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+    mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$MAM_TmeanF[index] = mean(mean_hist$mean, na.rm=TRUE)
+    Future_Means$MAM_TmeanF[index] = mean(mean_fut$mean, na.rm=TRUE)
+    Deltas$MAM_TmeanF[index] = mean(delta$mean, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+
+    var = "JJA Tmean (F)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      hist_var[[H]] = s[,,,6:8] #all months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      fut_var[[F]] = s[,,,6:8] #all months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+    
+    mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+    mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$JJA_TmeanF[index] = mean(mean_hist$mean, na.rm=TRUE)
+    Future_Means$JJA_TmeanF[index] = mean(mean_fut$mean, na.rm=TRUE)
+    Deltas$JJA_TmeanF[index] = mean(delta$mean, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+
+    var = "SON Tmean (F)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      hist_var[[H]] = s[,,,9:11] #all months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+      s = select(s, tmean)
+      fut_var[[F]] = s[,,,9:11] #all months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+    
+    mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
+    mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$SON_TmeanF[index] = mean(mean_hist$mean, na.rm=TRUE)
+    Future_Means$SON_TmeanF[index] = mean(mean_fut$mean, na.rm=TRUE)
+    Deltas$SON_TmeanF[index] = mean(delta$mean, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=1, option = "H",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #Turbo for temp delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
     
     # Seasonal Precip
+    
+    var = "DJF precip (in)"
+    hist_var <- list()
+    
+    for(H in 1:length(cropped_st_hist)){
+      s = cropped_st_hist[[H]]
+      s = select(s, pcp)
+      hist_var[[H]] = s[,,,c(1:2,12)] #set for months
+    }
+    
+    fut_var <- list()
+    
+    for(F in 1:length(cropped_st_fut)){
+      s = cropped_st_fut[[F]]
+      s = select(s, pcp)
+      fut_var[[F]] = s[,,,c(1:2,12)] #set for months
+    }
+    
+    hist_var_stars <- Reduce(c, hist_var)
+    hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+    
+    fut_var_stars <- Reduce(c, fut_var) 
+    fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+    
+    sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
+    sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+    delta <- sum_fut - sum_hist
+    
+    
+    #### Add values to Means dfs
+    Baseline_Means$DJF_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
+    Future_Means$DJF_Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
+    Deltas$DJF_Precip_in[index] = mean(delta$sum, na.rm=TRUE)
+    
+    
+    # ggplot - delta
+    ggplot() + 
+      geom_stars(data = delta, alpha = 0.8) + 
+      geom_sf(data = shp, aes(), fill = NA) + 
+      scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(2, "cm"),
+            legend.key.height = unit(.2, "cm"),
+            plot.title=element_text(size=12,face="bold",hjust=0.5))
+    
+    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+    
   
   var = "MAM precip (in)"
   hist_var <- list()
@@ -108,19 +469,8 @@ for (G in 1:2){
   
  
   #### Add values to Means dfs
-  # index for df
-  index <- match(gcm, GCMs) * match(rcp, RCPs)
-
-  Baseline_Means$GCM[index] = gcm
-  Baseline_Means$RCP[index] = rcp
   Baseline_Means$MAM_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
-  
-  Future_Means$GCM[index] = gcm
-  Future_Means$RCP[index] = rcp
   Future_Means$MAM_Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
-  
-  Deltas$GCM[index] = gcm
-  Deltas$RCP[index] = rcp
   Deltas$MAM_Precip_in[index] = mean(delta$sum, na.rm=TRUE)
 
   
@@ -128,15 +478,113 @@ for (G in 1:2){
 ggplot() + 
     geom_stars(data = delta, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis(direction=-1, option = "C",begin = .5, end = 1, 
-                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #plasma for precip delta
+    scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
     labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
         theme(legend.position = "bottom",
               legend.key.width = unit(2, "cm"),
               legend.key.height = unit(.2, "cm"),
           plot.title=element_text(size=12,face="bold",hjust=0.5))
 
-  ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = plot.dir, width = 4.5, height=4)
+  ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+  
+  var = "JJA precip (in)"
+  hist_var <- list()
+  
+  for(H in 1:length(cropped_st_hist)){
+    s = cropped_st_hist[[H]]
+    s = select(s, pcp)
+    hist_var[[H]] = s[,,,6:8] #set for months
+  }
+  
+  fut_var <- list()
+  
+  for(F in 1:length(cropped_st_fut)){
+    s = cropped_st_fut[[F]]
+    s = select(s, pcp)
+    fut_var[[F]] = s[,,,6:8] #set for months
+  }
+  
+  hist_var_stars <- Reduce(c, hist_var)
+  hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+  
+  fut_var_stars <- Reduce(c, fut_var) 
+  fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+  
+  sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
+  sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+  delta <- sum_fut - sum_hist
+  
+  
+  #### Add values to Means dfs
+  Baseline_Means$JJA_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
+  Future_Means$JJA_Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
+  Deltas$JJA_Precip_in[index] = mean(delta$sum, na.rm=TRUE)
+  
+  
+  # ggplot - delta
+  ggplot() + 
+    geom_stars(data = delta, alpha = 0.8) + 
+    geom_sf(data = shp, aes(), fill = NA) + 
+    scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+    labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+    theme(legend.position = "bottom",
+          legend.key.width = unit(2, "cm"),
+          legend.key.height = unit(.2, "cm"),
+          plot.title=element_text(size=12,face="bold",hjust=0.5))
+  
+  ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+  
+  var = "SON precip (in)"
+  hist_var <- list()
+  
+  for(H in 1:length(cropped_st_hist)){
+    s = cropped_st_hist[[H]]
+    s = select(s, pcp)
+    hist_var[[H]] = s[,,,9:11] #set for months
+  }
+  
+  fut_var <- list()
+  
+  for(F in 1:length(cropped_st_fut)){
+    s = cropped_st_fut[[F]]
+    s = select(s, pcp)
+    fut_var[[F]] = s[,,,9:11] #set for months
+  }
+  
+  hist_var_stars <- Reduce(c, hist_var)
+  hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+  
+  fut_var_stars <- Reduce(c, fut_var) 
+  fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+  
+  sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
+  sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+  delta <- sum_fut - sum_hist
+  
+  
+  #### Add values to Means dfs
+  Baseline_Means$SON_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
+  Future_Means$SON_Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
+  Deltas$SON_Precip_in[index] = mean(delta$sum, na.rm=TRUE)
+  
+  
+  # ggplot - delta
+  ggplot() + 
+    geom_stars(data = delta, alpha = 0.8) + 
+    geom_sf(data = shp, aes(), fill = NA) + 
+    scale_fill_viridis(direction=-1, option = "E",begin = .5, end = 1, 
+                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+    labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+    theme(legend.position = "bottom",
+          legend.key.width = unit(2, "cm"),
+          legend.key.height = unit(.2, "cm"),
+          plot.title=element_text(size=12,face="bold",hjust=0.5))
+  
+  ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+  
+  
   
   rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta)
   }
