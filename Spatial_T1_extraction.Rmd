@@ -23,10 +23,17 @@ library(ggthemes)
 library(viridis)
 library(here)
 
+data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
+vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD/"
+
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
 
 area <- 'wrst_mtns' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
+
+
+GCMs <- list.files(path = data.dir)
+RCPs <- c("rcp45", "rcp85")
 
 ```
 
@@ -34,8 +41,7 @@ area <- 'wrst_mtns' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
 
 ```{r Load spatial data}
 
-data.dir <- "D:/NCAR_AK/met" 
-vic.dir <- "D:/NCAR_AK/vic_hydro"
+
 
 # Spatial
 boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/Boundary_shapefiles/"
