@@ -586,7 +586,9 @@ ggplot() +
   
   
   
-  rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta)
+  rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta,mean_hist,mean_fut)
   }
 }
+
+rm(cropped_fut, cropped_hist, cropped_st_fut, cropped_st_hist,l,nc,nc_crop,s)
   
