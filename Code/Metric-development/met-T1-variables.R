@@ -1,7 +1,7 @@
-# for (G in 1:length(GCMs)){
-  gcm = GCMs[1]
-  # for(R in 1:length(RCPs[R])){
-    rcp = RCPs[1]
+for (G in 1:1){
+  gcm = GCMs[G]
+  for(R in 1:1){
+    rcp = RCPs[R]
     path = paste(data.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
     
@@ -19,7 +19,9 @@
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(hist_filelist)){
+      suppressMessages(
       l[[i]] <- read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      )
     }
     
     # Crop
@@ -44,7 +46,9 @@
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(fut_filelist)){
+      suppressMessages(
       l[[i]] <- read_ncdf(fut_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      )
     }
     
     # Crop
@@ -68,60 +72,73 @@
     ##    CREATE T1 variables   ################################################
     ############################################################################
     
-  
-  # Seasonal Precip
+    #Tmean
+    
+    #Precip
+    
+    
+    # Seasonal Precip
   
   var = "MAM precip (in)"
-  hist_MAM_pcp <- list()
+  hist_var <- list()
   
   for(H in 1:length(cropped_st_hist)){
     s = cropped_st_hist[[H]]
     s = select(s, pcp)
-    hist_MAM_pcp[[H]] = s[,,,3:5]
+    hist_var[[H]] = s[,,,3:5] #set for months
   }
   
-  fut_MAM_pcp <- list()
+  fut_var <- list()
   
   for(F in 1:length(cropped_st_fut)){
     s = cropped_st_fut[[F]]
     s = select(s, pcp)
-    fut_MAM_pcp[[F]] = s[,,,3:5]
+    fut_var[[F]] = s[,,,3:5] #set for months
   }
   
-  hist_MAM_pcp_stars <- Reduce(c, hist_MAM_pcp)
-  hist_MAM_pcp_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_MAM_pcp_stars
+  hist_var_stars <- Reduce(c, hist_var)
+  hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
   
-  fut_MAM_pcp_stars <- Reduce(c, fut_MAM_pcp) 
-  fut_MAM_pcp_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_MAM_pcp_stars
+  fut_var_stars <- Reduce(c, fut_var) 
+  fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
   
-  sum_hist_pcp <- st_apply(hist_MAM_pcp_stars, c("x", "y"), sum) # find sum
-  sum_fut_pcp <- st_apply(fut_MAM_pcp_stars, c("x", "y"), sum)
-  delta <- sum_fut_pcp - sum_hist_pcp
+  sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
+  sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+  delta <- sum_fut - sum_hist
   
-  Baseline_Means$GCM[1] = gcm
-  Baseline_Means$RCP[1] = rcp
-  Baseline_Means$MAM_Precip_in[1] = mean(sum_hist_pcp$sum, na.rm=TRUE)
+ 
+  #### Add values to Means dfs
+  # index for df
+  index <- which(gcm %in% GCMs) * which(rcp %in% RCPs)
   
-  Future_Means$GCM[1] = gcm
-  Future_Means$RCP[1] = rcp
-  Future_Means$MAM_Precip_in = mean(sum_fut_pcp$sum, na.rm=TRUE)
+  Baseline_Means$GCM[index] = gcm
+  Baseline_Means$RCP[index] = rcp
+  Baseline_Means$MAM_Precip_in[index] = mean(sum_hist$sum, na.rm=TRUE)
   
-  Delta$GCM[1] = gcm
-  Delta$RCP[1] = rcp
-  Delta$MAM_Precip_in = mean(delta$sum, na.rm=TRUE)
+  Future_Means$GCM[index] = gcm
+  Future_Means$RCP[index] = rcp
+  Future_Means$MAM_Precip_in[index] = mean(sum_fut$sum, na.rm=TRUE)
+  
+  Deltas$GCM[index] = gcm
+  Deltas$RCP[index] = rcp
+  Deltas$MAM_Precip_in[index] = mean(delta$sum, na.rm=TRUE)
 
   
   # ggplot - delta
-  
-  ggplot() + 
+ggplot() + 
     geom_stars(data = delta, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis() + 
-    theme_map() +
-    theme(legend.position = "bottom") +
-    theme(legend.key.width = unit(2, "cm")) 
+    scale_fill_viridis(direction=-1, option = "C",begin = .5, end = 1, 
+                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #plasma for precip delta
+    labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+        theme(legend.position = "bottom",
+              legend.key.width = unit(2, "cm"),
+              legend.key.height = unit(.2, "cm"),
+          plot.title=element_text(size=12,face="bold",hjust=0.5))
+
+  ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = plot.dir, width = 4.5, height=4)
   
-  
-  ggsave(filename = paste('./maps/Deltas/', GCMs[G], RCPs[R], "pcp_hist.png", sep = '_'))
-  
+  rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta)
+  }
+}
   
