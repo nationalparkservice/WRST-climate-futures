@@ -25,6 +25,7 @@ library(here)
 
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD/"
+plot.dir <- "C:/Users/achildress/Documents/wrst_temp/"
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
@@ -56,13 +57,13 @@ Create empty dataframes that will store climate summaries for each GCM.rcp as lo
 
 variables <- c("Tmean_F","Precip_in","DJF_TmeanF", "MAM_TmeanF", "JJA_TmeanF", "SON_TmeanF", "DJF_TmeanF", "DJF_Precip_in", "MAM_Precip_in", "SON_Precip_in", "Annual_max_SWE", "MAM_SON_SWE", "water_balance")
 
-Baseline_Means <- as.data.frame(matrix(data=NA,nrow=0,ncol=length(variables)+2))
+Baseline_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
 names(Baseline_Means) <- c("GCM", "RCP", variables)
 
-Future_Means <- as.data.frame(matrix(data=NA,nrow=0,ncol=length(variables)+2))
+Future_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
 names(Future_Means) <- c("GCM", "RCP", variables)
 
-Deltas <- as.data.frame(matrix(data=NA,nrow=0,ncol=length(variables)+2))
+Deltas <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
 names(Deltas) <- c("GCM", "RCP", variables)
 
 
