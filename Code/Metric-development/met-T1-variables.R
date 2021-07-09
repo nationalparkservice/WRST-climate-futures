@@ -1,6 +1,6 @@
-for (G in 1:2){
+for (G in 1:length(GCMs)){
   gcm = GCMs[G]
-  for(R in 1:2){
+  for(R in 1:length(RCPs)){
     rcp = RCPs[R]
     path = paste(data.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
