@@ -28,8 +28,8 @@ for (G in 1:1){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(wf_hist_filelist)){
-      suppressMessages(
-      l[[i]] <- read_ncdf(wf_hist_filelist[i],var=c("PRCP", "EVAP")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      suppressWarnings(
+      l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
       )
     }
     
@@ -55,8 +55,8 @@ for (G in 1:1){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(wf_fut_filelist)){
-      suppressMessages(
-      l[[i]] <- read_ncdf(wf_fut_filelist[i], var = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      suppressWarnings(
+      l[[i]] <- read_stars(wf_fut_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
       )
     }
     
@@ -104,7 +104,7 @@ for (G in 1:1){
       s = cropped_st_fut[[F]]
       s %>% mutate(water.balance = PRCP - EVAP) -> s 
       s = select(s, water.balance)
-      if (is.na(summary(s$SWE)[4])) {
+      if (is.na(summary(s$water.balance)[4])) {
         fut_var[[F]] = fut_var[[F-1]]
         st_dimensions(fut_var[[F]])[3] = st_dimensions(s)[3]
       } else{
@@ -133,8 +133,8 @@ for (G in 1:1){
     ggplot() + 
       geom_stars(data = delta, alpha = 0.8) + 
       geom_sf(data = shp, aes(), fill = NA) + 
-      scale_fill_viridis(direction=1, option = "E",begin = .5, end = 1, 
-                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #cividis for precip delta
+      scale_fill_viridis(direction=-1, option = "G",begin = .5, end = 1, 
+                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #mako for WB delta
       labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
       theme(legend.position = "bottom",
             legend.key.width = unit(2, "cm"),
@@ -164,7 +164,7 @@ for (G in 1:1){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(ws_hist_filelist)){
-      suppressMessages(
+      suppressWarnings(
         l[[i]] <- read_stars(ws_hist_filelist[i],sub=c("SWE"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
       )
     }
@@ -191,7 +191,7 @@ for (G in 1:1){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(ws_fut_filelist)){
-      suppressMessages(
+      suppressWarnings(
         l[[i]] <- read_stars(ws_fut_filelist[i], sub = c("SWE"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
       )
     }
@@ -281,7 +281,7 @@ for (G in 1:1){
     ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
     
     
-    var = "MAM/SON SWE (in)"
+    var = "MAM-SON SWE (in)"
     hist_var <- list()
     
     for(H in 1:length(cropped_st_hist)){
@@ -315,15 +315,15 @@ for (G in 1:1){
       fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
       
       
-      sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find max
-      sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+      mean_hist <- st_apply(hist_var_stars, c("x", "y"),FUN = function(x) mean(x)*6) # find max
+      mean_fut <- st_apply(fut_var_stars, c("x", "y"), FUN = function(x) mean(x)*6)
       
-      delta <- sum_fut - sum_hist
+      delta <- mean_fut - mean_hist
       
       #### Add values to Means dfs
-      Baseline_Means$MAM_SON_SWE[index] = mean(sum_hist$sum, na.rm=TRUE)
-      Future_Means$MAM_SON_SWE[index] = mean(sum_fut$sum, na.rm=TRUE)
-      Deltas$MAM_SON_SWE[index] = mean(delta$sum, na.rm=TRUE)
+      Baseline_Means$MAM_SON_SWE[index] = mean(mean_hist$SWEf, na.rm=TRUE)
+      Future_Means$MAM_SON_SWE[index] = mean(mean_fut$SWEf, na.rm=TRUE)
+      Deltas$MAM_SON_SWE[index] = mean(delta$SWEf, na.rm=TRUE)
       
       # ggplot - delta
       ggplot() + 
