@@ -1,6 +1,6 @@
-for (G in 1:1){
+for (G in 1:length(GCMs)){
   gcm = GCMs[G]
-  for(R in 1:2){
+  for(R in 1:length(RCPs)){
     rcp = RCPs[R]
     path = paste(vic.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
@@ -12,6 +12,7 @@ for (G in 1:1){
     # index for df
     GR <- paste(gcm,rcp,sep=".")
     index <- match(GR, GCM.RCP)
+    print(c(index, GR))
   
     ############################################################################
     ##    WATER BALANCE -- CREATE STARS OBJECTS FOR T1 PLOTS   #################
