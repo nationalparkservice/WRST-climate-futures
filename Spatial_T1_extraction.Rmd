@@ -54,7 +54,7 @@ plot(st_geometry(shp))
 Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
 ```{r Create empty dataframes}
 
-variables <- c("Tmean_F","Precip_in","DJF_TmeanF", "MAM_TmeanF", "JJA_TmeanF", "SON_TmeanF", "DJF_TmeanF", "DJF_Precip_in", "MAM_Precip_in", "JJA_Precip_in","SON_Precip_in", "Annual_max_SWE", "MAM_SON_SWE", "water_balance")
+variables <- c("Tmean_F","Precip_in","DJF_TmeanF", "MAM_TmeanF", "JJA_TmeanF", "SON_TmeanF", "DJF_Precip_in", "MAM_Precip_in", "JJA_Precip_in","SON_Precip_in", "Annual_max_SWE", "MAM_SON_SWE", "water_balance")
 
 Baseline_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
 names(Baseline_Means) <- c("GCM", "RCP", variables)
