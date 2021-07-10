@@ -315,8 +315,8 @@ for (G in 1:1){
       fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
       
       
-      mean_hist <- st_apply(hist_var_stars, c("x", "y"),FUN = function(x) mean(x)*6) # find max
-      mean_fut <- st_apply(fut_var_stars, c("x", "y"), FUN = function(x) mean(x)*6)
+      mean_hist <- st_apply(hist_var_stars, c("x", "y"),FUN = function(x) mean(x)) # find max
+      mean_fut <- st_apply(fut_var_stars, c("x", "y"), FUN = function(x) mean(x))
       
       delta <- mean_fut - mean_hist
       
