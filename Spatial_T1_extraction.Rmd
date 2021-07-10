@@ -43,8 +43,6 @@ GCM.RCP <- sort(apply(expand.grid(GCMs, RCPs), 1, paste, collapse="."))
 
 ```{r Load spatial data}
 
-
-
 # Spatial
 boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/Boundary_shapefiles/"
 shp <- st_read(paste0(boundary.dir, area, ".shp")) # Wrangell Mountains
@@ -73,7 +71,7 @@ names(Deltas) <- c("GCM", "RCP", variables)
 Loop through met GCM.rcp and summarize each variable
 
 ```{r Create met variables, results=hide, eval=TRUE}
-
+memory.limit(size = 60000)
 
 source(here::here("Code", "Metric-development", "met-T1-variables.R"),echo = FALSE) 
 
