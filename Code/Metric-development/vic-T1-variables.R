@@ -1,6 +1,6 @@
 for (G in 1:1){
   gcm = GCMs[G]
-  for(R in 1:1){
+  for(R in 1:2){
     rcp = RCPs[R]
     path = paste(vic.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
@@ -118,15 +118,15 @@ for (G in 1:1){
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(water.balancef = water.balance / 25.4) %>% select(water.balancef) -> fut_var_stars
     
-    sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find mean
-    sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
+    sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN = function(x) sum(x)/length(cropped_st_hist)) # find mean
+    sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN = function(x) sum(x)/length(cropped_st_fut))
     delta <- sum_fut - sum_hist
     
     
     #### Add values to Means dfs
-    Baseline_Means$water_balance[index] = mean(sum_hist$sum, na.rm=TRUE)
-    Future_Means$water_balance[index] = mean(sum_fut$sum, na.rm=TRUE)
-    Deltas$water_balance[index] = mean(delta$sum, na.rm=TRUE)
+    Baseline_Means$water_balance[index] = mean(sum_hist$water.balancef, na.rm=TRUE)
+    Future_Means$water_balance[index] = mean(sum_fut$water.balancef, na.rm=TRUE)
+    Deltas$water_balance[index] = mean(delta$water.balancef, na.rm=TRUE)
     
     
     # ggplot - delta
