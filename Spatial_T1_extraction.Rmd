@@ -35,6 +35,7 @@ area <- 'wrst_mtns' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
 
 GCMs <- list.files(path = data.dir)
 RCPs <- c("rcp45", "rcp85")
+GCM.RCP <- sort(apply(expand.grid(GCMs, RCPs), 1, paste, collapse="."))
 
 ```
 
