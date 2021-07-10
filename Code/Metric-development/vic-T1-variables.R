@@ -29,9 +29,10 @@ for (G in 1:length(GCMs)){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(wf_hist_filelist)){
+      invisible(capture.output(
       suppressWarnings(
       l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
+      )))
     }
     
     # Crop
@@ -56,9 +57,10 @@ for (G in 1:length(GCMs)){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(wf_fut_filelist)){
+      invisible(capture.output(
       suppressWarnings(
       l[[i]] <- read_stars(wf_fut_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
+      )))
     }
     
     # Crop
@@ -165,9 +167,10 @@ for (G in 1:length(GCMs)){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(ws_hist_filelist)){
+      invisible(capture.output(
       suppressWarnings(
         l[[i]] <- read_stars(ws_hist_filelist[i],sub=c("SWE"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
+      )))
     }
     
     # Crop
@@ -192,9 +195,10 @@ for (G in 1:length(GCMs)){
     l <- list() # Create a list to put the stars objects into
     
     for(i in 1:length(ws_fut_filelist)){
+      invisible(capture.output(
       suppressWarnings(
         l[[i]] <- read_stars(ws_fut_filelist[i], sub = c("SWE"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
+      )))
     }
     
     # Crop
