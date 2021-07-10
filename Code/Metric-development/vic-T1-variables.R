@@ -10,10 +10,8 @@ for (G in 1:1){
     model.dir <- paste0(plot.dir,gcm,".",rcp)
     
     # index for df
-    gcm <- GCMs[3]
-    rcp <- RCPs[1]
-    index <- match(gcm, GCMs) * match(rcp, RCPs)
-    index
+    GR <- paste(gcm,rcp,sep=".")
+    index <- match(GR, GCM.RCP)
   
     ############################################################################
     ##    WATER BALANCE -- CREATE STARS OBJECTS FOR T1 PLOTS   #################

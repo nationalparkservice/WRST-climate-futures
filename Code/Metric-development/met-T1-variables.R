@@ -11,7 +11,8 @@ for (G in 1:length(GCMs)){
     dir.create(model.dir,showWarnings=FALSE)
     
     # index for df
-    index <- match(gcm, GCMs) * match(rcp, RCPs)
+    GR <- paste(gcm,rcp,sep=".")
+    index <- match(GR, GCM.RCP) 
     
     Baseline_Means$GCM[index] = gcm
     Baseline_Means$RCP[index] = rcp
