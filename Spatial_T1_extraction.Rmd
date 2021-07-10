@@ -85,7 +85,7 @@ Loop through vic GCM.rcp and summarize each variable
 
 source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FALSE) 
 
-save.image(paste(area,"_T1_environment.RData"))
+save.image(paste0(plot.dir, area,"_T1_environment.RData"))
 
 ```
 
