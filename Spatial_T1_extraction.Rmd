@@ -16,12 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
 
-library(stars)
-library(dplyr)
-library(ggplot2)
-library(ggthemes)
-library(viridis)
-library(here)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel)
 
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
@@ -90,6 +85,32 @@ save.image(paste0(plot.dir, area,"_T1_environment.RData"))
 
 Run PCA and create scatterplots for T1 variables
 ```{r Run PCA}
+# Run scatterplot
+scatterplot <- function(df, X, Y, title,xaxis,yaxis){
+  plot <- ggplot(data=df, aes(x={{ X }}, y={{ Y }}))  +
+  geom_text_repel(aes(label=paste(GCM,RCP,sep="."))) +
+  geom_point(colour="black",size=4) +
+  theme(axis.text=element_text(size=18),
+        axis.title.x=element_text(size=18,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.2),
+        plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=18), legend.title=element_text(size=16)) + 
+  ###
+  labs(title =title, 
+       x = paste0("Changes in ",xaxis), # Change
+       y = paste0("Changes in ",yaxis)) + #change
+  scale_color_manual(name="Scenarios", values=c("black")) +
+  # scale_fill_manual(name="Scenarios",values = c("black")) + 
+  theme(legend.position="none") 
+  plot
+}
+scatterplot(df=Deltas,X=Tmean_F,Y=Precip_in,title="Tmean vs Precip scatterplot",xaxis="Avg Annual Temp (F)",yaxis="Avg Annual Precip (in)")
+scatterplot(df=Deltas,X=DJF_TmeanF,Y=Annual_max_SWE,title="Winter temp vs max SWE scatterplot",xaxis="Avg DJF Temp (F)",yaxis="Avg MAX SWE (in)")
+scatterplot(df=Deltas,X=JJA_Precip_in,Y=water_balance,title="Summer precip vs water balance scatterplot",xaxis="Avg JJA Precip (in)",yaxis="Avg Annual Water Balance (in)")
+
+# PCA df setup
+
+# Select PCs
 
 
 ```
