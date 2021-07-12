@@ -18,15 +18,14 @@ rm(list = ls())
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot)
 
-area <- 'eastern_coast' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
-
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
-plot.dir <- paste("C:/Users/achildress/Documents/wrst_temp",area,sep="/")
-dir.create(plot.dir,showWarnings=FALSE)
+plot.dir <- "C:/Users/achildress/Documents/wrst_temp/"
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
+
+area <- 'copper_plateau' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
 
 
 GCMs <- list.files(path = data.dir)
