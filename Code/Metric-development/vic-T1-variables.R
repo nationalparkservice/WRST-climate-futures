@@ -245,7 +245,7 @@ for (G in 1:length(GCMs)){
       s = select(s, SWE)
       if (is.na(summary(s$SWE)[4])) {
         fut_var[[F]] = fut_var[[F-1]]
-        st_dimensions(hist_var[[F]])[3] = st_dimensions(s)[3]
+        st_dimensions(fut_var[[F]])[3] = st_dimensions(s)[3]
       } else{
         fut_var[[F]] = s[,,,] #all months
       }
@@ -307,7 +307,7 @@ for (G in 1:length(GCMs)){
       s = select(s, SWE)
       if (is.na(summary(s$SWE)[4])) {
         fut_var[[F]] = fut_var[[F-1]]
-        st_dimensions(hist_var[[F]])[3] = st_dimensions(s[,,,c(3:5,9:11)])[3]
+        st_dimensions(fut_var[[F]])[3] = st_dimensions(s[,,,c(3:5,9:11)])[3]
       } else {
         fut_var[[F]] = s[,,,c(3:5,9:11)] #all months
       }
