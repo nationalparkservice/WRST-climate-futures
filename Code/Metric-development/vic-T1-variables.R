@@ -7,7 +7,7 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
-    model.dir <- paste0(plot.dir,gcm,".",rcp)
+    model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
     
     # index for df
     GR <- paste(gcm,rcp,sep=".")
