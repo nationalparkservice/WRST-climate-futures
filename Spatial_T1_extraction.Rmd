@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
 
-library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang)
 
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
@@ -106,9 +106,32 @@ scatterplot <- function(df, X, Y, title,xaxis,yaxis){
 }
 scatterplot(df=Deltas,X=Tmean_F,Y=Precip_in,title="Tmean vs Precip scatterplot",xaxis="Avg Annual Temp (F)",yaxis="Avg Annual Precip (in)")
 scatterplot(df=Deltas,X=DJF_TmeanF,Y=Annual_max_SWE,title="Winter temp vs max SWE scatterplot",xaxis="Avg DJF Temp (F)",yaxis="Avg MAX SWE (in)")
-scatterplot(df=Deltas,X=JJA_Precip_in,Y=water_balance,title="Summer precip vs water balance scatterplot",xaxis="Avg JJA Precip (in)",yaxis="Avg Annual Water Balance (in)")
+scatterplot(df=Deltas,X=JJA_TmeanF,Y=water_balance,title="Summer Tmean vs water balance scatterplot",xaxis="Avg JJA Tmean (F)",yaxis="Avg Annual Water Balance (in)")
 
 # PCA df setup
+head(Deltas)
+Deltas.rownames <- Deltas[,-c(1:2)]
+rownames(Deltas.rownames) <- paste(Deltas$GCM,Deltas$RCP,sep=".")
+
+PCA <- prcomp(Deltas.rownames[,c(1:length(Deltas.rownames))], center = TRUE,scale. = TRUE)
+
+head(PCA$rotation)
+head(PCA$x)
+summary(PCA)
+
+str(PCA)
+
+
+ggbiplot(PCA, labels=rownames(Deltas.rownames))
+
+pca.x<-as.data.frame(PCA$x)
+
+# This method doesn't return the exact models we selected,
+# but we may not have selected the most divergent models
+CF1 <- rownames(pca.x)[which.min(pca.x$PC1)]
+CF2 <- rownames(pca.x)[which.max(pca.x$PC1)]
+CF3 <- rownames(pca.x)[which.min(pca.x$PC2)]
+CF4 <- rownames(pca.x)[which.max(pca.x$PC2)]
 
 # Select PCs
 
