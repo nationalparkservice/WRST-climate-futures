@@ -1,7 +1,7 @@
 for (G in 1:length(GCMs)){
-  gcm = GCMs[G]
+  gcm = GCMs[i]
   for(R in 1:length(RCPs)){
-    rcp = RCPs[R]
+    rcp = RCPs[i]
     path = paste(vic.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
@@ -31,9 +31,11 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(wf_hist_filelist)){
       invisible(capture.output(
       suppressWarnings(
-      l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) 
       )))
     }
+# Warnings have been suppressed because they do not impact the numerical results. See here:
+    # https://gis.stackexchange.com/questions/379890/decreasing-resolution-of-netcdf-data-with-gdal
     
     # Crop
     
