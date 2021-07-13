@@ -1,7 +1,7 @@
 for (G in 1:length(GCMs)){
-  gcm = GCMs[i]
+  gcm = GCMs[G]
   for(R in 1:length(RCPs)){
-    rcp = RCPs[i]
+    rcp = RCPs[R]
     path = paste(vic.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
