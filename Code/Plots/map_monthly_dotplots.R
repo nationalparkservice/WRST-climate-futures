@@ -93,6 +93,7 @@ maps <- grid.arrange(seasons,maps.all,ncol = 2, widths = c(1,15))
 sample$month <- factor(sample$month, levels=c("Dec","Jan","Feb","Mar","Apr","May","Jun","Jul",
                                                  "Aug","Sep","Oct","Nov"))
 dotplot <- ggplot(sample, aes(x=water.balance,y=month,fill=CF)) +
+  geom_vline(xintercept=0, linetype="dashed", color = "black") + 
   geom_point(stat="identity",size=8,colour="black",aes(fill = factor(CF), shape = factor(CF))) +
   theme(axis.text=element_text(size=16),    #Text size for axis tick mark labels
         axis.title.x=element_blank(),               #Text size and alignment for x-axis label
