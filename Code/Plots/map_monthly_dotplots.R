@@ -77,6 +77,7 @@ maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3, # THIS WORKS, BU
                                     # top = textGrob("Change in average annual water balance (in/yr)",
                                     #                gp=gpar(fontface="bold", col="black", fontsize=20)))
 
+DJFcf1.grob <- ggplotGrob(DJF.cf1)
 
 lg <- tableGrob(c("W", "S","S","F"), theme= ttheme_minimal())
 grobS=c(grob(DJF.cf1),grob(DJF.cf2),grob(DJF.cf3))
@@ -112,4 +113,116 @@ g <- ggarrange(maps.all,dotplot, nrow=1,ncol=2)
 g
 annotate_figure(g, top = text_grob("Change in average monthly water balance (in/month)", 
                                       face = "bold", size = 20))
+
+
+
+
+
+
+
+
+
+
+
+
+#################################### CODE TO TRY AND ARRANGE GRID
+# https://stackoverflow.com/questions/45473843/put-row-and-column-titles-using-grid-arrange-in-r
+# doesn't work b/c each map returns 9 grobs ?
+rm(list=ls())
+
+pl <- replicate(12, ggplot(), FALSE)
+
+N <- length(pl)
+nr <- 4
+nc <- 3
+
+
+combine <- rbind(tableGrob(t(c(letters[1:nc])), theme = ttheme_minimal(), rows = ""), 
+                 cbind(tableGrob(LETTERS[1:nr], theme = ttheme_minimal()), 
+                       arrangeGrob(grobs = pl),  size = "last"), size = "last")
+grid.newpage()
+grid.draw(combine)
+
+
+
+#https://stackoverflow.com/questions/60347583/add-row-and-column-titles-with-ggarrange
+# Promising but 1. scale bar in weird location, 2. horizontal alignment weird
+
+maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3, # THIS WORKS, BUT WANT TO HAVE SHARED RC TITLES
+                                       MAM.cf1,MAM.cf2,MAM.cf3,    # FOR CF AND SEASON
+                                       JJA.cf1,JJA.cf2,JJA.cf3,
+                                       SON.cf1,SON.cf2,SON.cf3,
+                                       nrow = 4,ncol=3, position = "bottom") 
+
+
+row1 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="row 1 title", angle = 90) + theme_void() 
+row2 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="row 2 title", angle = 90) + theme_void() 
+row3 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="row 3 title", angle = 90) + theme_void() 
+row4 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="row 4 title", angle = 90) + theme_void() 
+
+col1 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="col 1 title") + theme_void() 
+col2 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="col 2 title") + theme_void() 
+col3 <- ggplot() + annotate(geom = 'text', x=1, y=1, label="col 3 title") + theme_void()
+
+layoutplot <- "
+#cccddd
+aeeefff
+aeeefff
+bggghhh
+bggghhh
+"
+
+
+plotlist <- list(a = row1, b = row2, c = col1, d = col2, e= DJF.cf1, f=DJF.cf2, g=MAM.cf1, h=MAM.cf2)
+
+wrap_plots(plotlist, guides = 'collect', design = layoutplot)
+
+
+
+
+#https://wilkelab.org/cowplot/articles/plot_grid.html
+
+# first align the top-row plot (p3) with the left-most plot of the
+# bottom row (p1)
+plots <- align_plots(p3, p1, align = 'v', axis = 'l')
+# then build the bottom row
+bottom_row <- plot_grid(plots[[2]], p2, labels = c('B', 'C'), label_size = 12)
+
+# then combine with the top row for final plot
+plot_grid(plots[[1]], bottom_row, labels = c('A', ''), label_size = 12, ncol = 1)
+
+
+# https://stackoverflow.com/questions/45473843/put-row-and-column-titles-using-grid-arrange-in-r
+# Again, too many grobs for each of the maps
+
+set.seed(0)
+pl = lapply(1:9, function(i) {
+  p = ggplot(data.frame(x=1:10,y=rnorm(10)),aes(x, y)) + 
+    geom_line()
+})
+
+
+maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3, # THIS WORKS, BUT WANT TO HAVE SHARED RC TITLES
+                                       MAM.cf1,MAM.cf2,MAM.cf3,    # FOR CF AND SEASON
+                                       JJA.cf1,JJA.cf2,JJA.cf3,
+                                       SON.cf1,SON.cf2,SON.cf3,
+                                       nrow = 4,ncol=3, position = "bottom") 
+
+# Create row and column titles
+col.titles = paste("CF", 1:3)
+row.titles = paste("R_Title", 4:6)
+
+# Add row titles
+pl[1:3] = lapply(1:3, function(i) arrangeGrob(pl[[i]], left=row.titles[i]))
+
+DJF.cf1 <- arrangeGrob(DJF.cf1,left=row.titles[1])
+MAM.cf1 <- arrangeGrob(MAM.cf1,left=row.titles[2])
+MAM.cf1 <- arrangeGrob(JJA.cf1,left=row.titles[3])
+
+# Add column titles and lay out plots
+grid.arrange(grobs=c(arrangeGrob(DJF.cf1,top=col.titles[1],ncol=1),
+                     arrangeGrob(DJF.cf2,top=col.titles[2],ncol=1),
+                     arrangeGrob(DJF.cf2,top=col.titles[3],ncol=1)),ncol=3)
+
+
                
