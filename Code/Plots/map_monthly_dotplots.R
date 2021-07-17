@@ -65,16 +65,20 @@ MAM.cf3 <- map.plot(data=d45,title="",metric="Water Balance",col="red")
 JJA.cf3 <- map.plot(data=d45,title="",metric="Water Balance",col="red")
 SON.cf3 <- map.plot(data=d45,title="",metric="Water Balance",col="red")
 
+###########################################################
+##### NONE OF THESE WORK ##################################
 # Merge into one plot
-lg <- tableGrob(c("W", "S","S","F"), theme= ttheme_minimal())
-maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3,
-                                    MAM.cf1,MAM.cf2,MAM.cf3,
+
+maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3, # THIS WORKS, BUT WANT TO HAVE SHARED RC TITLES
+                                    MAM.cf1,MAM.cf2,MAM.cf3,    # FOR CF AND SEASON
                                     JJA.cf1,JJA.cf2,JJA.cf3,
                                     SON.cf1,SON.cf2,SON.cf3,
-                                    nrow = 4,ncol=3, position = "bottom", 
-                                    top = textGrob("Change in average annual water balance (in/yr)",
-                                                   gp=gpar(fontface="bold", col="black", fontsize=16)))
+                                    nrow = 4,ncol=3, position = "bottom") 
+                                    # top = textGrob("Change in average annual water balance (in/yr)",
+                                    #                gp=gpar(fontface="bold", col="black", fontsize=20)))
 
+
+lg <- tableGrob(c("W", "S","S","F"), theme= ttheme_minimal())
 grobS=c(grob(DJF.cf1),grob(DJF.cf2),grob(DJF.cf3))
 combine <- rbind(tableGrob(t(c(letters[1:3])), theme = ttheme_minimal(), rows = ""), 
                  cbind(tableGrob(LETTERS[1:4], theme = ttheme_minimal()), 
@@ -83,4 +87,29 @@ grid.newpage()
 grid.draw(cbind(lg, maps.all, size = "last"))
 
 
+################################### MONTHLY DOT PLOT ##################
 
+sample$month <- factor(sample$month, levels=c("Dec","Jan","Feb","Mar","Apr","May","Jun","Jul",
+                                                 "Aug","Sep","Oct","Nov"))
+dotplot <- ggplot(sample, aes(x=water.balance,y=month,fill=CF)) +
+  geom_point(stat="identity",size=8,colour="black",aes(fill = factor(CF), shape = factor(CF))) +
+  theme(axis.text=element_text(size=16),    #Text size for axis tick mark labels
+        axis.title.x=element_blank(),               #Text size and alignment for x-axis label
+        plot.title=element_blank(),
+        # axis.title.y=element_text(size=16, vjust=0.5,  margin=margin(t=20, r=20, b=20, l=20)),              #Text size and alignment for y-axis label
+        # plot.title=element_text(size=20, vjust=0.5, face="bold", margin=margin(t=20, r=20, b=20, l=20)),      #Text size and alignment for plot title
+        legend.title=element_text(size=16),                                                                    #Text size of legend category labels
+        legend.text=element_text(size=14),                                                                   #Text size of legend title
+        legend.position = "bottom")  +
+  labs(title = "Change in average monthly water balance (in/yr)", 
+       x = "Change in water balance (in/yr)", y = "") +
+  scale_fill_manual(name="",values = c("blue", "pink", "red")) +
+  scale_shape_manual(name="",values = c(21,22,23)) +
+  scale_y_discrete(limits=rev)
+dotplot
+
+g <- ggarrange(maps.all,dotplot, nrow=1,ncol=2)
+g
+annotate_figure(g, top = text_grob("Change in average monthly water balance (in/month)", 
+                                      face = "bold", size = 20))
+               
