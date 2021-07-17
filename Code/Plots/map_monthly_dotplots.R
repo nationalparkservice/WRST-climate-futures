@@ -41,9 +41,10 @@ map.plot <- function(data, title,xaxis,metric,col){
           legend.key.width = unit(6, "cm"),
           legend.key.height = unit(.3, "cm"),
           legend.justification = "center",
-          plot.title=element_blank(),
-          # plot.title=element_text(size=12,face="bold",hjust=0.5),
-          plot.background = element_rect(colour = col, fill=NA, size=5)) + 
+          # plot.title=element_blank(),
+          plot.title=element_text(size=12,face="bold",hjust=0.5),
+          plot.background = element_rect(colour = col, fill=NA, size=5),
+          plot.margin = unit(c(.5,0,0,0), "cm")) + 
     labs(fill = metric)
 }
 
@@ -77,15 +78,14 @@ maps.all <- grid_arrange_shared_legend(DJF.cf1,DJF.cf2,DJF.cf3, # THIS WORKS, BU
                                     # top = textGrob("Change in average annual water balance (in/yr)",
                                     #                gp=gpar(fontface="bold", col="black", fontsize=20)))
 
-DJFcf1.grob <- ggplotGrob(DJF.cf1)
+djf <- textGrob("DJF", gp = gpar(fontface="bold", size = 12))
+mam <- textGrob("MAM", gp = gpar(fontface="bold", size = 12))
+jja <- textGrob("JJA", gp = gpar(fontface="bold", size = 12))
+son <- textGrob("SON", gp = gpar(fontface="bold", size = 12))
 
-lg <- tableGrob(c("W", "S","S","F"), theme= ttheme_minimal())
-grobS=c(grob(DJF.cf1),grob(DJF.cf2),grob(DJF.cf3))
-combine <- rbind(tableGrob(t(c(letters[1:3])), theme = ttheme_minimal(), rows = ""), 
-                 cbind(tableGrob(LETTERS[1:4], theme = ttheme_minimal()), 
-                       arrangeGrob(grobs = maps.all),  size = "last"), size = "last")
-grid.newpage()
-grid.draw(cbind(lg, maps.all, size = "last"))
+seasons <- grid.arrange(djf,mam,jja,son,ncol=1)
+
+maps <- grid.arrange(seasons,maps.all,ncol = 2, widths = c(1,15))
 
 
 ################################### MONTHLY DOT PLOT ##################
@@ -109,8 +109,8 @@ dotplot <- ggplot(sample, aes(x=water.balance,y=month,fill=CF)) +
   scale_y_discrete(limits=rev)
 dotplot
 
-g <- ggarrange(maps.all,dotplot, nrow=1,ncol=2)
-g
+g <- grid.arrange(maps, dotplot,ncol = 2, widths = c(6, 4), clip = FALSE)
+
 annotate_figure(g, top = text_grob("Change in average monthly water balance (in/month)", 
                                       face = "bold", size = 20))
 
