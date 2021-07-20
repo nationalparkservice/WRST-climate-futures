@@ -17,6 +17,7 @@ library(ggpubr)
 library(gridExtra)
 library(grid)
 library(dplyr)
+library(gtable)
 
 # Load example data
 
@@ -77,10 +78,12 @@ ts <- ggplot(sample, aes(x=year, y=water.balance, group=CF, colour = CF)) +
        x = "Year", y = "Water balance (in/yr)") +
   scale_color_manual(name="",values = c("blue","pink","red","grey")) +
   scale_fill_manual(name="",values = c("blue","pink","red","grey")) +
-  scale_shape_manual(name="",values = c(21,22,23, 24)) 
+  scale_shape_manual(name="",values = c(21,22,23, 24)) +
+  coord_fixed(ratio = 1.0) 
   # scale_y_continuous(limits=c(ceiling(42), ceiling(max(ALL2$TavgCustom)))) +
   # guides(color=guide_legend(override.aes = list(size=7))) 
 ts
+
 
 bar <- ggplot(means, aes(x=CF,y=water.balance,fill=CF)) +
   geom_bar(stat="identity",position="dodge",colour="black") +
@@ -120,10 +123,10 @@ table <- gtable_add_grob(table, grobs = rectGrob(gp = gpar(fill=NA, lwd=2)), #li
 table <- annotate_figure(table,
                 top = text_grob("Historical = absolute value \n CFs = change values", color = "black",
                                  face = "italic", size = 12))
-tsplots <- grid.arrange(ts, table,ncol = 2, widths = c(2, 1), clip = FALSE)
+tsplots <- grid.arrange(ts, table,ncol = 2, widths = c(4, 1), clip = FALSE)
 
 g <- ggarrange(maps,tsplots, nrow=2)
-
+g
 
 
 
