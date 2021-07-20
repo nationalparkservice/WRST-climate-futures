@@ -79,7 +79,7 @@ ts <- ggplot(sample, aes(x=year, y=water.balance, group=CF, colour = CF)) +
   scale_color_manual(name="",values = c("blue","pink","red","grey")) +
   scale_fill_manual(name="",values = c("blue","pink","red","grey")) +
   scale_shape_manual(name="",values = c(21,22,23, 24)) +
-  coord_fixed(ratio = 1.0) 
+  coord_fixed(ratio = 1.25) 
   # scale_y_continuous(limits=c(ceiling(42), ceiling(max(ALL2$TavgCustom)))) +
   # guides(color=guide_legend(override.aes = list(size=7))) 
 ts
