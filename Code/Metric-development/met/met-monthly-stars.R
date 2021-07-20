@@ -1,6 +1,5 @@
 ## MET MONTHLY
-# for (G in 1:length(GCMs)){
-for (G in 1:1){
+for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
     rcp = sub('.*\\.', '', GCMs[G])
