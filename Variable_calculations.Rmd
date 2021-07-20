@@ -1,0 +1,100 @@
+---
+title: "Calculate variables and plot"
+author: "Amber Runyon"
+date: "7/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Initials
+
+```{r Initials, echo=FALSE, message=FALSE, warning=FALSE}
+
+rm(list = ls())
+
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot)
+
+data.dir <- "D:/NCAR_AK/met" 
+vic.dir <- "D:/NCAR_AK/vic_hydro" 
+plot.dir <- "C:/Users/achildress/Documents/wrst_temp/stars_objs"
+
+historical.period <- as.character(seq(1950,1999,1))
+future.period <- as.character(seq(2025,2055,1))
+
+area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
+
+
+GCMs <- c("inmcm4.rcp85","ACCESS1-3.rcp45","CanESM2.rcp85")
+CFs <- c("Climate Future 1", "Climate Future 2", "Climate Future 3")
+cols <- c("#12045C","#ffcccc","#E10720")
+
+CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
+
+
+```
+
+## Load Spatial Data
+
+```{r Load spatial data}
+
+# Spatial
+boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/Boundary_shapefiles/"
+shp <- st_read(paste0(boundary.dir, area, ".shp")) # Wrangell Mountains
+shp <- st_transform(shp, 3338)
+plot(st_geometry(shp))
+
+
+```
+Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
+```{r Create empty dataframes}
+
+monthly.variables <- c("Tmean_F","Precip_in","DJF_TmeanF", "MAM_TmeanF", "JJA_TmeanF", "SON_TmeanF", "DJF_Precip_in", "MAM_Precip_in", "JJA_Precip_in","SON_Precip_in", "Annual_max_SWE", "MAM_SON_SWE", "water_balance")
+
+annual.variables <- 
+
+Baseline_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
+names(Baseline_Means) <- c("GCM", "RCP", variables)
+
+Future_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
+names(Future_Means) <- c("GCM", "RCP", variables)
+
+Deltas <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
+names(Deltas) <- c("GCM", "RCP", variables)
+
+
+```
+
+Loop through met GCM.rcp and summarize each variable
+
+```{r Create met monthly variables, results=hide, eval=TRUE}
+memory.limit(size = 60000)
+
+source(here::here("Code", "Metric-development", "met-monthly-stars.R"),echo = FALSE) 
+source(here:here("Code", "Metric-development", "met-monthly-variables.R"),echo = FALSE)
+
+```
+
+```{r Create met daily variables, results=hide, eval=TRUE}
+
+source(here::here("Code", "Metric-development", "met-daily-stars.R"),echo = FALSE) 
+source(here:here("Code", "Metric-development", "met-daily-variables.R"),echo = FALSE)
+
+
+```
+
+
+Loop through vic GCM.rcp and summarize each variable
+
+```{r Create vic variables}
+
+source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FALSE) 
+
+save.image(paste0(plot.dir, area,"_T1_environment.RData"))
+
+```
+
+
