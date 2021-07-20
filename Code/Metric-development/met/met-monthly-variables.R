@@ -7,6 +7,7 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
+    
     model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
     dir.create(model.dir,showWarnings=FALSE)
     
@@ -26,7 +27,7 @@ for (G in 1:length(GCMs)){
     ##    CREATE STARS OBJECTS FOR T1 PLOTS   ##################################
     ############################################################################
     
-    # shp = whatever shapefile you want to use to crop the area of interest
+    # FirstLabel - This is the first chunk of code I want to navigate to. ####
     
     # HISTORICAL
     
