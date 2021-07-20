@@ -18,9 +18,9 @@ rm(list = ls())
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot)
 
-data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
-vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
-plot.dir <- "C:/Users/achildress/Documents/wrst_temp/"
+data.dir <- "D:/NCAR_AK/met" 
+vic.dir <- "D:/NCAR_AK/vic_hydro" 
+plot.dir <- "C:/Users/achildress/Documents/wrst_temp/stars_objs"
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
@@ -30,6 +30,10 @@ area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, W
 
 GCMs <- c("inmcm4.rcp85","ACCESS1-3.rcp45","CanESM2.rcp85")
 CFs <- c("Climate Future 1", "Climate Future 2", "Climate Future 3")
+cols <- c("#12045C","#ffcccc","#E10720")
+
+CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
+
 
 ```
 
