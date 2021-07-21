@@ -3,10 +3,12 @@ for (G in 1:length(GCMs)){
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   model.dir <- paste0(plot.dir,"/",GCMs[G])
   # stars objs
-  # cropped_st_hist <- load(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
-  assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
-  assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
-  assign(cropped_st_grid,paste0("cropped_st_grid_",GCMs[G]))
+  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
+  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
+  cropped_st_grid <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
+  # assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
+  # assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
+  # assign(cropped_st_grid,paste0("cropped_st_grid_",GCMs[G]))
   
     # Annual Tmean ----
   
@@ -63,7 +65,7 @@ for (G in 1:length(GCMs)){
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
     
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+    grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
     Daymet_Monthly = merge(Daymet_Monthly,future,by="GCM",all=TRUE)
     
     # Annual Precip ----
@@ -170,7 +172,7 @@ for (G in 1:length(GCMs)){
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
 
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+    grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
     Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # MAM Tmean ----
@@ -964,5 +966,6 @@ for (G in 1:length(GCMs)){
 }
 
 rm(hist_var, fut_var, grid_var, hist_var_stars, fut_var_stars, grid_var_stars, sum_hist, sum_fut, sum_grid, 
-   delta,mean_hist,mean_fut,mean_grid, baseline,future)
+   delta,mean_hist,mean_fut,mean_grid, baseline,future, cropped_fut,cropped_hist,cropped_grid,
+   cropped_st_fut,cropped_st_hist,cropped_st_grid,l,nc,nc_crop,s)
   
