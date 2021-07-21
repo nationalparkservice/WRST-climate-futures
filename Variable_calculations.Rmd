@@ -1,5 +1,5 @@
 ---
-title: "Calculate variables and plot"
+title: "Calculate variables"
 author: "Amber Runyon"
 date: "7/23/2021"
 output: html_document
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
 
-library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot);library(units)
 
 data.dir <- "D:/NCAR_AK/met" 
 vic.dir <- "D:/NCAR_AK/vic_hydro" 
