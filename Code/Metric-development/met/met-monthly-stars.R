@@ -77,7 +77,7 @@ for (G in 1:length(GCMs)){
     saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",GCMs[G]),sep="/"))
     
     
-    # DAYMET ----
+      # DAYMET ----
     
     l <- list() # Create a list to put the stars objects into
     
