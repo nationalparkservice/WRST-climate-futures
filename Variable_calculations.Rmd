@@ -63,6 +63,8 @@ Baseline_Monthly <- merge(Baseline_Monthly,CF_GCM[,c("GCM","CF")],by="GCM")
 
 Future_Monthly <- Baseline_Monthly
 
+Daymet_Monthly <- data.frame(GCM = rep("Daymet",4),Season = seasons, CF = rep("Historical",4))
+
 Baseline_Annual <- expand.grid(GCMs,historical.period); names(Baseline_Annual) <- c("GCM","Year")
 Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
 
