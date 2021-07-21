@@ -71,7 +71,7 @@ for (G in 1:length(GCMs)){
     cropped_st_fut <- list()
     
     for(i in 1:length(cropped_fut)){
-      cropped_st_fut <- st_as_stars(cropped_fut[[i]])
+      cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
     }
     # assign(paste0("cropped_st_fut_",GCMs[G]), cropped_st_fut)
     saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",GCMs[G]),sep="/"))
