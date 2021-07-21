@@ -1,7 +1,6 @@
 for (G in 1:length(GCMs)){
   gcm = GCMs[G]
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-  match(gcm, CF_GCM$GCM)
   model.dir <- paste0(plot.dir,"/",GCMs[G])
   # stars objs
   # cropped_st_hist <- load(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
@@ -48,7 +47,8 @@ for (G in 1:length(GCMs)){
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
     grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) 
+     select(tmean_f) -> grid_var_stars
     
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
