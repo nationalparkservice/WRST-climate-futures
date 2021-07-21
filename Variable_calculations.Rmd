@@ -52,19 +52,24 @@ plot(st_geometry(shp))
 Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
 ```{r Create empty dataframes}
 
-monthly.variables <- c("Tmean_F","Precip_in","DJF_TmeanF", "MAM_TmeanF", "JJA_TmeanF", "SON_TmeanF", "DJF_Precip_in", "MAM_Precip_in", "JJA_Precip_in","SON_Precip_in", "Annual_max_SWE", "MAM_SON_SWE", "water_balance")
+monthly.variables <- c("Annual.tmeanF","Annual.precipIn","DJF.tmeanF", "MAM.tmeanF", "JJA.tmeanF", "SON.tmeanF","DJF.tmaxF", "MAM.tmaxF", "JJA.tmaxF", "SON.tmaxF","DJF.tminF", "MAM.tminF", "JJA.tminF", "SON.tminF", "DJF.precipIn", "MAM.precipIn", "JJA.precipIn","SON.precipIn")
 
-annual.variables <- 
+annual.variables <- c("freeze.thaw","GDD","freq.hot.days","days.below32","days.below0","WSF,below0","W.days.over0","precip.over99","max.SWE","MAMSON.SWE","SWE.precip","water.balance","max.runoff","mean.soil.moisture","yday.SWE0","mean.soil.temp")
 
-Baseline_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
-names(Baseline_Means) <- c("GCM", "RCP", variables)
+seasons <- factor(c("DJF","MAM","JJA","SON"),levels=c("DJF","MAM","JJA","SON"))
 
-Future_Means <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
-names(Future_Means) <- c("GCM", "RCP", variables)
+Baseline_Monthly<-expand.grid(GCMs,seasons); names(Baseline_Monthly) <- c("GCM","Season")
+Baseline_Monthly <- merge(Baseline_Monthly,CF_GCM[,c("GCM","CF")],by="GCM")
 
-Deltas <- as.data.frame(matrix(data=NA,nrow=length(GCMs)*length(RCPs),ncol=length(variables)+2))
-names(Deltas) <- c("GCM", "RCP", variables)
+Future_Monthly <- Baseline_Monthly
 
+Baseline_Annual <- expand.grid(GCMs,historical.period); names(Baseline_Annual) <- c("GCM","Year")
+Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
+
+Future_Annual <- expand.grid(GCMs,future.period); names(Future_Annual) <- c("GCM","Year")
+Future_Annual <- merge(Future_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
+
+Daymet_Annual <- data.frame(GCM = "Daymet", CF = "Historical")
 
 ```
 
