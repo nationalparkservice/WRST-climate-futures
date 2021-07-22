@@ -5,15 +5,10 @@ for (G in 1:length(GCMs)){
   # stars objs
   cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
   cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
-  cropped_st_grid <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
   # assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
   # assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
-  # assign(cropped_st_grid,paste0("cropped_st_grid_",GCMs[G]))
-  
+
     # Annual Tmean ----
-  
-    #Tmean
-    
     var = "Annual.tmeanF"
     hist_var <- list()
     
@@ -33,28 +28,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-      s = select(s, tmean)
-      grid_var[[F]] = s[,,,] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var)
-    grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -64,10 +45,7 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,future,by="GCM",all=TRUE)
-    
+
     # Annual Precip ----
     var = "Annual.precipIn"
     hist_var <- list()
@@ -86,27 +64,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,] #set for months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, pcp)
-      grid_var[[F]] = s[,,,] #set for months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var)
-    grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
-    grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
-
     sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
     sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-    sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
     delta <- sum_fut - sum_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -116,9 +81,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(sum_fut$sum, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,future,by="GCM",all=TRUE)
     
     # DJF Tmean ----
     var = "DJF.tmeanF"
@@ -140,28 +102,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,c(1:2,12)] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-      s = select(s, tmean)
-      grid_var[[F]] = s[,,,c(1:2,12)] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -172,9 +120,6 @@ for (G in 1:length(GCMs)){
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
 
-    grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
-    
     # MAM Tmean ----
     var = "MAM.tmeanF"
     hist_var <- list()
@@ -195,28 +140,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,3:5] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-      s = select(s, tmean)
-      grid_var[[F]] = s[,,,3:5] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -226,9 +157,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # JJA Tmean ----
     var = "JJA.tmeanF"
@@ -250,28 +178,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,6:8] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-      s = select(s, tmean)
-      grid_var[[F]] = s[,,,6:8] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -281,9 +195,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # SON Tmean ----
     var = "SON.TmeanF"
@@ -305,28 +216,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,9:11] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-      s = select(s, tmean)
-      grid_var[[F]] = s[,,,9:11] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-    grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -336,9 +233,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # DJF Tmax ----
     var = "DJF.tmaxF"
@@ -358,27 +252,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,c(1:2,12)] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmax)
-      grid_var[[F]] = s[,,,c(1:2,12)] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
-    grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -388,9 +269,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # MAM Tmax ----
     var = "MAM.tmaxF"
@@ -410,27 +288,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,3:5] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmax)
-      grid_var[[F]] = s[,,,3:5] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var)
-    grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
-    grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -440,9 +305,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # JJA Tmax ----
     var = "JJA.tmaxF"
@@ -462,27 +324,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,6:8] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmax)
-      grid_var[[F]] = s[,,,6:8] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
-    grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -492,9 +341,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # SON Tmax ----
     var = "SON.TmaxF"
@@ -514,27 +360,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,9:11] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmax)
-      grid_var[[F]] = s[,,,9:11] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
-    grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -544,9 +377,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # DJF Tmin ----
     var = "DJF.tminF"
@@ -566,27 +396,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,c(1:2,12)] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmin)
-      grid_var[[F]] = s[,,,c(1:2,12)] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
-    grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -596,9 +413,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # MAM Tmin ----
     var = "MAM.tminF"
@@ -618,27 +432,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,3:5] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmin)
-      grid_var[[F]] = s[,,,3:5] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
-    grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -648,9 +449,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # JJA Tmin ----
     var = "JJA.tminF"
@@ -670,27 +468,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,6:8] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmin)
-      grid_var[[F]] = s[,,,6:8] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
-    grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -700,9 +485,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # SON Tmin ----
     var = "SON.TminF"
@@ -722,27 +504,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,9:11] #all months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, tmin)
-      grid_var[[F]] = s[,,,9:11] #all months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
-    grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
-    
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
-    mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -752,9 +521,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(mean_fut$mean, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # DJF Precip ----
     var = "DJF.precipIn"
@@ -774,27 +540,14 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,c(1:2,12)] #set for months
     }
     
-    grid_var <- list()
-    
-    for(F in 1:length(cropped_st_grid)){
-      s = cropped_st_grid[[F]]
-      s = select(s, pcp)
-      grid_var[[F]] = s[,,,c(1:2,12)] #set for months
-    }
-    
     hist_var_stars <- Reduce(c, hist_var)
     hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
     
     fut_var_stars <- Reduce(c, fut_var) 
     fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
     
-    grid_var_stars <- Reduce(c, grid_var) 
-    grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
-    grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
-    
     sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
     sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-    sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
     delta <- sum_fut - sum_hist
     saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
     
@@ -804,9 +557,6 @@ for (G in 1:length(GCMs)){
     
     future <- data.frame(GCM=GCMs[G], var = mean(sum_fut$sum, na.rm=TRUE));  names(future)[2] <- var
     Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-    
-    grid <- data.frame(GCM=GCMs[G], var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
-    Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
     
     # MAM Precip ----
   var = "MAM.precipIn"
@@ -826,27 +576,14 @@ for (G in 1:length(GCMs)){
     fut_var[[F]] = s[,,,3:5] #set for months
   }
   
-  grid_var <- list()
-  
-  for(F in 1:length(cropped_st_grid)){
-    s = cropped_st_grid[[F]]
-    s = select(s, pcp)
-    grid_var[[F]] = s[,,,3:5] #set for months
-  }
-  
   hist_var_stars <- Reduce(c, hist_var)
   hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
   
   fut_var_stars <- Reduce(c, fut_var) 
   fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
   
-  grid_var_stars <- Reduce(c, grid_var) 
-  grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
-  grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
-  
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-  sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
   saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
   
@@ -856,9 +593,6 @@ for (G in 1:length(GCMs)){
   
   future <- data.frame(GCM=GCMs[G], var = mean(sum_fut$sum, na.rm=TRUE));  names(future)[2] <- var
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-  
-  grid <- data.frame(GCM=GCMs[G], var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
-  Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
   
     # JJA precip ----
   var = "JJA.precipIn"
@@ -878,27 +612,14 @@ for (G in 1:length(GCMs)){
     fut_var[[F]] = s[,,,6:8] #set for months
   }
   
-  grid_var <- list()
-  
-  for(F in 1:length(cropped_st_grid)){
-    s = cropped_st_grid[[F]]
-    s = select(s, pcp)
-    grid_var[[F]] = s[,,,6:8] #set for months
-  }
-  
   hist_var_stars <- Reduce(c, hist_var)
   hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
   
   fut_var_stars <- Reduce(c, fut_var) 
   fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
   
-  grid_var_stars <- Reduce(c, grid_var) 
-  grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
-  grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
-  
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-  sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
   saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
   
@@ -908,9 +629,6 @@ for (G in 1:length(GCMs)){
   
   future <- data.frame(GCM=GCMs[G], var = mean(sum_fut$sum, na.rm=TRUE));  names(future)[2] <- var
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-  
-  grid <- data.frame(GCM=GCMs[G], var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
-  Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
   
     # SON Precip ----
   var = "SON.precipIn"
@@ -930,27 +648,14 @@ for (G in 1:length(GCMs)){
     fut_var[[F]] = s[,,,9:11] #set for months
   }
   
-  grid_var <- list()
-  
-  for(F in 1:length(cropped_st_grid)){
-    s = cropped_st_grid[[F]]
-    s = select(s, pcp)
-    grid_var[[F]] = s[,,,9:11] #set for months
-  }
-  
   hist_var_stars <- Reduce(c, hist_var)
   hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
   
   fut_var_stars <- Reduce(c, fut_var) 
   fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
   
-  grid_var_stars <- Reduce(c, grid_var) 
-  grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
-  grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
-  
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
-  sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
   
   #### Add values to Means dfs
@@ -959,10 +664,6 @@ for (G in 1:length(GCMs)){
   
   future <- data.frame(GCM=GCMs[G], var = mean(sum_fut$sum, na.rm=TRUE));  names(future)[2] <- var
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
-  
-  grid <- data.frame(GCM=GCMs[G], var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
-  Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
-
 }
 
 rm(hist_var, fut_var, grid_var, hist_var_stars, fut_var_stars, grid_var_stars, sum_hist, sum_fut, sum_grid, 
