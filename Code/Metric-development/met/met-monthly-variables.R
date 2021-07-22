@@ -666,6 +666,359 @@ for (G in 1:length(GCMs)){
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
 }
 
+cropped_st_grid <- readRDS(paste(plot.dir,"cropped_st_hist_Daymet",sep="/"))
+
+# Annual Tmean ----
+var = "Annual.tmeanF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+  s = select(s, tmean)
+  grid_var[[F]] = s[,,,] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var)
+grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
+grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+Daymet_Annual = 
+  
+  # Annual Precip ----
+var = "Annual.precipIn"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, pcp)
+  grid_var[[F]] = s[,,,] #set for months
+}
+
+grid_var_stars <- Reduce(c, grid_var)
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
+
+sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
+
+grid <- data.frame(GCM="Daymet", var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# DJF Tmean ----
+var = "DJF.tmeanF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+  s = select(s, tmean)
+  grid_var[[F]] = s[,,,c(1:2,12)] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
+grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# MAM Tmean ----
+var = "MAM.tmeanF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+  s = select(s, tmean)
+  grid_var[[F]] = s[,,,3:5] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
+grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# JJA Tmean ----
+var = "JJA.tmeanF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+  s = select(s, tmean)
+  grid_var[[F]] = s[,,,6:8] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
+grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# SON Tmean ----
+var = "SON.TmeanF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+  s = select(s, tmean)
+  grid_var[[F]] = s[,,,9:11] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
+grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# DJF Tmax ----
+var = "DJF.tmaxF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmax)
+  grid_var[[F]] = s[,,,c(1:2,12)] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
+grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# MAM Tmax ----
+var = "MAM.tmaxF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmax)
+  grid_var[[F]] = s[,,,3:5] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var)
+grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
+grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# JJA Tmax ----
+var = "JJA.tmaxF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmax)
+  grid_var[[F]] = s[,,,6:8] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
+grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# SON Tmax ----
+var = "SON.TmaxF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmax)
+  grid_var[[F]] = s[,,,9:11] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmax <- drop_units(grid_var_stars$tmax)
+grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# DJF Tmin ----
+var = "DJF.tminF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmin)
+  grid_var[[F]] = s[,,,c(1:2,12)] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
+grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# MAM Tmin ----
+var = "MAM.tminF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmin)
+  grid_var[[F]] = s[,,,3:5] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
+grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# JJA Tmin ----
+var = "JJA.tminF"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmin)
+  grid_var[[F]] = s[,,,6:8] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
+grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# SON Tmin ----
+var = "SON.TminF"
+hist_var <- list()
+
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, tmin)
+  grid_var[[F]] = s[,,,9:11] #all months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$tmin <- drop_units(grid_var_stars$tmin)
+grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_var_stars
+
+mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
+
+grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# DJF Precip ----
+var = "DJF.precipIn"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, pcp)
+  grid_var[[F]] = s[,,,c(1:2,12)] #set for months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
+
+sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
+
+grid <- data.frame(GCM="Daymet", var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# MAM Precip ----
+var = "MAM.precipIn"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, pcp)
+  grid_var[[F]] = s[,,,3:5] #set for months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
+
+sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
+
+grid <- data.frame(GCM="Daymet", var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# JJA precip ----
+var = "JJA.precipIn"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, pcp)
+  grid_var[[F]] = s[,,,6:8] #set for months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
+
+sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
+
+grid <- data.frame(GCM="Daymet", var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+# SON Precip ----
+var = "SON.precipIn"
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, pcp)
+  grid_var[[F]] = s[,,,9:11] #set for months
+}
+
+grid_var_stars <- Reduce(c, grid_var) 
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
+
+sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
+
+grid <- data.frame(GCM="Daymet", var = mean(sum_grid$sum, na.rm=TRUE));  names(grid)[2] <- var
+Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
+
+
 rm(hist_var, fut_var, grid_var, hist_var_stars, fut_var_stars, grid_var_stars, sum_hist, sum_fut, sum_grid, 
    delta,mean_hist,mean_fut,mean_grid, baseline,future, cropped_fut,cropped_hist,cropped_grid,
    cropped_st_fut,cropped_st_hist,cropped_st_grid,l,nc,nc_crop,s)
