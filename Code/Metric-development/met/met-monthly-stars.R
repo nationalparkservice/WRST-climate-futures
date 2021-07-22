@@ -7,7 +7,6 @@ for (G in 1:length(GCMs)){
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
-    grid_filelist = list.files(path = paste(data.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
     
     model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
     dir.create(model.dir,showWarnings=FALSE)
@@ -75,38 +74,40 @@ for (G in 1:length(GCMs)){
     }
     # assign(paste0("cropped_st_fut_",GCMs[G]), cropped_st_fut)
     saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",GCMs[G]),sep="/"))
-    
-    
-      # DAYMET ----
-    
-    l <- list() # Create a list to put the stars objects into
-    
-    for(i in 1:length(grid_filelist)){
-      invisible(capture.output(
-        suppressWarnings(
-        l[[i]] <- read_stars(grid_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )))
-    }
-    
-    # Crop
-    
-    cropped_grid <- list() # create list for cropped stars objects
-    
-    for(i in 1:length(l)){ # add cropped stars objects to a new list
-      nc = l[[i]]
-      nc = st_transform(nc, st_crs(shp))
-      nc_crop = nc[shp]
-      cropped_grid[[i]] = nc_crop
-    }
-    
-   cropped_st_grid <- list()
-    
-    for(i in 1:length(cropped_grid)){
-      cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
-    }
-   # assign(paste0("cropped_st_grid_",GCMs[G]), cropped_st_grid)
-   saveRDS(cropped_st_grid, file = paste(model.dir,paste0("cropped_st_grid_",GCMs[G]),sep="/"))
 }
+print("extracting Daymet")
+grid_filelist = list.files(path = paste(data.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
+
+# DAYMET ----
+
+l <- list() # Create a list to put the stars objects into
+
+for(i in 1:length(grid_filelist)){
+  invisible(capture.output(
+    suppressWarnings(
+      l[[i]] <- read_stars(grid_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+    )))
+}
+
+# Crop
+
+cropped_grid <- list() # create list for cropped stars objects
+
+for(i in 1:length(l)){ # add cropped stars objects to a new list
+  nc = l[[i]]
+  nc = st_transform(nc, st_crs(shp))
+  nc_crop = nc[shp]
+  cropped_grid[[i]] = nc_crop
+}
+
+cropped_st_grid <- list()
+
+for(i in 1:length(cropped_grid)){
+  cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
+}
+# assign(paste0("cropped_st_grid_",GCMs[G]), cropped_st_grid)
+saveRDS(cropped_st_grid, file = paste(model.dir,paste0("cropped_st_grid_",GCMs[G]),sep="/"))
+
 
 rm(cropped_st_grid,cropped_st_fut,cropped_st_fut,cropped_fut,cropped_grid,cropped_hist,nc_crop,nc,l,nc,s)
 
