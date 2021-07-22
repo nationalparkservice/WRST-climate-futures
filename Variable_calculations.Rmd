@@ -71,7 +71,8 @@ Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
 Future_Annual <- expand.grid(GCMs,future.period); names(Future_Annual) <- c("GCM","Year")
 Future_Annual <- merge(Future_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
 
-# Daymet_Annual <- data.frame(GCM = "Daymet", CF = "Historical")
+Daymet_Annual <- expand.grid("Daymet",seq(1980,2016,1)); names(Daymet_Annual) <- c("GCM","Year")
+Daymet_Annual$CF <- "Historical"
 
 ```
 
