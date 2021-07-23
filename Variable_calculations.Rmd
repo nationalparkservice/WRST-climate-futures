@@ -24,6 +24,7 @@ plot.dir <- "C:/Users/achildress/Documents/wrst_temp/stars_objs"
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
+daymet.period <- as.character(seq(1980,2016,1))
 
 area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
 
@@ -71,7 +72,7 @@ Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
 Future_Annual <- expand.grid(GCMs,future.period); names(Future_Annual) <- c("GCM","Year")
 Future_Annual <- merge(Future_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
 
-Daymet_Annual <- expand.grid("Daymet",seq(1980,2016,1)); names(Daymet_Annual) <- c("GCM","Year")
+Daymet_Annual <- expand.grid("Daymet",daymet.period); names(Daymet_Annual) <- c("GCM","Year")
 Daymet_Annual$CF <- "Historical"
 
 ```
