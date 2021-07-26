@@ -666,7 +666,7 @@ for (G in 1:length(GCMs)){
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
 }
 
-cropped_st_grid <- readRDS(paste(plot.dir,"cropped_st_hist_Daymet",sep="/"))
+cropped_st_grid <- readRDS(paste(plot.dir,"cropped_st_Daymet",sep="/"))
 
 # Annual Tmean ----
 var = "Annual.tmeanF"
@@ -687,8 +687,7 @@ mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
 grid <- data.frame(GCM="Daymet", var = mean(mean_grid$mean, na.rm=TRUE));  names(grid)[2] <- var
 Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
-Daymet_Annual = 
-  
+
   # Annual Precip ----
 var = "Annual.precipIn"
 grid_var <- list()
