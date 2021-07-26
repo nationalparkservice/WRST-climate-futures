@@ -1,10 +1,10 @@
 for (G in 1:length(GCMs)){
   gcm = GCMs[G]
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-  model.dir <- paste0(plot.dir,"/",GCMs[G])
+  model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
-  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
+  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
+  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
   # assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
   # assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
 
@@ -37,7 +37,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -73,7 +73,7 @@ for (G in 1:length(GCMs)){
     sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
     sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
     delta <- sum_fut - sum_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(sum_hist$sum, na.rm=TRUE));  names(baseline)[2] <- var
@@ -111,7 +111,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -149,7 +149,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -187,7 +187,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -225,7 +225,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -261,7 +261,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -297,7 +297,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -333,7 +333,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -369,7 +369,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -405,7 +405,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -441,7 +441,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -477,7 +477,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -513,7 +513,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(mean_hist$mean, na.rm=TRUE));  names(baseline)[2] <- var
@@ -549,7 +549,7 @@ for (G in 1:length(GCMs)){
     sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
     sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
     delta <- sum_fut - sum_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     baseline <- data.frame(GCM=GCMs[G], var = mean(sum_hist$sum, na.rm=TRUE));  names(baseline)[2] <- var
@@ -585,7 +585,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   baseline <- data.frame(GCM=GCMs[G], var = mean(sum_hist$sum, na.rm=TRUE));  names(baseline)[2] <- var
@@ -621,7 +621,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,GCMs[G],sep="-"),sep="/"))
+  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   baseline <- data.frame(GCM=GCMs[G], var = mean(sum_hist$sum, na.rm=TRUE));  names(baseline)[2] <- var
@@ -657,6 +657,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), sum) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), sum)
   delta <- sum_fut - sum_hist
+  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   baseline <- data.frame(GCM=GCMs[G], var = mean(sum_hist$sum, na.rm=TRUE));  names(baseline)[2] <- var
@@ -666,7 +667,8 @@ for (G in 1:length(GCMs)){
   Future_Monthly = merge(Future_Monthly,future,by="GCM",all=TRUE)
 }
 
-cropped_st_grid <- readRDS(paste(plot.dir,"cropped_st_Daymet",sep="/"))
+model.dir <- paste0(data.dir,"/", "Daymet")
+cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
 
 # Annual Tmean ----
 var = "Annual.tmeanF"
