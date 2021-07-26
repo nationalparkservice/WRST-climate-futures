@@ -16,18 +16,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
 
+area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
+
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot);library(units)
 
 met.dir <- "D:/NCAR_AK/met" 
 vic.dir <- "D:/NCAR_AK/vic_hydro"
 
-data.dir <- "C:/Users/achildress/Documents/wrst_temp/Data"
+working.dir <- "C:/Users/achildress/Documents/wrst_temp/"
+
+data.dir <- paste(working.dir, "Data", area, sep="/")
+  
+dir.create(data.dir,showWarnings=FALSE)
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
 daymet.period <- as.character(seq(1980,2016,1))
 
-area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
+
 
 
 GCMs <- c("inmcm4.rcp85","ACCESS1-3.rcp45","CanESM2.rcp85")
@@ -101,6 +107,8 @@ Loop through vic GCM.rcp and summarize each variable
 ```{r Create vic variables}
 
 source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FALSE) 
+
+# Create tables.dir and save tables as .csv files
 
 save.image(paste0(plot.dir, area,"_T1_environment.RData"))
 
