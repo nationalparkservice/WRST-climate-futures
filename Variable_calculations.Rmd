@@ -88,15 +88,17 @@ Loop through met GCM.rcp and summarize each variable
 ```{r Create met monthly variables, results=hide, eval=TRUE}
 memory.limit(size = 60000)
 
-source(here::here("Code", "Metric-development", "met-monthly-stars.R"),echo = FALSE) 
-source(here:here("Code", "Metric-development", "met-monthly-variables.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "met","met-monthly-stars.R"),echo = FALSE) 
+source(here:here("Code", "Metric-development", "met","met-monthly-variables.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "met","Annual.tmeanF.R"),echo = FALSE) 
+source(here::here("Code", "Metric-development", "met","Annual.precipIn.R"),echo = FALSE) 
 
 ```
 
 ```{r Create met daily variables, results=hide, eval=TRUE}
 
-source(here::here("Code", "Metric-development", "met-daily-stars.R"),echo = FALSE) 
-source(here:here("Code", "Metric-development", "met-daily-variables.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "met","met-daily-stars.R"),echo = FALSE) 
+
 
 
 ```
