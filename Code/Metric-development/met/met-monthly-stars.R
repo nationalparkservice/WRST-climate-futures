@@ -3,7 +3,7 @@ for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
     rcp = sub('.*\\.', '', GCMs[G])
-    path = paste(data.dir,"monthly/BCSD", gcm, rcp, sep = '/')
+    path = paste(met.dir,"monthly/BCSD", gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc', full.names = TRUE)
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
@@ -76,7 +76,7 @@ for (G in 1:length(GCMs)){
     saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",GCMs[G]),sep="/"))
 }
 print("extracting Daymet")
-grid_filelist = list.files(path = paste(data.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
+grid_filelist = list.files(path = paste(met.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
 
 # DAYMET ----
 
