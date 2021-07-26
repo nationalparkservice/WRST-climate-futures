@@ -8,7 +8,7 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
-    model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
+    model.dir <- paste0(data.dir,"/",gcm,".",rcp)
     dir.create(model.dir,showWarnings=FALSE)
     
     print(paste0("extracting ", GCMs[G]))
@@ -43,7 +43,7 @@ for (G in 1:length(GCMs)){
     }
     
     # assign(paste0("cropped_st_hist_",GCMs[G]), cropped_st_hist)
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_",GCMs[G]),sep="/"))
+    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
     
     
       # FUTURE ----
@@ -73,9 +73,13 @@ for (G in 1:length(GCMs)){
       cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
     }
     # assign(paste0("cropped_st_fut_",GCMs[G]), cropped_st_fut)
-    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",GCMs[G]),sep="/"))
+    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_",gcm,"_",rcp),sep="/"))
 }
 print("extracting Daymet")
+
+model.dir <- paste0(data.dir,"/", "Daymet")
+dir.create(model.dir,showWarnings=FALSE)
+
 grid_filelist = list.files(path = paste(met.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
 
 # DAYMET ----
@@ -106,7 +110,7 @@ for(i in 1:length(cropped_grid)){
   cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
 }
 # assign(paste0("cropped_st_grid_",GCMs[G]), cropped_st_grid)
-saveRDS(cropped_st_grid, file = paste(plot.dir,"cropped_st_grid_Daymet",sep="/"))
+saveRDS(cropped_st_grid, file = paste(model.dir,"cropped_st_grid_Daymet",sep="/"))
 
 
 rm(cropped_st_grid,cropped_st_fut,cropped_st_fut,cropped_fut,cropped_grid,cropped_hist,nc_crop,nc,l,nc,s)
