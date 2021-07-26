@@ -1,5 +1,6 @@
 for (G in 1:length(GCMs)){
-  gcm = GCMs[G]
+  gcm = sub("\\..*", "", GCMs[G])
+  rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
