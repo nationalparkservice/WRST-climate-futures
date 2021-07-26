@@ -23,7 +23,7 @@ library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis
 met.dir <- "D:/NCAR_AK/met" 
 vic.dir <- "D:/NCAR_AK/vic_hydro"
 
-working.dir <- "C:/Users/achildress/Documents/wrst_temp/"
+working.dir <- "C:/Users/achildress/Documents/wrst_temp"
 
 data.dir <- paste(working.dir, "Data", area, sep="/")
   
