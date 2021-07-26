@@ -59,12 +59,11 @@ annual.variables <- c("freeze.thaw","GDD","freq.hot.days","days.below32","days.b
 
 seasons <- factor(c("DJF","MAM","JJA","SON"),levels=c("DJF","MAM","JJA","SON"))
 
-Baseline_Monthly<-expand.grid(GCMs,seasons); names(Baseline_Monthly) <- c("GCM","Season")
-Baseline_Monthly <- merge(Baseline_Monthly,CF_GCM[,c("GCM","CF")],by="GCM")
+Baseline_Monthly<-CF_GCM[,1:2]
 
 Future_Monthly <- Baseline_Monthly
 
-Daymet_Monthly <- data.frame(GCM = rep("Daymet",4),Season = seasons, CF = rep("Historical",4))
+Daymet_Monthly <- data.frame(CF = "Historical",GCM = "Daymet")
 
 Baseline_Annual <- expand.grid(GCMs,historical.period); names(Baseline_Annual) <- c("GCM","Year")
 Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
