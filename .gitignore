@@ -3,6 +3,7 @@
 .Rapp.history
 # Session Data files
 .RData
+.Rds
 # User-specific files
 .Ruserdata
 # Example code in package build process
@@ -27,5 +28,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 data
+Plots
+Data
 WRST-climate-futures.Rproj
 output
