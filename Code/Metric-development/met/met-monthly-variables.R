@@ -1022,6 +1022,5 @@ Daymet_Monthly = merge(Daymet_Monthly,grid,by="GCM",all=TRUE)
 
 
 rm(hist_var, fut_var, grid_var, hist_var_stars, fut_var_stars, grid_var_stars, sum_hist, sum_fut, sum_grid, 
-   delta,mean_hist,mean_fut,mean_grid, baseline,future, cropped_fut,cropped_hist,cropped_grid,
-   cropped_st_fut,cropped_st_hist,cropped_st_grid,l,nc,nc_crop,s)
+   delta,mean_hist,mean_fut,mean_grid, baseline,future)
   
