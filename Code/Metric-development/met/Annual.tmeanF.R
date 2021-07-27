@@ -13,12 +13,17 @@ grid_var_stars <- Reduce(c, grid_var)
 grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
 grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
 
+# t<- as.data.frame(grid_var_stars) # Code we were playing with 7/27
+# t2 <- t %>% group_by(time) %>% summarize(tmean = mean(tmean_f))
+# t2 <- aggregate(tmean_f~time,t,mean)
+
 
 # st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
 
 by_t = "1 year"
 test <- aggregate(grid_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
 test2 <- split(test, "time")
+
 
 df<-data.frame(year=daymet.period,mean=NA)
 for (i in 1:length(daymet.period)){
