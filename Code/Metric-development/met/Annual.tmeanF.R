@@ -1,5 +1,74 @@
-# Annual.tmean
-var = "Annual.tmeanF"
+for (G in 1:length(GCMs)){
+  gcm = sub("\\..*", "", GCMs[G])
+  rcp = sub('.*\\.', '', GCMs[G])
+  # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
+  model.dir <- paste0(data.dir,"/",GCMs[G])
+  # stars objs
+  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
+  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_",gcm,"_",rcp),sep="/"))
+  # assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
+  # assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
+  
+  # Annual Tmean ----
+  var = "Annual.tmeanF"
+  hist_var <- list()
+  
+  for(H in 1:length(cropped_st_hist)){
+    s = cropped_st_hist[[H]]
+    s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+    s = select(s, tmean)
+    hist_var[[H]] = s[,,,] #all months
+  }
+  
+  fut_var <- list()
+  
+  for(F in 1:length(cropped_st_fut)){
+    s = cropped_st_fut[[F]]
+    s %>% mutate(tmean = (tmax + tmin)/2) -> s 
+    s = select(s, tmean)
+    fut_var[[F]] = s[,,,] #all months
+  }
+  
+  hist_var_stars <- Reduce(c, hist_var)
+  hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
+  
+  fut_var_stars <- Reduce(c, fut_var) 
+  fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
+  
+  by_t = "1 year"
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  hist1 <- split(hist, "time")
+  
+  
+  df<-data.frame(year=historical.period,mean=NA)
+  for (i in 1:length(historical.period)){
+    t <-st_apply(hist1[i],1:2,mean)
+    df$mean[i] <- mean(t$mean,na.rm=TRUE)
+  }
+  df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
+  Baseline_Annual <- merge(Baseline_Annual,df,by=c("GCM","Year"),all=TRUE)
+  
+  fut <- aggregate(fut_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  fut1 <- split(fut, "time")
+  
+  df<-data.frame(year=future.period,mean=NA)
+  for (i in 1:length(future.period)){
+    t <-st_apply(fut1[i],1:2,mean)
+    df$mean[i] <- mean(t$mean,na.rm=TRUE)
+  }
+  df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
+  Future_Annual <- merge(Future_Annual,df,by=c("GCM","Year"),all=TRUE)
+  
+  mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
+  mean_fut <- st_apply(fut, c("x", "y"), mean)
+  delta <- mean_fut - mean_hist
+  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+
+}
+
+model.dir <- paste0(data.dir,"/", "Daymet")
+cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
+
 grid_var <- list()
 
 for(F in 1:length(cropped_st_grid)){
@@ -13,37 +82,23 @@ grid_var_stars <- Reduce(c, grid_var)
 grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
 grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
 
-# t<- as.data.frame(grid_var_stars) # Code we were playing with 7/27
-# t2 <- t %>% group_by(time) %>% summarize(tmean = mean(tmean_f))
-# t2 <- aggregate(tmean_f~time,t,mean)
-
-
 # st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
 
-by_t = "1 year"
-test <- aggregate(grid_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-test2 <- split(test, "time")
+grid <- aggregate(grid_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+grid1 <- split(grid, "time")
 
 
 df<-data.frame(year=daymet.period,mean=NA)
 for (i in 1:length(daymet.period)){
-t <-st_apply(test2[i],1:2,mean)
+t <-st_apply(grid1[i],1:2,mean)
 df$mean[i] <- mean(t$mean,na.rm=TRUE)
 }
+df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
+Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
 
 # test2 <- split(test, "time") # ggplot will not work if time is a dimension, so switching to an attribute. Should not matter since time is aggregated here. 
-mean_grid <- st_apply(test, c("x", "y"), mean)
+mean_grid <- st_apply(grid, c("x", "y"), mean)
 saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
 
-# Plot
-
-ggplot() + # Resolution is course
-  geom_stars(data = mean_grid, alpha = 0.8) + 
-  # facet_wrap("time") +
-  # scale_fill_viridis() + 
-  #coord_equal() + 
-  theme_map() +
-  theme(legend.position = "bottom") +
-  theme(legend.key.width = unit(2, "cm"))
-
+rm(grid_var,grid_var_stars,grid,grid1,mean_grid,fut,fut1,fut_var,fut_var_stars,mean_fut,fut,fut1,fut_var,fut_var_stars,mean_fut)
 
