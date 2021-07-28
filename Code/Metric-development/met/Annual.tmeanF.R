@@ -1,3 +1,9 @@
+# Annual Tmean ----
+var = "Annual.tmeanF"
+DF.hist <- data.frame()
+DF.fut <- data.frame()
+
+
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
@@ -9,8 +15,6 @@ for (G in 1:length(GCMs)){
   # assign(cropped_st_hist,paste0("cropped_st_hist_",GCMs[G]))
   # assign(cropped_st_fut,paste0("cropped_st_fut_",GCMs[G]))
   
-  # Annual Tmean ----
-  var = "Annual.tmeanF"
   hist_var <- list()
   
   for(H in 1:length(cropped_st_hist)){
@@ -46,7 +50,8 @@ for (G in 1:length(GCMs)){
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  Baseline_Annual <- merge(Baseline_Annual,df,by=c("GCM","Year"),all=TRUE)
+  DF.hist<-rbind(DF.hist,df)
+
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
   fut1 <- split(fut, "time")
@@ -57,7 +62,8 @@ for (G in 1:length(GCMs)){
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  Future_Annual <- merge(Future_Annual,df,by=c("GCM","Year"),all=TRUE)
+  DF.fut<-rbind(DF.fut,df)
+
   
   mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
   mean_fut <- st_apply(fut, c("x", "y"), mean)
@@ -65,6 +71,8 @@ for (G in 1:length(GCMs)){
   saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
+Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
+Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
 
 model.dir <- paste0(data.dir,"/", "Daymet")
 cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
@@ -100,5 +108,5 @@ Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
 mean_grid <- st_apply(grid, c("x", "y"), mean)
 saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
 
-rm(grid_var,grid_var_stars,grid,grid1,mean_grid,fut,fut1,fut_var,fut_var_stars,mean_fut,fut,fut1,fut_var,fut_var_stars,mean_fut)
+rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
 
