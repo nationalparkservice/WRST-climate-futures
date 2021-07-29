@@ -1,5 +1,5 @@
 # Annual Tmean ----
-var = "Annual.tmeanF"
+var = "Annual.precipIn"
 DF.hist <- data.frame()
 DF.fut <- data.frame()
 
