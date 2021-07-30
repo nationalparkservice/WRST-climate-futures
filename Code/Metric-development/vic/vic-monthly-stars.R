@@ -91,7 +91,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(wf_hist_filelist)){
       invisible(capture.output(
         suppressWarnings(
-          l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) 
+          l[[i]] <- read_stars(wf_hist_filelist[i], sub = c("PRCP","EVAP","SNOW_MELT"), curvilinear = c("longitude", "latitude")) 
         )))
     }
     # Warnings have been suppressed because they do not impact the numerical results. See here:
@@ -122,7 +122,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(wf_fut_filelist)){
       invisible(capture.output(
         suppressWarnings(
-          l[[i]] <- read_stars(wf_fut_filelist[i], sub = c("PRCP","EVAP"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+          l[[i]] <- read_stars(wf_fut_filelist[i], sub = c("PRCP","EVAP","SNOW_MELT"), curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
         )))
     }
     
