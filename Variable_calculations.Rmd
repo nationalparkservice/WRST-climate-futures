@@ -57,7 +57,9 @@ plot(st_geometry(shp))
 
 
 ```
-Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
+
+## Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
+
 ```{r Create empty dataframes}
 
 monthly.variables <- c("Annual.tmeanF","Annual.precipIn","DJF.tmeanF", "MAM.tmeanF", "JJA.tmeanF", "SON.tmeanF","DJF.tmaxF", "MAM.tmaxF", "JJA.tmaxF", "SON.tmaxF","DJF.tminF", "MAM.tminF", "JJA.tminF", "SON.tminF", "DJF.precipIn", "MAM.precipIn", "JJA.precipIn","SON.precipIn")
@@ -83,6 +85,7 @@ Daymet_Annual$CF <- "Historical"
 
 ```
 
+## Met monthly parse and variable creation
 Loop through met GCM.rcp and summarize each variable
 
 ```{r Create met monthly variables, results=hide, eval=TRUE}
@@ -96,16 +99,22 @@ source(here::here("Code", "Metric-development", "met","Annual.precipIn.R"),echo 
 
 ```
 
+## Vic monthly parse and variable creation
+
 ```{r Create vic monthly variables, results=hide, eval=TRUE}
 memory.limit(size = 60000)
 
-source(here::here("Code", "Metric-development", "met","met-monthly-stars.R"),echo = FALSE) 
-source(here::here("Code", "Metric-development", "met","met-monthly-variables.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "vic","vic-monthly-stars.R"),echo = FALSE) 
 
-source(here::here("Code", "Metric-development", "met","Annual.tmeanF.R"),echo = FALSE) 
-source(here::here("Code", "Metric-development", "met","Annual.precipIn.R"),echo = FALSE) 
+source(here::here("Code", "Metric-development", "vic","max.SWE.R"),echo = FALSE) 
+source(here::here("Code", "Metric-development", "vic","MAMSON.SWE.R"),echo = FALSE) 
+source(here::here("Code", "Metric-development", "vic","water.balance.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "vic","SWE.precip.R"),echo = FALSE)
+
 
 ```
+
+## Met daily parse and variable creation
 
 ```{r Create met daily variables, results=hide, eval=TRUE}
 
@@ -115,8 +124,7 @@ source(here::here("Code", "Metric-development", "met","met-daily-stars.R"),echo 
 
 ```
 
-
-Loop through vic GCM.rcp and summarize each variable
+## Vic daily parse and variable creation
 
 ```{r Create vic variables}
 
@@ -127,5 +135,3 @@ source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FAL
 save.image(paste0(plot.dir, area,"_T1_environment.RData"))
 
 ```
-
-
