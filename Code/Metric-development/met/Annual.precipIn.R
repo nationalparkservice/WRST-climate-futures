@@ -1,8 +1,7 @@
-# Annual Tmean ----
+# Annual PrecipIn ----
 var = "Annual.precipIn"
 DF.hist <- data.frame()
 DF.fut <- data.frame()
-
 
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
@@ -19,8 +18,7 @@ for (G in 1:length(GCMs)){
   
   for(H in 1:length(cropped_st_hist)){
     s = cropped_st_hist[[H]]
-    s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-    s = select(s, tmean)
+    s = select(s, pcp)
     hist_var[[H]] = s[,,,] #all months
   }
   
@@ -28,19 +26,18 @@ for (G in 1:length(GCMs)){
   
   for(F in 1:length(cropped_st_fut)){
     s = cropped_st_fut[[F]]
-    s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-    s = select(s, tmean)
+    s = select(s, pcp)
     fut_var[[F]] = s[,,,] #all months
   }
   
   hist_var_stars <- Reduce(c, hist_var)
-  hist_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> hist_var_stars
-  
-  fut_var_stars <- Reduce(c, fut_var) 
-  fut_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> fut_var_stars
-  
+  hist_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> hist_var_stars
+
+  fut_var_stars <- Reduce(c, fut_var)
+  fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
+
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x) *30) #Don't need to divide by #yrs b/c by year
   hist1 <- split(hist, "time")
   
   
@@ -53,7 +50,7 @@ for (G in 1:length(GCMs)){
   DF.hist<-rbind(DF.hist,df)
 
   
-  fut <- aggregate(fut_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x) *30) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
   fut1 <- split(fut, "time")
   
   df<-data.frame(year=future.period,mean=NA)
@@ -81,18 +78,17 @@ grid_var <- list()
 
 for(F in 1:length(cropped_st_grid)){
   s = cropped_st_grid[[F]]
-  s %>% mutate(tmean = (tmax + tmin)/2) -> s 
-  s = select(s, tmean)
+  s = select(s, pcp)
   grid_var[[F]] = s[,,,] #all months
 }
 
 grid_var_stars <- Reduce(c, grid_var)
-grid_var_stars$tmean <- drop_units(grid_var_stars$tmean)
-grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> grid_var_stars
+grid_var_stars$pcp <- drop_units(grid_var_stars$pcp)
+grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_stars
 
 # st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
 
-grid <- aggregate(grid_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) sum(x) *30) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
 grid1 <- split(grid, "time")
 
 
