@@ -1,5 +1,5 @@
-# Annual MAMSON SWE ----
-var = "MAMSON.SWE"
+# Annual SWE:precip  ----
+var = "SWE.precip"
 DF.hist <- data.frame()
 DF.fut <- data.frame()
 
@@ -9,19 +9,19 @@ for (G in 1:length(GCMs)){
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
-  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
-
+  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_wf_",gcm,"_",rcp),sep="/"))
+  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+  
   hist_var <- list()
   
   for(H in 1:length(cropped_st_hist)){
     s = cropped_st_hist[[H]]
-    s = select(s, SWE)
-    if (is.na(summary(s$SWE)[4])) {
+    s = select(s, c(PRCP,SNOW_MELT))
+    if (is.na(summary(s$PRCP)[4] | summary(s$SNOW_MELT)[4])) {
       hist_var[[H]] = hist_var[[H-1]]
       st_dimensions(hist_var[[H]])[3] = st_dimensions(s)[3]
     } else{
-      hist_var[[H]] = s[,,,c(3:5,9:11)] #all months
+      hist_var[[H]] = s[,,,] #all months
     }
   }
   
@@ -29,26 +29,31 @@ for (G in 1:length(GCMs)){
   
   for(F in 1:length(cropped_st_fut)){
     s = cropped_st_fut[[F]]
-    s = select(s, SWE)
-    if (is.na(summary(s$SWE)[4])) {
+    s = select(s, c(PRCP,SNOW_MELT))
+    if (is.na(summary(s$PRCP)[4] | summary(s$SNOW_MELT)[4])) {
       fut_var[[F]] = fut_var[[F-1]]
       st_dimensions(fut_var[[F]])[3] = st_dimensions(s)[3]
     } else{
-      fut_var[[F]] = s[,,,c(3:5,9:11)] #all months
+      fut_var[[F]] = s[,,,] #all months
     }
   }
   
   hist_var_stars <- Reduce(c, hist_var)
-  hist_var_stars$SWE <- drop_units(hist_var_stars$SWE)
-  hist_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> hist_var_stars
+  hist_var_stars <- drop_units(hist_var_stars)
+  hist_var_stars %>% mutate(PRCPf = PRCP / 25.4) %>% select(PRCPf) -> hist_var_stars_prcp
+  hist_var_stars %>% mutate(MELTf = SNOW_MELT / 25.4) %>% select(MELTf) -> hist_var_stars_melt
   
   fut_var_stars <- Reduce(c, fut_var)
   fut_var_stars$SWE <- drop_units(fut_var_stars$SWE)
   fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
 
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
-  hist1 <- split(hist, "time")
+  hist_p <- aggregate(hist_var_stars_prcp, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  hist_p1 <- split(hist_p, "time")
+  hist_m <- aggregate(hist_var_stars_melt, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  hist_m1 <- split(hist_m, "time")
+  
+  ###### melt still greater than precip by a lot
   
   
   df<-data.frame(year=historical.period,mean=NA)
@@ -119,5 +124,6 @@ Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
 mean_grid <- st_apply(grid, c("x", "y"), mean)
 saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
 
-rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
+rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut,
+   cropped_st_hist_ws,cropped_st_fut_ws,cropped_st_grid_ws,cropped_st_hist_wf,cropped_st_fut_wf,cropped_st_grid_wf)
 
