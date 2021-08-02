@@ -8,7 +8,7 @@ test <- readRDS("C:/Users/achildress/Documents/wrst_temp/Data/WRST_simple/inmcm4
 
 
 ggplot() + # Resolution is course
-  geom_stars(data = test, alpha = 0.8) + 
+  geom_stars(data = delta, alpha = 0.8) + 
   # facet_wrap("time") +
   # scale_fill_viridis() + 
   #coord_equal() + 
