@@ -1,4 +1,5 @@
 ## MET MONTHLY
+DF.hist <- data.frame()
 for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
@@ -13,21 +14,73 @@ for (G in 1:length(GCMs)){
     
     print(paste0("extracting ", GCMs[G]))
 
-    # Createing stars objects ####
+    # Creating stars objects ####
     
       # HISTORICAL ----
-    
-    l <- list() # Create a list to put the stars objects into
-    
+    hist_annual <- list() # Create a list to put the stars objects into
     for(i in 1:length(hist_filelist)){
-      suppressMessages(
-      l[[i]] <- read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+      # suppressMessages(
+      yr = as.Date(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
+      hist_star = read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) 
+      hist_star = st_transform(hist_star, st_crs(shp))
+      hist_crop = hist_star[shp]
+      hist_crop = drop_units(hist_crop)
       
-      
-      )
-    }
+      # add Imperial units
+      hist_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
+        mutate(tmin_f = tmin * 9/5 + 32) %>% 
+        mutate(pcp_in = pcp / 25.4) -> hist_crop
     
-    # Crop
+      # add threshold var
+      hist_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
+        mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
+        mutate(under32 = tmin < 0) %>%
+        mutate(month = as.numeric(format(st_get_dimension_values(hist_crop, 'time'),"%m"))) -> hist_threshold
+        # mutate(hot.pctl = quantile(tmax_f,.99,na.rm=TRUE)) 
+
+      freeze.thaw.sum <- st_apply((hist_threshold %>% select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
+      GDD.sum <- st_apply((hist_threshold %>% select(GDD)), c("x", "y"), sum,rename=FALSE)
+      under32.sum <- st_apply((hist_threshold %>% select(under32)), c("x", "y"), sum,rename=FALSE)
+      
+      # Don't know how to add/retain time dimension for year
+      
+      by_t = "1 month"
+      under32.month = aggregate((hist_threshold %>% select(under32)), by = by_t, FUN = sum)
+      # under32.split <- split(under32.month, "time")
+      
+      WSF.below32 <- st_apply(under32.month[,c(1:5,9:12)],c("x", "y"),sum,rename=FALSE)
+      names(WSF.below32) <- "WSF.below32"
+      W.under32 <- st_apply(under32.month[,c(1:2,12)],c("x", "y"),sum,rename=FALSE)
+      names(W.under32) <- "W.under32"
+      
+      
+      hist_annual[[i]]<- annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,WSF.below32,W.under32)
+      
+      ## timeseries df
+      df<-data.frame(GCM = GCMs[G],year = yr)
+      s <- st_apply(annual_thresholds,1:2,mean)
+      df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
+      df$GDD = mean(s$GDD,na.rm=TRUE)
+      df$under32 = mean(s$under.32,na.rm=TRUE)
+      df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
+      df$W.under32 = mean(s$W.under32,na.rm=TRUE)
+
+      DF.hist <- rbind(DF.hist,df)
+      
+      rm(hist_star,hist_crop,hist_threshold,freeze.thaw.sum, GDD.sum, under32.sum, under32.month, WSF.below32,
+         w.under32,s)
+      gc()
+      # )
+    }
+    aggregate(hist_annual,by=,c("x", "y"),FUN=mean)
+    Hist_annual <- Reduce(c,hist_annual)
+    
+    Hist_annual <- st_apply(hist_annual,c("x", "y"),mean)
+    
+    
+      
+      
+      # Crop
     
     cropped_hist <- list() # create list for cropped stars objects
     
