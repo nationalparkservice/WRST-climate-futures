@@ -21,6 +21,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(hist_filelist)){
       # suppressMessages(
       yr = as.Date(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
+      print(yr)
       hist_star = read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) 
       hist_star = st_transform(hist_star, st_crs(shp))
       hist_crop = hist_star[shp]
@@ -61,7 +62,7 @@ for (G in 1:length(GCMs)){
       s <- st_apply(annual_thresholds,1:2,mean)
       df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
       df$GDD = mean(s$GDD,na.rm=TRUE)
-      df$under32 = mean(s$under.32,na.rm=TRUE)
+      df$under32 = mean(s$under32,na.rm=TRUE)
       df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
       df$W.under32 = mean(s$W.under32,na.rm=TRUE)
 
@@ -72,11 +73,16 @@ for (G in 1:length(GCMs)){
       gc()
       # )
     }
+    
     aggregate(hist_annual,by=,c("x", "y"),FUN=mean)
     Hist_annual <- Reduce(c,hist_annual)
     
     Hist_annual <- st_apply(hist_annual,c("x", "y"),mean)
     
+    H <- data.frame(hist_annual)
+    H_sf<-sf::st_as_sf(H,coords = c("x", "y"), crs = 3338)
+    plot(st_geometry(H_sf))
+    plot(st_geometry(H_sf$GDD))
     
       
       
