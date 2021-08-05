@@ -1,6 +1,7 @@
 ## MET MONTHLY
 DF.hist <- data.frame()
-for (G in 1:length(GCMs)){
+# for (G in 1:length(GCMs)){
+G = 1
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
     rcp = sub('.*\\.', '', GCMs[G])
@@ -74,6 +75,8 @@ for (G in 1:length(GCMs)){
       # )
     }
     
+    
+    ##### TESTING COMBINING STARS LIST
     aggregate(hist_annual,by=,c("x", "y"),FUN=mean)
     Hist_annual <- Reduce(c,hist_annual)
     
