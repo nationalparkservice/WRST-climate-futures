@@ -18,7 +18,7 @@ for (G in 1:length(GCMs)){
     
       # HISTORICAL ----
     hist_annual <- list() # Create a list to put the stars objects into
-    for(i in 1:length(hist_filelist)){
+    for(i in 1:2){
       # suppressMessages(
       yr = as.Date(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
       print(yr)
@@ -81,8 +81,12 @@ for (G in 1:length(GCMs)){
     
     H <- data.frame(hist_annual)
     H_sf<-sf::st_as_sf(H,coords = c("x", "y"), crs = 3338)
-    plot(st_geometry(H_sf))
-    plot(st_geometry(H_sf$GDD))
+    # plot(st_geometry(H_sf))
+    # plot(st_geometry(H_sf$GDD))
+    plot(H_sf) #works
+    H_aggregate_ft <- H_sf %>%
+      group_by(geometry) %>% summarise(freeze.thaw,mean)
+    
     
       
       
