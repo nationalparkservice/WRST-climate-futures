@@ -21,7 +21,7 @@ G = 1
     hist_annual <- list() # Create a list to put the stars objects into
     for(i in 1:2){
       # suppressMessages(
-      yr = as.Date(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
+      yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
       print(yr)
       hist_star = read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) 
       hist_star = st_transform(hist_star, st_crs(shp))
@@ -58,6 +58,7 @@ G = 1
       
       hist_annual[[i]]<- annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,WSF.below32,W.under32)
       
+      
       ## timeseries df
       df<-data.frame(GCM = GCMs[G],year = yr)
       s <- st_apply(annual_thresholds,1:2,mean)
@@ -77,8 +78,71 @@ G = 1
     
     
     ##### TESTING COMBINING STARS LIST
+    l = list()
+    l[[1]]<-AT
+    l[[2]]<-AT
+    names(l) = c(historical.period[1:2])
+    l[[1]] = st_redimension(l[[1]])
+    l[[2]] = st_redimension(l[[2]])
+
+    l = do.call(c, l)
+    
+    # Attributes to 4th dimension
+    names(r) = basename(paths)
+    r = st_redimension(r)
+    
+    # Clean dimension names
+    r = st_set_dimensions(r, names = c("x", "y", "variable", "period"))
+    r
+
+    
+    
+    names(hist_annual) = c(historical.period[1:2])
+    r = c(do.call("c", hist_annual))
+    merge(s)r = do.call("c", hist_annual)                                                                                                        
+    r = st_redimension(r) 
+
+    
+    freeze.thaw.sum %>% 
+      st_redimension(
+        new_dims = st_dimensions(x = 1:299, y = 1:209,year=yr)) -> AT
+    AT
+    
+    freeze.thaw.sum %>% 
+      st_redimension(
+        new_dims = st_dimensions(x = 1:299, y = 1:209,year=
+                                   as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[2])),format="%Y"))) -> AT2
+    AT2
+    
+    l=list()
+    l[[1]] <- AT
+    l[[2]] <- AT2
+    
+    
+    st_apply(l, c("x", "y"), sum, rename=FALSE)
+    
+    
+    
+    st_get_dimension_values(AT,3)
+    st_dimensions(annual_thresholds)[1]
+    st_dimensions(AT)["year"]
+st_dimensions(AT,"x")
+    AT <- st_set_dimensions(AT,2,point=FALSE)
+    AT <-  st_set_dimensions(AT, 3, from=1,to=1,offset=NA,delta=NA,refsys=POSIXct, point = NA, values=yr)
+    
+    AT = st_set_dimensions(AT, names = c("x", "y", "year"))
+
+    plot(annual_thresholds[1])
+    plot(AT[1])
+    dim(annual_thresholds)
+    
+    
+    c = c(jan, feb, along=3)
+    mean_two_month = st_apply(c, c("x", "y"), mean)
+    
     aggregate(hist_annual,by=,c("x", "y"),FUN=mean)
-    Hist_annual <- Reduce(c,hist_annual)
+   
+     Hist_annual <- Reduce(c,hist_annual)
     
     Hist_annual <- st_apply(hist_annual,c("x", "y"),mean)
     
@@ -88,7 +152,9 @@ G = 1
     # plot(st_geometry(H_sf$GDD))
     plot(H_sf) #works
     H_aggregate_ft <- H_sf %>%
-      group_by(geometry) %>% summarise(freeze.thaw,mean)
+      group_by(x.1) %>% summarize(ft = mean(freeze.thaw,na.rm=TRUE))
+
+    
     
     
       
