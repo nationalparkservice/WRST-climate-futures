@@ -48,6 +48,7 @@ for (G in 1:length(GCMs)){
 
   by_t = "1 year"
   hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  hist <- hist[,2:51,,]
   hist1 <- split(hist, "time")
   
   
@@ -61,6 +62,7 @@ for (G in 1:length(GCMs)){
 
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  fut <- fut[,2:32,,]
   fut1 <- split(fut, "time")
   
   df<-data.frame(year=future.period,mean=NA)
@@ -78,8 +80,10 @@ for (G in 1:length(GCMs)){
   saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
-Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
-Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
+# Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
+# Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
+write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
+write.csv(DF.fut,paste0(data.dir,"/Annual_fut",var,".csv"),row.names=FALSE)
 
 model.dir <- paste0(data.dir,"/", "Daymet")
 cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet_wf",sep="/"))
@@ -113,11 +117,12 @@ t <-st_apply(grid1[i],1:2,mean)
 df$mean[i] <- mean(t$mean,na.rm=TRUE)
 }
 df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
+# Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
 
 # test2 <- split(test, "time") # ggplot will not work if time is a dimension, so switching to an attribute. Should not matter since time is aggregated here. 
 mean_grid <- st_apply(grid, c("x", "y"), mean)
 saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
+write.csv(df,paste0(data.dir,"/Annual_daymet",var,".csv"),row.names=FALSE)
 
 rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
-
+gc()

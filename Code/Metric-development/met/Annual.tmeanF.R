@@ -55,7 +55,7 @@ for (G in 1:length(GCMs)){
 
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = mean, na.omit = TRUE) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-  fut <- fut[,2:31,,]
+  fut <- fut[,2:32,,]
   fut1 <- split(fut, "time")
   
   df<-data.frame(year=future.period,mean=NA)
