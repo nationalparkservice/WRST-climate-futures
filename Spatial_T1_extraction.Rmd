@@ -18,14 +18,18 @@ rm(list = ls())
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(ggbiplot)
 
+area <- 'wrst_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
+
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
-plot.dir <- "C:/Users/achildress/Documents/wrst_temp/"
+plot.dir <- paste0("C:/Users/achildress/Documents/wrst_temp/",area)
+
+dir.create(plot.dir,showWarnings=FALSE)
 
 historical.period <- as.character(seq(1950,1999,1))
 future.period <- as.character(seq(2025,2055,1))
 
-area <- 'copper_plateau' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
+
 
 
 GCMs <- list.files(path = data.dir)
@@ -42,7 +46,7 @@ GCM.RCP <- sort(apply(expand.grid(GCMs, RCPs), 1, paste, collapse="."))
 boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/Climate futures development/Data/Boundary_shapefiles/"
 shp <- st_read(paste0(boundary.dir, area, ".shp")) # Wrangell Mountains
 shp <- st_transform(shp, 3338)
-plot(st_geometry(shp))
+# plot(st_geometry(shp))
 
 
 ```
@@ -86,6 +90,9 @@ save.image(paste0(plot.dir, area,"_T1_environment.RData"))
 Run PCA and create scatterplots for T1 variables
 ```{r Run PCA}
 # Run scatterplot
+PlotWidth = 15
+PlotHeight = 9
+
 scatterplot <- function(df, X, Y, title,xaxis,yaxis){
   plot <- ggplot(data=df, aes(x={{ X }}, y={{ Y }}))  +
   geom_text_repel(aes(label=paste(GCM,RCP,sep="."))) +
@@ -105,8 +112,13 @@ scatterplot <- function(df, X, Y, title,xaxis,yaxis){
   plot
 }
 scatterplot(df=Deltas,X=Tmean_F,Y=Precip_in,title="Tmean vs Precip scatterplot",xaxis="Avg Annual Temp (F)",yaxis="Avg Annual Precip (in)")
+ggsave("Scatter_Tmean-pcp.png", path = plot.dir, width = PlotWidth, height = PlotHeight)
+
 scatterplot(df=Deltas,X=DJF_TmeanF,Y=Annual_max_SWE,title="Winter temp vs max SWE scatterplot",xaxis="Avg DJF Temp (F)",yaxis="Avg MAX SWE (in)")
+ggsave("Scatter_DJFTmean-MaxSWE.png", path = plot.dir, width = PlotWidth, height = PlotHeight)
+
 scatterplot(df=Deltas,X=JJA_TmeanF,Y=water_balance,title="Summer Tmean vs water balance scatterplot",xaxis="Avg JJA Tmean (F)",yaxis="Avg Annual Water Balance (in)")
+ggsave("Scatter_JJATmean-WB.png", path = plot.dir, width = PlotWidth, height = PlotHeight)
 
 # PCA df setup
 head(Deltas)
@@ -123,6 +135,7 @@ str(PCA)
 
 
 ggbiplot(PCA, labels=rownames(Deltas.rownames))
+ggsave("PCA-plot.png", path = plot.dir, width = PlotWidth, height = PlotHeight)
 
 pca.x<-as.data.frame(PCA$x)
 
