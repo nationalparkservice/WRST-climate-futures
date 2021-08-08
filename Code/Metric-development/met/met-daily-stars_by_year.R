@@ -1,7 +1,7 @@
 ## MET MONTHLY
 DF.hist <- data.frame()
-# for (G in 1:length(GCMs)){
-G = 1
+DF.fut <- data.frame()
+for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
     rcp = sub('.*\\.', '', GCMs[G])
@@ -19,7 +19,7 @@ G = 1
     
       # HISTORICAL ----
     hist_annual <- list() # Create a list to put the stars objects into
-    for(i in 1:2){
+    for(i in ){
       # suppressMessages(
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
       print(yr)
