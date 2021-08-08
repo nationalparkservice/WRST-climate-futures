@@ -19,7 +19,7 @@ for (G in 1:length(GCMs)){
     
       # HISTORICAL ----
     hist_annual <- list() # Create a list to put the stars objects into
-    for(i in ){
+    for(i in length()){
       # suppressMessages(
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
       print(yr)
