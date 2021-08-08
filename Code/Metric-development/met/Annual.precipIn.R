@@ -37,7 +37,8 @@ for (G in 1:length(GCMs)){
   fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
 
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x) *30) #Don't need to divide by #yrs b/c by year
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x) *30) # *30 bc mean daily, want mean monthly
+  hist <- hist[,2:51,,]
   hist1 <- split(hist, "time")
   
   
@@ -50,7 +51,8 @@ for (G in 1:length(GCMs)){
   DF.hist<-rbind(DF.hist,df)
 
   
-  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x) *30) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x) *30) # *30 bc mean daily, want mean monthly
+  fut <- fut[,2:31,,]
   fut1 <- split(fut, "time")
   
   df<-data.frame(year=future.period,mean=NA)
@@ -68,8 +70,10 @@ for (G in 1:length(GCMs)){
   saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
-Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
-Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
+# Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
+# Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
+write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
+write.csv(DF.fut,paste0(data.dir,"/Annual_fut",var,".csv"),row.names=FALSE)
 
 model.dir <- paste0(data.dir,"/", "Daymet")
 cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
@@ -89,6 +93,7 @@ grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_st
 # st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
 
 grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) sum(x) *30) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+grid <- grid[,2:38,,]
 grid1 <- split(grid, "time")
 
 
