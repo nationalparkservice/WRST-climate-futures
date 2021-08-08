@@ -82,7 +82,9 @@ Loop through vic GCM.rcp and summarize each variable
 
 source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FALSE) 
 
-save.image(paste0(plot.dir, area,"_T1_environment.RData"))
+write.csv(Baseline_Means,paste0(plot.dir,"/Baseline_Means-T1.csv"),row.names = FALSE)
+write.csv(Future_Means,paste0(plot.dir,"/Future_Means-T1.csv"),row.names = FALSE)
+write.csv(Deltas,paste0(plot.dir,"/Deltas-T1.csv"),row.names = FALSE)
 
 ```
 
