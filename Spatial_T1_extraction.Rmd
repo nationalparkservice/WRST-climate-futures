@@ -22,7 +22,7 @@ area <- 'wrst_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast
 
 data.dir <- "D:/NCAR_AK/met/monthly/BCSD/" 
 vic.dir <- "D:/NCAR_AK/vic_hydro/monthly/BCSD"
-plot.dir <- paste0("C:/Users/achildress/Documents/wrst_temp/",area)
+plot.dir <- paste0("C:/Users/achildress/Documents/wrst_temp/T1-extraction",area)
 
 dir.create(plot.dir,showWarnings=FALSE)
 
