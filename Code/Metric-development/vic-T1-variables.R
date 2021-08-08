@@ -7,7 +7,7 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
-    model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
+    # model.dir <- paste0(plot.dir,"/",gcm,".",rcp)
     
     # index for df
     GR <- paste(gcm,rcp,sep=".")
@@ -134,23 +134,23 @@ for (G in 1:length(GCMs)){
     Deltas$water_balance[index] = mean(delta$water.balancef, na.rm=TRUE)
     
     
-    # ggplot - delta
-    ggplot() + 
-      geom_stars(data = delta, alpha = 0.8) + 
-      geom_sf(data = shp, aes(), fill = NA) + 
-      scale_fill_viridis(direction=-1, option = "G",begin = .5, end = 1, 
-                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #mako for WB delta
-      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
-      theme(legend.position = "bottom",
-            legend.key.width = unit(2, "cm"),
-            legend.key.height = unit(.2, "cm"),
-            plot.title=element_text(size=12,face="bold",hjust=0.5))
-    
-    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
-    
+    # # ggplot - delta
+    # ggplot() + 
+    #   geom_stars(data = delta, alpha = 0.8) + 
+    #   geom_sf(data = shp, aes(), fill = NA) + 
+    #   scale_fill_viridis(direction=-1, option = "G",begin = .5, end = 1, 
+    #                      guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #mako for WB delta
+    #   labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="mean (F)") +
+    #   theme(legend.position = "bottom",
+    #         legend.key.width = unit(2, "cm"),
+    #         legend.key.height = unit(.2, "cm"),
+    #         plot.title=element_text(size=12,face="bold",hjust=0.5))
+    # 
+    # ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+    # 
     rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta)
     rm(cropped_fut, cropped_hist, cropped_st_fut, cropped_st_hist,l,nc,nc_crop,s,wf_hist_filelist,wf_fut_filelist)
-    
+    gc()
     
     
     
@@ -273,19 +273,19 @@ for (G in 1:length(GCMs)){
     Deltas$Annual_max_SWE[index] = mean(delta$max, na.rm=TRUE)
     
     
-    # ggplot - delta
-    ggplot() + 
-      geom_stars(data = delta, alpha = 0.8) + 
-      geom_sf(data = shp, aes(), fill = NA) + 
-      scale_fill_viridis(direction=1, option = "G",begin = .5, end = 1, 
-                         guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # mako for snow
-      labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
-      theme(legend.position = "bottom",
-            legend.key.width = unit(2, "cm"),
-            legend.key.height = unit(.2, "cm"),
-            plot.title=element_text(size=12,face="bold",hjust=0.5))
-    
-    ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+    # # ggplot - delta
+    # ggplot() + 
+    #   geom_stars(data = delta, alpha = 0.8) + 
+    #   geom_sf(data = shp, aes(), fill = NA) + 
+    #   scale_fill_viridis(direction=1, option = "G",begin = .5, end = 1, 
+    #                      guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # mako for snow
+    #   labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+    #   theme(legend.position = "bottom",
+    #         legend.key.width = unit(2, "cm"),
+    #         legend.key.height = unit(.2, "cm"),
+    #         plot.title=element_text(size=12,face="bold",hjust=0.5))
+    # 
+    # ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
     
     
     var = "MAM-SON SWE (in)"
@@ -332,22 +332,23 @@ for (G in 1:length(GCMs)){
       Future_Means$MAM_SON_SWE[index] = mean(mean_fut$SWEf, na.rm=TRUE)
       Deltas$MAM_SON_SWE[index] = mean(delta$SWEf, na.rm=TRUE)
       
-      # ggplot - delta
-      ggplot() + 
-        geom_stars(data = delta, alpha = 0.8) + 
-        geom_sf(data = shp, aes(), fill = NA) + 
-        scale_fill_viridis(direction=1, option = "G",begin = .5, end = 1, 
-                           guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # mako for snow
-        labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
-        theme(legend.position = "bottom",
-              legend.key.width = unit(2, "cm"),
-              legend.key.height = unit(.2, "cm"),
-              plot.title=element_text(size=12,face="bold",hjust=0.5))
-      
-      ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
+      # # ggplot - delta
+      # ggplot() + 
+      #   geom_stars(data = delta, alpha = 0.8) + 
+      #   geom_sf(data = shp, aes(), fill = NA) + 
+      #   scale_fill_viridis(direction=1, option = "G",begin = .5, end = 1, 
+      #                      guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # mako for snow
+      #   labs(title = paste0("Change in ", var, " -- ", gcm, ".", rcp), fill="inches/year") +
+      #   theme(legend.position = "bottom",
+      #         legend.key.width = unit(2, "cm"),
+      #         legend.key.height = unit(.2, "cm"),
+      #         plot.title=element_text(size=12,face="bold",hjust=0.5))
+      # 
+      # ggsave(paste(var, gcm, rcp, ".png", sep = '_'),path = model.dir, width = 4.5, height=4)
     
     rm(hist_var, fut_var, hist_var_stars, fut_var_stars, sum_hist, sum_fut, delta)
     rm(cropped_fut, cropped_hist, cropped_st_fut, cropped_st_hist,l,nc,nc_crop,s)
+    gc()
     
   }
 }
