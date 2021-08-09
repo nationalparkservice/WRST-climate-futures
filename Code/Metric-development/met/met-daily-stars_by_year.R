@@ -1,5 +1,69 @@
 ## MET MONTHLY
-DF.hist <- data.frame()
+print("extracting Daymet")
+
+model.dir <- paste0(data.dir,"/", "Daymet")
+# dir.create(model.dir,showWarnings=FALSE)
+DF.grid <- data.frame()
+grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc', full.names = TRUE)
+
+# DAYMET ----
+for(i in 1:length(grid_filelist)){
+grid_annual <- list() # Create a list to put the stars objects into
+yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", grid_filelist[i])),format="%Y")
+invisible(capture.output(
+  suppressWarnings(
+    grid_star = read_stars(grid_filelist[i], sub=c("tmax","tmin","pcp") ,curvilinear = c("longitude", "latitude")))))
+grid_star = st_transform(grid_star, st_crs(shp))
+grid_crop = grid_star[shp]
+grid_crop = drop_units(grid_crop)
+rm(grid_star)
+
+# add Imperial units
+grid_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
+  mutate(tmin_f = tmin * 9/5 + 32) %>% 
+  mutate(pcp_in = pcp / 25.4) -> grid_crop
+
+# add threshold var
+grid_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
+  mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
+  mutate(under32 = tmin < 0) %>%
+  mutate(Over20 = tmax > 20)-> grid_threshold
+  # mutate(month = as.numeric(format(st_get_dimension_values(grid_crop, 'time'),"%m"))) 
+  # mutate(hot.pctl = quantile(tmax_f,.99,na.rm=TRUE)) 
+
+freeze.thaw.sum <- st_apply((grid_threshold %>% dplyr::select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
+GDD.sum <- st_apply((grid_threshold %>% dplyr::select(GDD)), c("x", "y"), sum,rename=FALSE)
+under32.sum <- st_apply((grid_threshold %>% dplyr::select(under32)), c("x", "y"), sum,rename=FALSE)
+Over20.sum <- st_apply((grid_threshold %>% dplyr::select(Over20)), c("x", "y"), sum,rename=FALSE)
+
+# Don't know how to add/retain time dimension for year
+
+by_t = "1 month"
+under32.month = aggregate((grid_threshold %>% dplyr::select(under32)), by = by_t, FUN = sum)
+# under32.split <- split(under32.month, "time")
+
+WSF.below32 <- st_apply(under32.month[,c(1:5,9:12)],c("x", "y"),sum,rename=FALSE)
+names(WSF.below32) <- "WSF.below32"
+W.under32 <- st_apply(under32.month[,c(1:2,12)],c("x", "y"),sum,rename=FALSE)
+names(W.under32) <- "W.under32"
+
+# grid_annual[[i]]<- 
+annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32,W.under32)
+
+## timeseries df
+df<-data.frame(GCM = "Daymet",year = yr)
+s <- st_apply(annual_thresholds,1:2,mean)
+df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
+df$GDD = mean(s$GDD,na.rm=TRUE)
+df$under32 = mean(s$under32,na.rm=TRUE)
+df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
+df$W.under32 = mean(s$W.under32,na.rm=TRUE)
+
+DF.grid[[i]] <- df
+}
+write.csv(DF.grid,paste0(data.dir,"/Annual_thresholds_gridmet.csv"),row.names = TRUE)
+
+
 DF.fut <- data.frame()
 for (G in 1:length(GCMs)){
   # setting variables ----
@@ -19,7 +83,7 @@ for (G in 1:length(GCMs)){
     
       # HISTORICAL ----
     hist_annual <- list() # Create a list to put the stars objects into
-    for(i in length()){
+    # for(i in 1:2){
       # suppressMessages(
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
       print(yr)
@@ -209,44 +273,8 @@ st_dimensions(AT,"x")
     # assign(paste0("cropped_st_fut_",GCMs[G]), cropped_st_fut)
     saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_daily_",gcm,"_",rcp),sep="/"))
 }
-print("extracting Daymet")
-
-model.dir <- paste0(data.dir,"/", "Daymet")
-# dir.create(model.dir,showWarnings=FALSE)
-
-grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc', full.names = TRUE)
-
-# DAYMET ----
-
-l <- list() # Create a list to put the stars objects into
-
-for(i in 1:length(grid_filelist)){
-  invisible(capture.output(
-    suppressWarnings(
-      l[[i]] <- read_stars(grid_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-    )))
-}
-
-# Crop
-
-cropped_grid <- list() # create list for cropped stars objects
-
-for(i in 1:length(l)){ # add cropped stars objects to a new list
-  nc = l[[i]]
-  nc = st_transform(nc, st_crs(shp))
-  nc_crop = nc[shp]
-  cropped_grid[[i]] = nc_crop
-}
-
-cropped_st_grid <- list()
-
-for(i in 1:length(cropped_grid)){
-  cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
-}
-# assign(paste0("cropped_st_grid_",GCMs[G]), cropped_st_grid)
-saveRDS(cropped_st_grid, file = paste(model.dir,"cropped_st_Daymet_daily_",sep="/"))
 
 
-rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,cropped_hist,nc_crop,nc,l,nc,s)
-
+rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,nc_crop,nc,l,nc,s)
+gc()
   
