@@ -27,14 +27,14 @@ grid_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
 grid_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
   mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
   mutate(under32 = tmin < 0) %>%
-  mutate(Over20 = tmax > 20)-> grid_threshold
+  mutate(over20 = tmax > 20)-> grid_threshold
   # mutate(month = as.numeric(format(st_get_dimension_values(grid_crop, 'time'),"%m"))) 
   # mutate(hot.pctl = quantile(tmax_f,.99,na.rm=TRUE)) 
 
 freeze.thaw.sum <- st_apply((grid_threshold %>% dplyr::select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
 GDD.sum <- st_apply((grid_threshold %>% dplyr::select(GDD)), c("x", "y"), sum,rename=FALSE)
 under32.sum <- st_apply((grid_threshold %>% dplyr::select(under32)), c("x", "y"), sum,rename=FALSE)
-Over20.sum <- st_apply((grid_threshold %>% dplyr::select(Over20)), c("x", "y"), sum,rename=FALSE)
+over20.sum <- st_apply((grid_threshold %>% dplyr::select(over20)), c("x", "y"), sum,rename=FALSE)
 
 # Don't know how to add/retain time dimension for year
 
@@ -48,7 +48,7 @@ W.under32 <- st_apply(under32.month[,c(1:2,12)],c("x", "y"),sum,rename=FALSE)
 names(W.under32) <- "W.under32"
 
 # grid_annual[[i]]<- 
-annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32,W.under32)
+annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32)
 
 ## timeseries df
 df<-data.frame(GCM = "Daymet",year = yr)
@@ -56,12 +56,17 @@ s <- st_apply(annual_thresholds,1:2,mean)
 df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
 df$GDD = mean(s$GDD,na.rm=TRUE)
 df$under32 = mean(s$under32,na.rm=TRUE)
+df$over20 = mean(s$over20)
 df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
 df$W.under32 = mean(s$W.under32,na.rm=TRUE)
 
 DF.grid[[i]] <- df
+rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32,W.under32,
+   grid_threshold,grid_crop)
+gc()
 }
 write.csv(DF.grid,paste0(data.dir,"/Annual_thresholds_gridmet.csv"),row.names = TRUE)
+
 
 
 DF.fut <- data.frame()
@@ -71,7 +76,6 @@ for (G in 1:length(GCMs)){
     rcp = sub('.*\\.', '', GCMs[G])
     path = paste(met.dir, gcm, rcp, sep = '/')
     file.list = list.files(path = path, pattern = '.nc4', full.names = TRUE)
-    hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
     model.dir <- paste0(data.dir,"/",gcm,".",rcp)
@@ -82,36 +86,38 @@ for (G in 1:length(GCMs)){
     # Creating stars objects ####
     
       # HISTORICAL ----
-    hist_annual <- list() # Create a list to put the stars objects into
-    # for(i in 1:2){
-      # suppressMessages(
-      yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[i])),format="%Y")
+    fut_annual <- list() # Create a list to put the stars objects into
+    for(i in 1:2){
+      yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", fut_filelist[i])),format="%Y")
       print(yr)
-      hist_star = read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) 
-      hist_star = st_transform(hist_star, st_crs(shp))
-      hist_crop = hist_star[shp]
-      hist_crop = drop_units(hist_crop)
+      # invisible(capture.output(
+      #   suppressWarnings(
+      fut_star = read_ncdf(fut_filelist[i], curvilinear = c("longitude", "latitude"))
+      fut_star = st_transform(fut_star, st_crs(shp))
+      fut_crop = fut_star[shp]
+      fut_crop = drop_units(fut_crop)
+      rm(fut_star)
       
       # add Imperial units
-      hist_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
+      fut_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
         mutate(tmin_f = tmin * 9/5 + 32) %>% 
-        mutate(pcp_in = pcp / 25.4) -> hist_crop
+        mutate(pcp_in = pcp / 25.4) -> fut_crop
     
       # add threshold var
-      hist_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
+      fut_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
         mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
         mutate(under32 = tmin < 0) %>%
-        mutate(month = as.numeric(format(st_get_dimension_values(hist_crop, 'time'),"%m"))) -> hist_threshold
-        # mutate(hot.pctl = quantile(tmax_f,.99,na.rm=TRUE)) 
+        mutate(over20 = tmax > 20) -> fut_threshold
 
-      freeze.thaw.sum <- st_apply((hist_threshold %>% select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
-      GDD.sum <- st_apply((hist_threshold %>% select(GDD)), c("x", "y"), sum,rename=FALSE)
-      under32.sum <- st_apply((hist_threshold %>% select(under32)), c("x", "y"), sum,rename=FALSE)
+      freeze.thaw.sum <- st_apply((fut_threshold %>% dplyr::select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
+      GDD.sum <- st_apply((fut_threshold %>% dplyr::select(GDD)), c("x", "y"), sum,rename=FALSE)
+      under32.sum <- st_apply((fut_threshold %>% dplyr::select(under32)), c("x", "y"), sum,rename=FALSE)
+      over20.sum <- st_apply((fut_threshold %>% dplyr::select(over20)), c("x", "y"), sum,rename=FALSE)
       
       # Don't know how to add/retain time dimension for year
       
       by_t = "1 month"
-      under32.month = aggregate((hist_threshold %>% select(under32)), by = by_t, FUN = sum)
+      under32.month = aggregate((fut_threshold %>% dplyr::select(under32)), by = by_t, FUN = sum)
       # under32.split <- split(under32.month, "time")
       
       WSF.below32 <- st_apply(under32.month[,c(1:5,9:12)],c("x", "y"),sum,rename=FALSE)
@@ -120,7 +126,8 @@ for (G in 1:length(GCMs)){
       names(W.under32) <- "W.under32"
       
       
-      hist_annual[[i]]<- annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,WSF.below32,W.under32)
+      # hist_annual[[i]]<- 
+        annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32)
       
       
       ## timeseries df
@@ -129,152 +136,16 @@ for (G in 1:length(GCMs)){
       df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
       df$GDD = mean(s$GDD,na.rm=TRUE)
       df$under32 = mean(s$under32,na.rm=TRUE)
+      df$over20 = mean(s$over20,na.rm=TRUE)
       df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
       df$W.under32 = mean(s$W.under32,na.rm=TRUE)
 
-      DF.hist <- rbind(DF.hist,df)
+      DF.fut <- rbind(DF.fut,df)
       
-      rm(hist_star,hist_crop,hist_threshold,freeze.thaw.sum, GDD.sum, under32.sum, under32.month, WSF.below32,
-         w.under32,s)
+      rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32,W.under32,
+         fut_threshold,fut_crop)
       gc()
       # )
-    }
-    
-    
-    ##### TESTING COMBINING STARS LIST
-    l = list()
-    l[[1]]<-AT
-    l[[2]]<-AT
-    names(l) = c(historical.period[1:2])
-    l[[1]] = st_redimension(l[[1]])
-    l[[2]] = st_redimension(l[[2]])
-
-    l = do.call(c, l)
-    
-    # Attributes to 4th dimension
-    names(r) = basename(paths)
-    r = st_redimension(r)
-    
-    # Clean dimension names
-    r = st_set_dimensions(r, names = c("x", "y", "variable", "period"))
-    r
-
-    
-    
-    names(hist_annual) = c(historical.period[1:2])
-    r = c(do.call("c", hist_annual))
-    merge(s)r = do.call("c", hist_annual)                                                                                                        
-    r = st_redimension(r) 
-
-    
-    freeze.thaw.sum %>% 
-      st_redimension(
-        new_dims = st_dimensions(x = 1:299, y = 1:209,year=yr)) -> AT
-    AT
-    
-    freeze.thaw.sum %>% 
-      st_redimension(
-        new_dims = st_dimensions(x = 1:299, y = 1:209,year=
-                                   as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", hist_filelist[2])),format="%Y"))) -> AT2
-    AT2
-    
-    l=list()
-    l[[1]] <- AT
-    l[[2]] <- AT2
-    
-    
-    st_apply(l, c("x", "y"), sum, rename=FALSE)
-    
-    
-    
-    st_get_dimension_values(AT,3)
-    st_dimensions(annual_thresholds)[1]
-    st_dimensions(AT)["year"]
-st_dimensions(AT,"x")
-    AT <- st_set_dimensions(AT,2,point=FALSE)
-    AT <-  st_set_dimensions(AT, 3, from=1,to=1,offset=NA,delta=NA,refsys=POSIXct, point = NA, values=yr)
-    
-    AT = st_set_dimensions(AT, names = c("x", "y", "year"))
-
-    plot(annual_thresholds[1])
-    plot(AT[1])
-    dim(annual_thresholds)
-    
-    
-    c = c(jan, feb, along=3)
-    mean_two_month = st_apply(c, c("x", "y"), mean)
-    
-    aggregate(hist_annual,by=,c("x", "y"),FUN=mean)
-   
-     Hist_annual <- Reduce(c,hist_annual)
-    
-    Hist_annual <- st_apply(hist_annual,c("x", "y"),mean)
-    
-    H <- data.frame(hist_annual)
-    H_sf<-sf::st_as_sf(H,coords = c("x", "y"), crs = 3338)
-    # plot(st_geometry(H_sf))
-    # plot(st_geometry(H_sf$GDD))
-    plot(H_sf) #works
-    H_aggregate_ft <- H_sf %>%
-      group_by(x.1) %>% summarize(ft = mean(freeze.thaw,na.rm=TRUE))
-
-    
-    
-    
-      
-      
-      # Crop
-    
-    cropped_hist <- list() # create list for cropped stars objects
-    
-    for(i in 1:length(l)){ # add cropped stars objects to a new list
-      nc = l[[i]]
-      nc = st_transform(nc, st_crs(shp))
-      nc_crop = nc[shp]
-      cropped_hist[[i]] = nc_crop
-    }
-    
-    cropped_st_hist <- list()
-    
-    for(i in 1:length(cropped_hist)){
-      cropped_st_hist[[i]] <- st_as_stars(cropped_hist[[i]])
-    }
-    
-    # assign(paste0("cropped_st_hist_",GCMs[G]), cropped_st_hist)
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_daily_",gcm,"_",rcp),sep="/"))
-    
-    
-      # FUTURE ----
-    
-    l <- list() # Create a list to put the stars objects into
-    
-    for(i in 1:length(fut_filelist)){
-      suppressMessages(
-      l[[i]] <- read_ncdf(fut_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
-    }
-    
-    # Crop
-    
-    cropped_fut <- list() # create list for cropped stars objects
-    
-    for(i in 1:length(l)){ # add cropped stars objects to a new list
-      nc = l[[i]]
-      nc = st_transform(nc, st_crs(shp))
-      nc_crop = nc[shp]
-      cropped_fut[[i]] = nc_crop
-    }
-    
-    cropped_st_fut <- list()
-    
-    for(i in 1:length(cropped_fut)){
-      cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
-    }
-    # assign(paste0("cropped_st_fut_",GCMs[G]), cropped_st_fut)
-    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_daily_",gcm,"_",rcp),sep="/"))
 }
-
-
-rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,nc_crop,nc,l,nc,s)
-gc()
-  
+write.csv(DF.fut,paste0(model.dir,"/Annual_thresholds_",gcm,"_",rcp,".csv"),row.names = TRUE)
+}
