@@ -120,28 +120,7 @@ memory.limit(size = 75000)
 
 
 source(here::here("Code", "Metric-development", "met","met-daily-stars_by_year.R"),echo = FALSE) 
-source(here::here("Code", "Metric-development", "vic","met-daily-stars.R"),echo = FALSE)
-
-
-# freeze.thaw
-# GDD
-# freq.hot.days
-# days.below32
-# WSF.below0
-# W.days.over0
-
-
+source(here::here("Code", "Metric-development", "vic","SWE-runoff-Pr99.R"),echo = FALSE)
 
 ```
 
-## Vic daily parse and variable creation
-
-```{r Create vic variables}
-
-# source(here::here("Code", "Metric-development", "vic-T1-variables.R"),echo = FALSE) 
-# 
-# # Create tables.dir and save tables as .csv files
-# 
-# save.image(paste0(plot.dir, area,"_T1_environment.RData"))
-
-```
