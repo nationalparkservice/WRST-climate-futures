@@ -65,7 +65,7 @@ rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32
    grid_threshold,grid_crop)
 gc()
 }
-write.csv(DF.grid,paste0(data.dir,"/Annual_thresholds_gridmet.csv"),row.names = TRUE)
+write.csv(DF.grid,paste0(model.dir,"/Annual_thresholds_Daymet.csv"),row.names = TRUE)
 
 
 
@@ -87,7 +87,7 @@ for (G in 1:length(GCMs)){
     
       # HISTORICAL ----
     # fut_annual <- list() # Create a list to put the stars objects into
-    for(i in 1:2){
+    for(i in 1:length(future_filelist)){
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", fut_filelist[i])),format="%Y")
       print(yr)
       # invisible(capture.output(
@@ -147,5 +147,5 @@ for (G in 1:length(GCMs)){
       gc()
       # )
 }
-write.csv(DF.fut,paste0(model.dir,"/Annual_thresholds_",gcm,"_",rcp,".csv"),row.names = TRUE)
+write.csv(DF.fut,paste0(data.dir,"/Annual_thresholds_",gcm,"_",rcp,".csv"),row.names = TRUE)
 }
