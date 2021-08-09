@@ -8,7 +8,7 @@ grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc
 
 # DAYMET ----
 for(i in 1:length(grid_filelist)){
-grid_annual <- list() # Create a list to put the stars objects into
+# grid_annual <- list() # Create a list to put the stars objects into
 yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", grid_filelist[i])),format="%Y")
 invisible(capture.output(
   suppressWarnings(
@@ -86,7 +86,7 @@ for (G in 1:length(GCMs)){
     # Creating stars objects ####
     
       # HISTORICAL ----
-    fut_annual <- list() # Create a list to put the stars objects into
+    # fut_annual <- list() # Create a list to put the stars objects into
     for(i in 1:2){
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", fut_filelist[i])),format="%Y")
       print(yr)
