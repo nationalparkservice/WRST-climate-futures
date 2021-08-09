@@ -113,15 +113,15 @@ source(here::here("Code", "Metric-development", "vic","SWE.precip.R"),echo = FAL
 
 ## Met daily parse and variable creation
 
-```{r Create met daily variables, results=hide, eval=TRUE}
+```{r Create daily variables, results=hide, eval=TRUE}
 gc()
 memory.size()
 memory.limit(size = 75000)
 
 
 source(here::here("Code", "Metric-development", "met","met-daily-stars_by_year.R"),echo = FALSE) 
-# source(here::here("Code", "Metric-development", "met","met-daily-stars.R"),echo = FALSE) 
-# source(here::here("Code", "Metric-development", "vic","freeze.thaw.R"),echo = FALSE)
+source(here::here("Code", "Metric-development", "vic","met-daily-stars.R"),echo = FALSE)
+
 
 # freeze.thaw
 # GDD
