@@ -76,8 +76,8 @@ for (G in 1:length(GCMs)){
 # Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
 # Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
 
-write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
-write.csv(DF.fut,paste0(data.dir,"/Annual_fut",var,".csv"),row.names=FALSE)
+write.csv(DF.hist,paste0(data.dir,"/Annual_hist_",var,".csv"),row.names=FALSE)
+write.csv(DF.fut,paste0(data.dir,"/Annual_fut_",var,".csv"),row.names=FALSE)
 
 model.dir <- paste0(data.dir,"/", "Daymet")
 cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
