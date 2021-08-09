@@ -1,129 +1,134 @@
 # Annual SWE:precip  ----
 var = "SWE.precip"
-DF.hist <- data.frame()
-DF.fut <- data.frame()
 
+# DAYMET ----
+model.dir <- paste0(data.dir,"/", "Daymet")
+
+  cropped_st_wf <- readRDS(paste(model.dir,"cropped_st_Daymet_wf",sep="/"))
+  cropped_st_ws <- readRDS(paste(model.dir,"cropped_st_Daymet_ws",sep="/"))
+  
+  grid_var_wf <- list()
+  
+  for(F in 1:length(cropped_st_wf)){
+    s = cropped_st_wf[[F]]
+    s = dplyr::select(s, c(PRCP))
+    if (is.na(summary(s$PRCP)[4])) {
+      grid_var_wf[[F]] = grid_var_wf[[F-1]]
+      st_dimensions(grid_var_wf[[F]])[3] = st_dimensions(s)[3]
+    } else{
+      grid_var_wf[[F]] = s[,,,] #all months
+    }
+  }
+  
+  grid_var_ws <- list()
+  
+  for(F in 1:length(cropped_st_ws)){
+    s = cropped_st_ws[[F]]
+    s = dplyr::select(s, c(SWE))
+    if (is.na(summary(s$SWE)[4])) {
+      grid_var_ws[[F]] = grid_var_ws[[F-1]]
+      st_dimensions(grid_var_ws[[F]])[3] = st_dimensions(s)[3]
+    } else{
+      grid_var_ws[[F]] = s[,,,] #all months
+    }
+  }
+  
+  wf_var <- Reduce(c, grid_var_wf)
+  wf_var <-drop_units(wf_var)
+  wf_var %>% dplyr::select(PRCP) -> var_prcp
+  
+  ws_var <- Reduce(c, grid_var_ws)
+  ws_var <-drop_units(ws_var)
+  ws_var %>% dplyr::select(SWE) -> var_swe
+  
+  by_t = "1 year"
+  p <- aggregate(var_prcp, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  p1 <- split(p, "time")
+  s <- aggregate(var_swe, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
+  s1 <- split(s, "time")
+  
+  ratio1 <- s1[2:38,,]/p1[2:38,,]
+  ratio  <- s[,2:38,,]/p[,2:38,,]
+  r<-st_apply(ratio, c("x", "y"), mean)
+  saveRDS(r, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  
+  df<-data.frame(year=daymet.period,mean=NA)
+  for (i in 1:length(daymet.period)){
+    t <-st_apply(ratio1[i],1:2,mean)
+    df$mean[i] <- mean(t$mean,na.rm=TRUE)
+  }
+  df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
+  write.csv(df,paste0(model.dir,"/Annual_Daymet_",var,".csv"),row.names=FALSE)
+  
+  rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,grid_var_ws,grid_var_wf,cropped_st_wf,cropped_st_ws,r)
+  gc()
+
+# FUTURE ----
+DF.fut <- data.frame()
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_wf_",gcm,"_",rcp),sep="/"))
-  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+  cropped_st_wf <- readRDS(paste(model.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+  cropped_st_ws <- readRDS(paste(model.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
+
+  fut_var_wf <- list()
   
-  hist_var <- list()
-  
-  for(H in 1:length(cropped_st_hist)){
-    s = cropped_st_hist[[H]]
-    s = select(s, c(PRCP,SNOW_MELT))
-    if (is.na(summary(s$PRCP)[4] | summary(s$SNOW_MELT)[4])) {
-      hist_var[[H]] = hist_var[[H-1]]
-      st_dimensions(hist_var[[H]])[3] = st_dimensions(s)[3]
+  for(F in 1:length(cropped_st_wf)){
+    s = cropped_st_wf[[F]]
+    s = dplyr::select(s, c(PRCP))
+    if (is.na(summary(s$PRCP)[4])) {
+      fut_var_wf[[F]] = fut_var_wf[[F-1]]
+      st_dimensions(fut_var_wf[[F]])[3] = st_dimensions(s)[3]
     } else{
-      hist_var[[H]] = s[,,,] #all months
+      fut_var_wf[[F]] = s[,,,] #all months
     }
   }
   
-  fut_var <- list()
+  fut_var_ws <- list()
   
-  for(F in 1:length(cropped_st_fut)){
-    s = cropped_st_fut[[F]]
-    s = select(s, c(PRCP,SNOW_MELT))
-    if (is.na(summary(s$PRCP)[4] | summary(s$SNOW_MELT)[4])) {
-      fut_var[[F]] = fut_var[[F-1]]
-      st_dimensions(fut_var[[F]])[3] = st_dimensions(s)[3]
+  for(F in 1:length(cropped_st_ws)){
+    s = cropped_st_ws[[F]]
+    s = dplyr::select(s, c(SWE))
+    if (is.na(summary(s$SWE)[4])) {
+      fut_var_ws[[F]] = fut_var_ws[[F-1]]
+      st_dimensions(fut_var_ws[[F]])[3] = st_dimensions(s)[3]
     } else{
-      fut_var[[F]] = s[,,,] #all months
+      fut_var_ws[[F]] = s[,,,] #all months
     }
   }
   
-  hist_var_stars <- Reduce(c, hist_var)
-  hist_var_stars <- drop_units(hist_var_stars)
-  hist_var_stars %>% mutate(PRCPf = PRCP / 25.4) %>% select(PRCPf) -> hist_var_stars_prcp
-  hist_var_stars %>% mutate(MELTf = SNOW_MELT / 25.4) %>% select(MELTf) -> hist_var_stars_melt
-  
-  fut_var_stars <- Reduce(c, fut_var)
-  fut_var_stars$SWE <- drop_units(fut_var_stars$SWE)
-  fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
+  wf_var <- Reduce(c, fut_var_wf)
+  wf_var <-drop_units(wf_var)
+  wf_var %>% dplyr::select(PRCP) -> var_prcp
+
+  ws_var <- Reduce(c, fut_var_ws)
+  ws_var <-drop_units(ws_var)
+  ws_var %>% dplyr::select(SWE) -> var_swe
 
   by_t = "1 year"
-  hist_p <- aggregate(hist_var_stars_prcp, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
-  hist_p1 <- split(hist_p, "time")
-  hist_m <- aggregate(hist_var_stars_melt, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
-  hist_m1 <- split(hist_m, "time")
+  p <- aggregate(var_prcp, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  p1 <- split(p, "time")
+  s <- aggregate(var_swe, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
+  s1 <- split(s, "time")
   
-  ###### melt still greater than precip by a lot
-  
-  
-  df<-data.frame(year=historical.period,mean=NA)
-  for (i in 1:length(historical.period)){
-    t <-st_apply(hist1[i],1:2,mean)
-    df$mean[i] <- mean(t$mean,na.rm=TRUE)
-  }
-  df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.hist<-rbind(DF.hist,df)
-
-  
-  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-  fut1 <- split(fut, "time")
+  ratio1 <- s1[2:32,,]/p1[2:32,,]
+  ratio  <- s[,2:32,,]/p[,2:32,,]
+  r<-st_apply(ratio, c("x", "y"), mean)
+  saveRDS(r, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   df<-data.frame(year=future.period,mean=NA)
   for (i in 1:length(future.period)){
-    t <-st_apply(fut1[i],1:2,mean)
+    t <-st_apply(ratio1[i],1:2,mean)
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
   DF.fut<-rbind(DF.fut,df)
 
-  
-  mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
-  mean_fut <- st_apply(fut, c("x", "y"), mean)
-  delta <- mean_fut - mean_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
-
+rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,fut_var_ws,fut_var_wf,cropped_st_wf,cropped_st_ws,r)
+gc()
 }
-Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
-Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
-
-model.dir <- paste0(data.dir,"/", "Daymet")
-cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet_ws",sep="/"))
-
-grid_var <- list()
-
-for(F in 1:length(cropped_st_grid)){
-  s = cropped_st_grid[[F]]
-  s = select(s, SWE)
-  if (is.na(summary(s$SWE)[4])) {
-    grid_var[[F]] = grid_var[[F-1]]
-    st_dimensions(grid_var[[F]])[3] = st_dimensions(s)[3]
-  } else{
-    grid_var[[F]] = s[,,,c(3:5,9:11)] #all months
-  }
-}
-
-grid_var_stars <- Reduce(c, grid_var)
-grid_var_stars$SWE <- drop_units(grid_var_stars$SWE)
-grid_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> grid_var_stars
-
-# st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
-
-grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-grid1 <- split(grid, "time")
-
-
-df<-data.frame(year=daymet.period,mean=NA)
-for (i in 1:length(daymet.period)){
-t <-st_apply(grid1[i],1:2,mean)
-df$mean[i] <- mean(t$mean,na.rm=TRUE)
-}
-df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
-
-# test2 <- split(test, "time") # ggplot will not work if time is a dimension, so switching to an attribute. Should not matter since time is aggregated here. 
-mean_grid <- st_apply(grid, c("x", "y"), mean)
-saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
-
-rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut,
-   cropped_st_hist_ws,cropped_st_fut_ws,cropped_st_grid_ws,cropped_st_hist_wf,cropped_st_fut_wf,cropped_st_grid_wf)
+write.csv(DF.fut,paste0(data.dir,"/Annual_fut_",var,".csv"),row.names=FALSE)
 
