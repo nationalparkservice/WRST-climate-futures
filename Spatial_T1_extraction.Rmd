@@ -92,6 +92,8 @@ write.csv(Deltas,paste0(plot.dir,"/Deltas-T1.csv"),row.names = FALSE)
 Run PCA and create scatterplots for T1 variables
 ```{r Run PCA}
 # Run scatterplot
+## REDO PLOT AND MULTIPLY PCP BY 30 
+
 PlotWidth = 15
 PlotHeight = 9
 
