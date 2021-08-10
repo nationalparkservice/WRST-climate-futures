@@ -111,13 +111,12 @@ source(here::here("Code", "Metric-development", "vic","SWE.precip.R"),echo = FAL
 
 ```
 
-## Met daily parse and variable creation
+## Daily variable creation
 
 ```{r Create daily variables, results=hide, eval=TRUE}
 gc()
 memory.size()
 memory.limit(size = 75000)
-
 
 source(here::here("Code", "Metric-development", "met","met-daily-stars_by_year.R"),echo = FALSE) 
 source(here::here("Code", "Metric-development", "vic","SWE-runoff-Pr99.R"),echo = FALSE)
