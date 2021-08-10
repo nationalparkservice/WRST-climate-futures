@@ -1,7 +1,7 @@
-## MET MONTHLY
+## VIC MONTHLY
 print("extracting Daymet")
 
-model.dir <- paste0(data.dir,"/", "Daymet")
+model.dir <- paste0(vic.dir,"/daily/daymet")
 # dir.create(model.dir,showWarnings=FALSE)
 DF.grid <- data.frame()
 grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc', full.names = TRUE)
@@ -67,16 +67,19 @@ gc()
 }
 write.csv(DF.grid,paste0(model.dir,"/Annual_thresholds_Daymet.csv"),row.names = TRUE)
 
-
+# FUTURE ----
 
 DF.fut <- data.frame()
 for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
     rcp = sub('.*\\.', '', GCMs[G])
-    path = paste(met.dir, gcm, rcp, sep = '/')
+    path = paste(vic.dir,"daily/BCSD", gcm, rcp, sep = '/')
+    
     file.list = list.files(path = path, pattern = '.nc4', full.names = TRUE)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
+    wf_fut_filelist <- fut_filelist[grep("wf", fut_filelist)]
+    ws_fut_filelist <- fut_filelist[grep("ws", fut_filelist)]
     
     model.dir <- paste0(data.dir,"/",gcm,".",rcp)
     # dir.create(model.dir,showWarnings=FALSE)
@@ -92,11 +95,11 @@ for (G in 1:length(GCMs)){
       print(yr)
       # invisible(capture.output(
       #   suppressWarnings(
-      fut_star = read_ncdf(fut_filelist[i], curvilinear = c("longitude", "latitude"))
-      fut_star = st_transform(fut_star, st_crs(shp))
-      fut_crop = fut_star[shp]
-      fut_crop = drop_units(fut_crop)
-      rm(fut_star)
+      fut_star_wf = read_stars(wf_fut_filelist[i], var=c("PRCP","RUNOFF") ,curvilinear = c("longitude", "latitude"))
+      fut_star_wf = st_transform(fut_star_wf, st_crs(shp))
+      fut_crop_wf = fut_star_wf[shp]
+      fut_crop_wf = drop_units(fut_crop_wf)
+      rm(fut_star_wf)
       
       # add Imperial units
       fut_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
