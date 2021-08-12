@@ -25,7 +25,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(eb_hist_filelist)){
       invisible(capture.output(
         suppressWarnings(
-          l[[i]] <- read_stars(eb_hist_filelist[i], sub = c("SOIL_TEMP1","SOIL_TEMP2","SOIL_TEMP3"), curvilinear = c("longitude", "latitude")) 
+          (l[[i]] <- read_stars(eb_hist_filelist[i], sub = c("SOIL_TEMP1","SOIL_TEMP2","SOIL_TEMP3"), curvilinear = c("longitude", "latitude"))) 
         )))
     }
     # Warnings have been suppressed because they do not impact the numerical results. See here:
