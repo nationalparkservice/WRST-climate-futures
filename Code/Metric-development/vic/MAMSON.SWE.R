@@ -82,8 +82,8 @@ for (G in 1:length(GCMs)){
   fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
 
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
-  hist <- hist[,2:51,,]
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
+  hist <- hist[,1:50,,]
   # hist1 <- split(hist, "time")
   # 
   # 
@@ -97,7 +97,7 @@ for (G in 1:length(GCMs)){
 
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-  fut <- fut[,2:32,,]
+  fut <- fut[,1:31,,]
   fut1 <- split(fut, "time")
   
   df<-data.frame(year=future.period,mean=NA)
