@@ -9,10 +9,27 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r set directories, include=FALSE}
-base.dir
-data.dir
-plot.dir
+```{r set directories, include=FALSE, results=hide, eval=TRUE}
+rm(list = ls())
+
+area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
+
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units)
+
+base.dir = "C:/Users/achildress/Documents/wrst_temp"
+data.dir = paste0(base.dir,"/Data")
+plot.dir = paste0(base.dir, "/Plots")
 ```
 
-```{r run plots, include=FALSE}
+```{r area map, include=FALSE,results=hide, eval=FALSE}
+source(here::here("Code", "Plots", "area-map.R"),echo = FALSE)
+# holding off on script - using ArcGIS plot for now
+```
+
+```{r scatterplot, echo=FALSE, message=FALSE, warning=FALSE}
+source(here::here("Code", "Plots", "scatterplot.R"),echo = FALSE) 
+```
+
+```{r run plots, include=FALSE,results=hide, eval=TRUE}
+source(here::here("Code", "Plots", "seasonal-tmax.R"),echo = FALSE)
+```
