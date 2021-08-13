@@ -8,7 +8,7 @@ for (G in 1:length(GCMs)){
     hist_filelist = Filter(function(x) grepl(paste(historical.period, collapse = "|"), x), file.list)
     fut_filelist = Filter(function(x) grepl(paste(future.period, collapse = "|"), x), file.list)
     
-    model.dir <- paste0(data.dir,"/",gcm,".",rcp)
+    # model.dir <- paste0(data.dir,"/",gcm,".",rcp)
     # dir.create(model.dir,showWarnings=FALSE)
     
     print(paste0("extracting ", GCMs[G]))
@@ -47,7 +47,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_hist)){
       cropped_st_hist[[i]] <- st_as_stars(cropped_hist[[i]])
     }
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_eb_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_hist, file = paste(data.dir,paste0("cropped_st_hist_eb_",gcm,"_",rcp),sep="/"))
     
     # FUTURE
     
@@ -76,7 +76,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_fut)){
       cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
     }
-    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_eb_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_fut, file = paste(data.dir,paste0("cropped_st_fut_eb_",gcm,"_",rcp),sep="/"))
     
     
     # Createing wf stars objects ####
@@ -113,7 +113,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_hist)){
       cropped_st_hist[[i]] <- st_as_stars(cropped_hist[[i]])
     }
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_wf_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_hist, file = paste(data.dir,paste0("cropped_st_hist_wf_",gcm,"_",rcp),sep="/"))
     
     # FUTURE
     
@@ -142,7 +142,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_fut)){
       cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
     }
-    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_fut, file = paste(data.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
     
     
     # Createing ws stars objects ####
@@ -179,7 +179,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_hist)){
       cropped_st_hist[[i]] <- st_as_stars(cropped_hist[[i]])
     }
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_hist, file = paste(data.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
     
     # FUTURE
     
@@ -208,7 +208,7 @@ for (G in 1:length(GCMs)){
     for(i in 1:length(cropped_fut)){
       cropped_st_fut[[i]] <- st_as_stars(cropped_fut[[i]])
     }
-    saveRDS(cropped_st_fut, file = paste(model.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_fut, file = paste(data.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
     
 }
 
@@ -216,7 +216,7 @@ for (G in 1:length(GCMs)){
 # DAYMET ----
 print("extracting Daymet")
 
-model.dir <- paste0(data.dir,"/", "Daymet")
+# model.dir <- paste0(data.dir,"/", "Daymet")
 # dir.create(model.dir,showWarnings=FALSE)
 
 grid_filelist = list.files(path = paste(vic.dir,"monthly/daymet",sep='/'), pattern= '.nc', full.names = TRUE)
@@ -249,7 +249,7 @@ cropped_st_grid <- list()
 for(i in 1:length(cropped_grid)){
   cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
 }
-saveRDS(cropped_st_grid, file = paste(model.dir,"cropped_st_Daymet_eb",sep="/"))
+saveRDS(cropped_st_grid, file = paste(data.dir,"cropped_st_Daymet_eb",sep="/"))
 
 # Createing wf stars objects ####
 wf_grid_filelist <-grid_filelist[grep("wf", grid_filelist)]
@@ -279,7 +279,7 @@ cropped_st_grid <- list()
 for(i in 1:length(cropped_grid)){
   cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
 }
-saveRDS(cropped_st_grid, file = paste(model.dir,"cropped_st_Daymet_wf",sep="/"))
+saveRDS(cropped_st_grid, file = paste(data.dir,"cropped_st_Daymet_wf",sep="/"))
 
 
 # Createing ws stars objects ####
@@ -310,7 +310,7 @@ cropped_st_grid <- list()
 for(i in 1:length(cropped_grid)){
   cropped_st_grid[[i]] <- st_as_stars(cropped_grid[[i]])
 }
-saveRDS(cropped_st_grid, file = paste(model.dir,"cropped_st_Daymet_ws",sep="/"))
+saveRDS(cropped_st_grid, file = paste(data.dir,"cropped_st_Daymet_ws",sep="/"))
 
 
 rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,cropped_hist,nc_crop,nc,l,s,eb_grid_filelist,eb_fut_filelist,
