@@ -1,16 +1,16 @@
-# Annual water.balance ----
-var = "water.balance"
+# Annual soil.temp ----
+var = "soil.temp"
 DF = data.frame()
 
-cropped_st_grid <- readRDS(paste(data.dir,"cropped_st_Daymet_wf",sep="/"))
+cropped_st_grid <- readRDS(paste(data.dir,"cropped_st_Daymet_eb",sep="/"))
 
 grid_var <- list()
 
 for(F in 1:length(cropped_st_grid)){
   s = cropped_st_grid[[F]]
-  s %>% mutate(water.balance = PRCP - EVAP) -> s 
-  s = select(s, water.balance)
-  if (is.na(summary(s$water.balance)[4])) {
+  s %>% mutate(soil.temp = (SOIL_TEMP1+SOIL_TEMP2)/2) -> s 
+  s = select(s, soil.temp)
+  if (is.na(summary(s$soil.temp)[4])) {
     grid_var[[F]] = grid_var[[F-1]]
     st_dimensions(grid_var[[F]])[3] = st_dimensions(s)[3]
   } else{
@@ -19,11 +19,11 @@ for(F in 1:length(cropped_st_grid)){
 }
 
 grid_var_stars <- Reduce(c, grid_var)
-grid_var_stars %>% mutate(water.balancef = water.balance / 25.4) %>% select(water.balancef) -> grid_var_stars
+grid_var_stars %>% mutate(soil.tempf = soil.temp * 9/5 + 32) %>% select(soil.tempf) -> grid_var_stars
 
 # st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
 by_t = "1 year"
-grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) sum(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
 grid1 <- split(grid, "time")
 
 
@@ -44,16 +44,15 @@ for (G in 1:length(GCMs)){
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   # model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_wf_",gcm,"_",rcp),sep="/"))
-  cropped_st_fut <- readRDS(paste(data.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+  cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_eb_",gcm,"_",rcp),sep="/"))
+  cropped_st_fut <- readRDS(paste(data.dir,paste0("cropped_st_fut_eb_",gcm,"_",rcp),sep="/"))
 
   hist_var <- list()
   
   for(H in 1:length(cropped_st_hist)){
     s = cropped_st_hist[[H]]
-    s %>% mutate(water.balance = PRCP - EVAP) -> s 
-    s = select(s, water.balance)
-    if (is.na(summary(s$water.balance)[4])) {
+    s %>% mutate(soil.temp = (SOIL_TEMP1+SOIL_TEMP2)/2) -> s
+    if (is.na(summary(s$soil.temp)[4])) {
       hist_var[[H]] = hist_var[[H-1]]
       st_dimensions(hist_var[[H]])[3] = st_dimensions(s)[3]
     } else{
@@ -65,9 +64,8 @@ for (G in 1:length(GCMs)){
   
   for(F in 1:length(cropped_st_fut)){
     s = cropped_st_fut[[F]]
-    s %>% mutate(water.balance = PRCP - EVAP) -> s 
-    s = select(s, water.balance)
-    if (is.na(summary(s$water.balance)[4])) {
+    s %>% mutate(soil.temp = (SOIL_TEMP1+SOIL_TEMP2)/2) -> s 
+    if (is.na(summary(s$soil.temp)[4])) {
       fut_var[[F]] = fut_var[[F-1]]
       st_dimensions(fut_var[[F]])[3] = st_dimensions(s)[3]
     } else{
@@ -76,13 +74,13 @@ for (G in 1:length(GCMs)){
   }
   
   hist_var_stars <- Reduce(c, hist_var)
-  hist_var_stars %>% mutate(water.balancef = water.balance / 25.4) %>% select(water.balancef) -> hist_var_stars
+  hist_var_stars %>% mutate(soil.tempf = soil.temp * 9/5 + 32) %>% select(soil.tempf) -> hist_var_stars
   
   fut_var_stars <- Reduce(c, fut_var)
-  fut_var_stars %>% mutate(water.balancef = water.balance / 25.4) %>% select(water.balancef) -> fut_var_stars
+  fut_var_stars %>% mutate(soil.tempf = soil.temp * 9/5 + 32) %>% select(soil.tempf) -> fut_var_stars
 
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x)) #Don't need to divide by #yrs b/c by year
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
   hist <- hist[,2:51,,]
   # hist1 <- split(hist, "time")
   # 
@@ -96,7 +94,7 @@ for (G in 1:length(GCMs)){
   # DF.hist<-rbind(DF.hist,df)
 
   
-  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+  fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
   fut <- fut[,2:32,,]
   fut1 <- split(fut, "time")
   
