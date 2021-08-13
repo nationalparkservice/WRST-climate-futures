@@ -1,4 +1,4 @@
-monthly.variables <- c("Annual.tmeanF","Annual.precipIn","DJF.tmeanF", "MAM.tmeanF", "JJA.tmeanF", "SON.tmeanF","DJF.tmaxF", 
+monthly.variables <- c("DJF.tmeanF", "MAM.tmeanF", "JJA.tmeanF", "SON.tmeanF","DJF.tmaxF", 
                        "MAM.tmaxF", "JJA.tmaxF", "SON.tmaxF","DJF.tminF", "MAM.tminF", "JJA.tminF", "SON.tminF", 
                        "DJF.precipIn", "MAM.precipIn", "JJA.precipIn","SON.precipIn")
 
@@ -75,7 +75,7 @@ DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmean ----
-var = "SON.TmeanF"
+var = "SON.tmeanF"
 grid_var <- list()
 
 for(F in 1:length(cropped_st_grid)){
@@ -152,7 +152,7 @@ DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmax ----
-var = "SON.TmaxF"
+var = "SON.tmaxF"
 grid_var <- list()
 
 for(F in 1:length(cropped_st_grid)){
@@ -228,7 +228,7 @@ DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmin ----
-var = "SON.TminF"
+var = "SON.tminF"
 hist_var <- list()
 
 grid_var <- list()
@@ -331,7 +331,7 @@ for (G in 1:length(GCMs)){
   GR <- paste(gcm,rcp,sep=".")
   index <- match(GR, GCMs)
   # print(c(index, GR))
-  print("extracting", GR)
+  print(paste0("extracting ", GR))
 
   # stars objs
   cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
@@ -444,7 +444,7 @@ for (G in 1:length(GCMs)){
     DF.fut[index,var] = mean(mean_fut$mean, na.rm=TRUE)
     
     # SON Tmean ----
-    var = "SON.TmeanF"
+    var = "SON.tmeanF"
     hist_var <- list()
     
     for(H in 1:length(cropped_st_hist)){
@@ -578,7 +578,7 @@ for (G in 1:length(GCMs)){
     DF.fut[index,var] = mean(mean_fut$mean, na.rm=TRUE)
     
     # SON Tmax ----
-    var = "SON.TmaxF"
+    var = "SON.tmaxF"
     hist_var <- list()
     
     for(H in 1:length(cropped_st_hist)){
@@ -710,7 +710,7 @@ for (G in 1:length(GCMs)){
     DF.fut[index,var] = mean(mean_fut$mean, na.rm=TRUE)
     
     # SON Tmin ----
-    var = "SON.TminF"
+    var = "SON.tminF"
     hist_var <- list()
     
     for(H in 1:length(cropped_st_hist)){
@@ -878,5 +878,5 @@ DF = rbind(DF.hist, DF.fut,DF.grid)
 write.csv(DF, paste0(data.dir,"/Monthly_met.csv"),row.names=FALSE)
 
 rm(hist_var, fut_var, grid_var, hist_var_stars, fut_var_stars, grid_var_stars, sum_hist, sum_fut, sum_grid, 
-   delta,mean_hist,mean_fut,mean_grid, baseline,future, cropped_st_fut, cropped_st_hist,cropped_st_grid)
+   delta,mean_hist,mean_fut,mean_grid, cropped_st_fut, cropped_st_hist,cropped_st_grid)
 gc()
