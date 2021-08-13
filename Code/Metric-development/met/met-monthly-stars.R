@@ -108,6 +108,6 @@ for(i in 1:length(cropped_grid)){
 saveRDS(cropped_st_grid, file = paste(data.dir,"cropped_st_Daymet",sep="/"))
 
 
-rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,cropped_hist,nc_crop,nc,l,nc,s)
+rm(cropped_st_grid,cropped_st_fut,cropped_fut,cropped_grid,nc_crop,nc,l)
 
   
