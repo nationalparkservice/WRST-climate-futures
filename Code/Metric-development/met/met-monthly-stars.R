@@ -40,7 +40,7 @@ for (G in 1:length(GCMs)){
     }
 
     # assign(paste0("cropped_st_hist_",GCMs[G]), cropped_st_hist)
-    saveRDS(cropped_st_hist, file = paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
+    saveRDS(cropped_st_hist, file = paste(data.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
 
 
       # FUTURE ----
