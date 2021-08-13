@@ -1,0 +1,18 @@
+---
+title: "Running plotting scripts"
+author: "Amber Runyon"
+date: "8/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r set directories, include=FALSE}
+base.dir
+data.dir
+plot.dir
+```
+
+```{r run plots, include=FALSE}
