@@ -58,7 +58,7 @@ shp <- st_transform(shp, 3338)
 ## Met monthly parse and variable creation
 Loop through met GCM.rcp and summarize each variable
 
-```{r Create met monthly variables, results=hide, eval=FALSE}
+```{r Create met monthly variables, results=hide, eval=TRUE}
 memory.limit(size = 60000)
 
 source(here::here("Code", "Metric-development", "met","met-monthly-stars.R"),echo = FALSE) 
@@ -71,7 +71,7 @@ source(here::here("Code", "Metric-development", "met","Annual.precipIn.R"),echo 
 
 ## Vic monthly parse and variable creation
 
-```{r Create vic monthly variables, results=hide, eval=FALSE}
+```{r Create vic monthly variables, results=hide, eval=TRUE}
 memory.limit(size = 60000)
 
 source(here::here("Code", "Metric-development", "vic","vic-monthly-stars.R"),echo = FALSE) 
@@ -88,9 +88,7 @@ source(here::here("Code", "Metric-development", "vic","SWE.precip.R"),echo = FAL
 
 ```{r Create daily variables, results=hide, eval=TRUE}
 gc()
-memory.size()
-memory.limit(size = 75000)
-
+memory.limit(60000)
 source(here::here("Code", "Metric-development", "met","met-daily-stars_by_year.R"),echo = FALSE) 
 source(here::here("Code", "Metric-development", "vic","SWE-runoff-Pr99.R"),echo = FALSE)
 
