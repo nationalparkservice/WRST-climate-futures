@@ -1,13 +1,12 @@
 # Annual PrecipIn ----
 var = "Annual.precipIn"
-DF.hist <- data.frame()
-DF.fut <- data.frame()
+DF <- data.frame()
 
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-  model.dir <- paste0(data.dir,"/",GCMs[G])
+  # model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
   cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
   cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_",gcm,"_",rcp),sep="/"))
@@ -36,19 +35,19 @@ for (G in 1:length(GCMs)){
   fut_var_stars <- Reduce(c, fut_var)
   fut_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> fut_var_stars
 
-  by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x) *30) # *30 bc mean daily, want mean monthly
-  hist <- hist[,2:51,,]
-  hist1 <- split(hist, "time")
-  
-  
-  df<-data.frame(year=historical.period,mean=NA)
-  for (i in 1:length(historical.period)){
-    t <-st_apply(hist1[i],1:2,mean)
-    df$mean[i] <- mean(t$mean,na.rm=TRUE)
-  }
-  df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.hist<-rbind(DF.hist,df)
+  # by_t = "1 year"
+  # hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) sum(x) *30) # *30 bc mean daily, want mean monthly
+  # hist <- hist[,2:51,,]
+  # hist1 <- split(hist, "time")
+  # 
+  # 
+  # df<-data.frame(year=historical.period,mean=NA)
+  # for (i in 1:length(historical.period)){
+  #   t <-st_apply(hist1[i],1:2,mean)
+  #   df$mean[i] <- mean(t$mean,na.rm=TRUE)
+  # }
+  # df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
+  # DF.hist<-rbind(DF.hist,df)
 
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) sum(x) *30) # *30 bc mean daily, want mean monthly
@@ -61,7 +60,7 @@ for (G in 1:length(GCMs)){
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.fut<-rbind(DF.fut,df)
+  DF<-rbind(DF,df)
 
   
   mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
@@ -70,11 +69,8 @@ for (G in 1:length(GCMs)){
   saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
-# Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
-# Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
-write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
-write.csv(DF.fut,paste0(data.dir,"/Annual_fut",var,".csv"),row.names=FALSE)
 
+# write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
 model.dir <- paste0(data.dir,"/", "Daymet")
 cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet",sep="/"))
 
@@ -103,12 +99,13 @@ t <-st_apply(grid1[i],1:2,mean)
 df$mean[i] <- mean(t$mean,na.rm=TRUE)
 }
 df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-# Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
+
+DF<-rbind(DF,df)
 
 # test2 <- split(test, "time") # ggplot will not work if time is a dimension, so switching to an attribute. Should not matter since time is aggregated here. 
 mean_grid <- st_apply(grid, c("x", "y"), mean)
-saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
-write.csv(df,paste0(data.dir,"/Annual_daymet",var,".csv"),row.names=FALSE)
+saveRDS(mean_grid, file = paste0(data.dir,"/",var,"_daymet"))
+write.csv(df,paste0(data.dir,"/",var,"_ANN.csv"),row.names=FALSE)
 
 rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
 gc()

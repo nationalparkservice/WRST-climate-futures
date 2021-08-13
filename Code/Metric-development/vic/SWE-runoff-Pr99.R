@@ -1,11 +1,16 @@
-## VIC MONTHLY
+# Daily SWE ; Daily Runoff ----
+var1 = "SWE"
+var2 = "runoff"
+DF1 <- data.frame()
+DF2 <- data.frame()
+
 print("extracting Daymet")
 
-model.dir <- paste0(vic.dir,"/daily/daymet")
+# model.dir <- paste0(vic.dir,"/daily/daymet")
 # dir.create(model.dir,showWarnings=FALSE)
 DF.grid <- data.frame()
 
-grid_filelist = list.files(path = paste0(vic.dir,"/daily/daymet"), pattern= '.nc', full.names = TRUE)
+grid_filelist = list.fil1es(path = paste0(vic.dir,"/daily/daymet"), pattern= '.nc', full.names = TRUE)
 wf_grid_filelist <- grid_filelist[grep("wf", grid_filelist)]
 ws_grid_filelist <- grid_filelist[grep("ws", grid_filelist)]
 
@@ -41,8 +46,12 @@ runoff.mean <- st_apply((wf_imperial %>% dplyr::select(RUNOFF_in)), c("time"),me
 # pcp.mean <- st_apply((wf_imperial %>% dplyr::select(PCP_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
 SWE.mean <- st_apply((ws_imperial %>% dplyr::select(SWE_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
 
-full_join(data.frame(runoff.mean), data.frame(SWE.mean), by = "time") -> df 
-DF.grid <- rbind(DF.grid,df)
+df1 <- data.frame(SWE.mean)
+df2 <- data.frame(runoff.mean)
+ 
+DF1 <- rbind(DF1,df1)
+DF2 <- rbind(DF2, df2)
+}
 rm(runoff.mean,SWE.mean,grid_crop_ws,imperial_ws,grid_crop_wf)
 gc()
 
@@ -91,15 +100,19 @@ for (G in 1:length(GCMs)){
   # pcp.mean <- st_apply((wf_imperial %>% dplyr::select(PCP_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
   SWE.mean <- st_apply((ws_imperial %>% dplyr::select(SWE_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
   
-  full_join(data.frame(runoff.mean), data.frame(SWE.mean), by = "time") -> df 
-  DF.fut <- rbind(DF.fut,df)
+  df1 <- data.frame(SWE.mean)
+  df2 <- data.frame(runoff.mean) 
+  
+  DF1 <- rbind(DF1,df1)
+  DF2 <- rbind(DF2,df2)
   rm(runoff.mean,SWE.mean,fut_crop_ws,imperial_ws,fut_crop_wf)
   gc()
   }
-  write.csv(DF.fut,paste0(data.dir,"/Snow-Runoff_daily.csv"),row.names = TRUE)
 }
 
-  
+write.csv(DF1,paste0(data.dir,"/", var1, "_DAY.csv"),row.names = TRUE) 
+write.csv(DF2,paste0(data.dir,"/", var2, "_DAY.csv"),row.names = TRUE)
+
 # #Code to get Pr99 to work -- does not work, submitted issue to stars GitHub repo
 #   # Do this for Daymet
 # 
