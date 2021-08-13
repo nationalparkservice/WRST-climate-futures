@@ -7,6 +7,7 @@ grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc
 # DAYMET ----
 for(i in 1:length(grid_filelist)){
 # grid_annual <- list() # Create a list to put the stars objects into
+print(yr)
 yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", grid_filelist[i])),format="%Y")
 invisible(capture.output(
   suppressWarnings(
@@ -60,7 +61,7 @@ df$W.under32 = mean(s$W.under32,na.rm=TRUE)
 df$pcp.over.5 = mean(s$pcp.over.5,na.rm=TRUE)
 
 DF = rbind(DF, df)
-rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,Over20.sum,WSF.below32,W.under32,pcp.over.5.sum
+rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32,pcp.over.5.sum,
    grid_threshold,grid_crop)
 gc()
 }
@@ -82,7 +83,7 @@ for (G in 1:length(GCMs)){
     
       # HISTORICAL ----
     # fut_annual <- list() # Create a list to put the stars objects into
-    for(i in 1:length(future_filelist)){
+    for(i in 1:length(fut_filelist)){
       yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", fut_filelist[i])),format="%Y")
       print(yr)
       invisible(capture.output(
