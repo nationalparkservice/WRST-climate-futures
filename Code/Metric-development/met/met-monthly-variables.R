@@ -331,7 +331,7 @@ for (G in 1:length(GCMs)){
   GR <- paste(gcm,rcp,sep=".")
   index <- match(GR, GCMs)
   # print(c(index, GR))
-  print("extracting" GR)
+  print("extracting", GR)
 
   # stars objs
   cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_",gcm,"_",rcp),sep="/"))
