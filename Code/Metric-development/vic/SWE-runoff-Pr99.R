@@ -108,7 +108,7 @@ for (G in 1:length(GCMs)){
   
   DF1 <- rbind(DF1,df1)
   DF2 <- rbind(DF2,df2)
-  rm(runoff.mean,SWE.mean,fut_crop_ws,imperial_ws,fut_crop_wf)
+  rm(runoff.mean,SWE.mean,fut_crop_ws,ws_imperial,wf_imperial,fut_crop_wf)
   gc()
   }
 }
