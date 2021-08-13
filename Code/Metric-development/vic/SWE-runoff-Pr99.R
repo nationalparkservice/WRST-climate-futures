@@ -10,7 +10,7 @@ print("extracting Daymet")
 # dir.create(model.dir,showWarnings=FALSE)
 DF.grid <- data.frame()
 
-grid_filelist = list.fil1es(path = paste0(vic.dir,"/daily/daymet"), pattern= '.nc', full.names = TRUE)
+grid_filelist = list.files(path = paste0(vic.dir,"/daily/daymet"), pattern= '.nc', full.names = TRUE)
 wf_grid_filelist <- grid_filelist[grep("wf", grid_filelist)]
 ws_grid_filelist <- grid_filelist[grep("ws", grid_filelist)]
 
@@ -47,8 +47,10 @@ runoff.mean <- st_apply((wf_imperial %>% dplyr::select(RUNOFF_in)), c("time"),me
 SWE.mean <- st_apply((ws_imperial %>% dplyr::select(SWE_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
 
 df1 <- data.frame(SWE.mean)
+df1$GCM = "Daymet"
 df2 <- data.frame(runoff.mean)
- 
+df2$GCM = "Daymet"
+
 DF1 <- rbind(DF1,df1)
 DF2 <- rbind(DF2, df2)
 }
@@ -57,7 +59,6 @@ gc()
 
 # FUTURE ----
 
-DF.fut <- data.frame()
 for (G in 1:length(GCMs)){
   # setting variables ----
   gcm = sub("\\..*", "", GCMs[G])
@@ -101,7 +102,9 @@ for (G in 1:length(GCMs)){
   SWE.mean <- st_apply((ws_imperial %>% dplyr::select(SWE_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
   
   df1 <- data.frame(SWE.mean)
-  df2 <- data.frame(runoff.mean) 
+  df1$GCM = GCMs[G]
+  df2 <- data.frame(runoff.mean)
+  df2$GCM = GCMs[G]
   
   DF1 <- rbind(DF1,df1)
   DF2 <- rbind(DF2,df2)
