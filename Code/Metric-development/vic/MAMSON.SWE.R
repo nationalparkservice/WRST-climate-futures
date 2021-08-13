@@ -35,7 +35,7 @@ for (i in 1:length(daymet.period)){
 df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
 DF <- rbind(DF, df)
 
-# mean_grid <- st_apply(grid, c("x", "y"), mean)
+mean_grid <- st_apply(grid, c("x", "y"), mean)
 # saveRDS(mean_grid, file = paste0(data.dir,"/",var,gcm))
 
 for (G in 1:length(GCMs)){
@@ -44,21 +44,21 @@ for (G in 1:length(GCMs)){
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
   # model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
+  # cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
   cropped_st_fut <- readRDS(paste(data.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
 
-  hist_var <- list()
-  
-  for(H in 1:length(cropped_st_hist)){
-    s = cropped_st_hist[[H]]
-    s = select(s, SWE)
-    if (is.na(summary(s$SWE)[4])) {
-      hist_var[[H]] = hist_var[[H-1]]
-      st_dimensions(hist_var[[H]])[3] = st_dimensions(s)[3]
-    } else{
-      hist_var[[H]] = s[,,,c(3:5,9:11)] #all months
-    }
-  }
+  # hist_var <- list()
+  # 
+  # for(H in 1:length(cropped_st_hist)){
+  #   s = cropped_st_hist[[H]]
+  #   s = select(s, SWE)
+  #   if (is.na(summary(s$SWE)[4])) {
+  #     hist_var[[H]] = hist_var[[H-1]]
+  #     st_dimensions(hist_var[[H]])[3] = st_dimensions(s)[3]
+  #   } else{
+  #     hist_var[[H]] = s[,,,c(3:5,9:11)] #all months
+  #   }
+  # }
   
   fut_var <- list()
   
@@ -72,18 +72,18 @@ for (G in 1:length(GCMs)){
       fut_var[[F]] = s[,,,c(3:5,9:11)] #all months
     }
   }
-  
-  hist_var_stars <- Reduce(c, hist_var)
-  hist_var_stars$SWE <- drop_units(hist_var_stars$SWE)
-  hist_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> hist_var_stars
+  # 
+  # hist_var_stars <- Reduce(c, hist_var)
+  # hist_var_stars$SWE <- drop_units(hist_var_stars$SWE)
+  # hist_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> hist_var_stars
   
   fut_var_stars <- Reduce(c, fut_var)
   fut_var_stars$SWE <- drop_units(fut_var_stars$SWE)
   fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
 
-  by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
-  hist <- hist[,1:50,,]
+  # by_t = "1 year"
+  # hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
+  # hist <- hist[,1:50,,]
   # hist1 <- split(hist, "time")
   # 
   # 
@@ -111,7 +111,7 @@ for (G in 1:length(GCMs)){
   
   mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
   mean_fut <- st_apply(fut, c("x", "y"), mean)
-  delta <- mean_fut - mean_hist
+  delta <- mean_fut - mean_grid
   saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
