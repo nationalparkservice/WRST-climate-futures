@@ -7,8 +7,8 @@ grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc
 # DAYMET ----
 for(i in 1:length(grid_filelist)){
 # grid_annual <- list() # Create a list to put the stars objects into
-print(yr)
 yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", grid_filelist[i])),format="%Y")
+print(yr)
 invisible(capture.output(
   suppressWarnings(
     (grid_star = read_stars(grid_filelist[i], sub=c("tmax","tmin","pcp") ,curvilinear = c("longitude", "latitude"))))))
