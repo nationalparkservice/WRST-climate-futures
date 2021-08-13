@@ -13,15 +13,15 @@ for (G in 1:length(GCMs)){
     # Createing stars objects ####
     
       # HISTORICAL ----
-    
-    l <- list() # Create a list to put the stars objects into
-    
-    for(i in 1:length(hist_filelist)){
-      suppressMessages(
-      l[[i]] <- read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
-      )
-    }
-    
+    # 
+    # l <- list() # Create a list to put the stars objects into
+    # 
+    # for(i in 1:length(hist_filelist)){
+    #   suppressMessages(
+    #   l[[i]] <- read_ncdf(hist_filelist[i], curvilinear = c("longitude", "latitude")) # need to read in as ncdf or coordinate system does not translate (not sure why)
+    #   )
+    # }
+    # 
     # # Crop
     # 
     # cropped_hist <- list() # create list for cropped stars objects
