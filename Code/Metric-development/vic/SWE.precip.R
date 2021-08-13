@@ -1,11 +1,12 @@
 # Annual SWE:precip  ----
 var = "SWE.precip"
+DF = data.frame()
 
 # DAYMET ----
-model.dir <- paste0(data.dir,"/", "Daymet")
+# model.dir <- paste0(data.dir,"/", "Daymet")
 
-  cropped_st_wf <- readRDS(paste(model.dir,"cropped_st_Daymet_wf",sep="/"))
-  cropped_st_ws <- readRDS(paste(model.dir,"cropped_st_Daymet_ws",sep="/"))
+  cropped_st_wf <- readRDS(paste(data.dir,"cropped_st_Daymet_wf",sep="/"))
+  cropped_st_ws <- readRDS(paste(data.dir,"cropped_st_Daymet_ws",sep="/"))
   
   grid_var_wf <- list()
   
@@ -49,8 +50,7 @@ model.dir <- paste0(data.dir,"/", "Daymet")
   
   ratio1 <- s1[2:38,,]/p1[2:38,,]
   ratio  <- s[,2:38,,]/p[,2:38,,]
-  r<-st_apply(ratio, c("x", "y"), mean)
-  saveRDS(r, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+
   
   df<-data.frame(year=daymet.period,mean=NA)
   for (i in 1:length(daymet.period)){
@@ -58,21 +58,23 @@ model.dir <- paste0(data.dir,"/", "Daymet")
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-  write.csv(df,paste0(model.dir,"/Annual_Daymet_",var,".csv"),row.names=FALSE)
+  DF <- rbind(DF,df)
   
-  rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,grid_var_ws,grid_var_wf,cropped_st_wf,cropped_st_ws,r)
+  mean_grid<-st_apply(ratio, c("x", "y"), mean)
+  # saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  
+  rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,grid_var_ws,grid_var_wf,cropped_st_wf,cropped_st_ws)
   gc()
 
 # FUTURE ----
-DF.fut <- data.frame()
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-  model.dir <- paste0(data.dir,"/",GCMs[G])
+  # model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_wf <- readRDS(paste(model.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
-  cropped_st_ws <- readRDS(paste(model.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
+  cropped_st_wf <- readRDS(paste(data.dir,paste0("cropped_st_fut_wf_",gcm,"_",rcp),sep="/"))
+  cropped_st_ws <- readRDS(paste(data.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
 
   fut_var_wf <- list()
   
@@ -116,8 +118,7 @@ for (G in 1:length(GCMs)){
   
   ratio1 <- s1[2:32,,]/p1[2:32,,]
   ratio  <- s[,2:32,,]/p[,2:32,,]
-  r<-st_apply(ratio, c("x", "y"), mean)
-  saveRDS(r, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  mean_fut<-st_apply(ratio, c("x", "y"), mean)
   
   df<-data.frame(year=future.period,mean=NA)
   for (i in 1:length(future.period)){
@@ -125,10 +126,13 @@ for (G in 1:length(GCMs)){
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.fut<-rbind(DF.fut,df)
+  DF<-rbind(DF,df)
+  delta = mean_fut - mean_grid
+  saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
-rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,fut_var_ws,fut_var_wf,cropped_st_wf,cropped_st_ws,r)
+rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,fut_var_ws,fut_var_wf,cropped_st_wf,cropped_st_ws)
 gc()
 }
-write.csv(DF.fut,paste0(data.dir,"/Annual_fut_",var,".csv"),row.names=FALSE)
 
+write.csv(DF,paste0(data.dir,"/",var,"_ANN.csv"),row.names=FALSE)
+  
