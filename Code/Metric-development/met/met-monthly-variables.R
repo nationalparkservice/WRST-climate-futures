@@ -29,7 +29,7 @@ grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> gri
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 
 # assign(paste0("grid_",var), mean_grid)
 
@@ -50,7 +50,7 @@ grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> gri
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # JJA Tmean ----
@@ -70,7 +70,7 @@ grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> gri
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmean ----
@@ -90,7 +90,7 @@ grid_var_stars %>% mutate(tmean_f = tmean * 9/5 + 32) %>% select(tmean_f) -> gri
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # DJF Tmax ----
@@ -109,7 +109,7 @@ grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # MAM Tmax ----
@@ -128,7 +128,7 @@ grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # JJA Tmax ----
@@ -147,7 +147,7 @@ grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmax ----
@@ -166,7 +166,7 @@ grid_var_stars %>% mutate(tmax_f = tmax * 9/5 + 32) %>% select(tmax_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # DJF Tmin ----
@@ -185,7 +185,7 @@ grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # MAM Tmin ----
@@ -204,7 +204,7 @@ grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # JJA Tmin ----
@@ -223,7 +223,7 @@ grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # SON Tmin ----
@@ -244,7 +244,7 @@ grid_var_stars %>% mutate(tmin_f = tmin * 9/5 + 32) %>% select(tmin_f) -> grid_v
 
 mean_grid <- st_apply(grid_var_stars, c("x", "y"), mean)
 
-DF.grid[index,var] = mean(mean_grid$mean, na.rm=TRUE)
+DF.grid[var] = mean(mean_grid$mean, na.rm=TRUE)
 # assign(paste0("grid_",var), mean_grid)
 
 # DJF Precip ----
@@ -263,7 +263,7 @@ grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_st
 
 sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
 
-DF.grid[index,var] = mean(sum_grid$pcp_in, na.rm=TRUE)
+DF.grid[var] = mean(sum_grid$sum, na.rm=TRUE)
 # assign(paste0("grid_",var), sum_grid)
 
 # MAM Precip ----
@@ -282,7 +282,7 @@ grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_st
 
 sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
 
-DF.grid[index,var] = mean(sum_grid$pcp_in, na.rm=TRUE)
+DF.grid[var] = mean(sum_grid$sum, na.rm=TRUE)
 # assign(paste0("grid_",var), sum_grid)
 
 # JJA precip ----
@@ -301,7 +301,7 @@ grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_st
 
 sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
 
-DF.grid[index,var] = mean(sum_grid$pcp_in, na.rm=TRUE)
+DF.grid[var] = mean(sum_grid$sum, na.rm=TRUE)
 # assign(paste0("grid_",var), sum_grid)
 
 # SON Precip ----
@@ -320,7 +320,7 @@ grid_var_stars %>% mutate(pcp_in = pcp / 25.4) %>% select(pcp_in) -> grid_var_st
 
 sum_grid <- st_apply(grid_var_stars, c("x", "y"), sum)
 
-DF.grid[index,var] = mean(sum_grid$pcp_in, na.rm=TRUE)
+DF.grid[var] = mean(sum_grid$sum, na.rm=TRUE)
 # assign(paste0("grid_",var), sum_grid)
 
 for (G in 1:length(GCMs)){
@@ -400,7 +400,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -435,7 +435,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -470,7 +470,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -503,7 +503,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -536,7 +536,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -569,7 +569,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -602,7 +602,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -635,7 +635,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -668,7 +668,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -701,7 +701,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist    
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -734,7 +734,7 @@ for (G in 1:length(GCMs)){
     mean_hist <- st_apply(hist_var_stars, c("x", "y"), mean) # find mean
     mean_fut <- st_apply(fut_var_stars, c("x", "y"), mean)
     delta <- mean_fut - mean_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(mean_hist$mean, na.rm=TRUE)
@@ -767,7 +767,7 @@ for (G in 1:length(GCMs)){
     sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(historical.period)) # find sum
     sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(future.period))
     delta <- sum_fut - sum_hist
-    saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     #### Add values to Means dfs
     DF.hist[index,var] = mean(sum_hist$pcp_in, na.rm=TRUE)
@@ -800,7 +800,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(historical.period)) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(future.period))
   delta <- sum_fut - sum_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   DF.hist[index,var] = mean(sum_hist$pcp_in, na.rm=TRUE)
@@ -833,7 +833,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(historical.period)) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(future.period))
   delta <- sum_fut - sum_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   DF.hist[index,var] = mean(sum_hist$pcp_in, na.rm=TRUE)
@@ -866,7 +866,7 @@ for (G in 1:length(GCMs)){
   sum_hist <- st_apply(hist_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(historical.period)) # find sum
   sum_fut <- st_apply(fut_var_stars, c("x", "y"), FUN=function(x) sum(x)*90/length(future.period))
   delta <- sum_fut - sum_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
   
   #### Add values to Means dfs
   DF.hist[index,var] = mean(sum_hist$pcp_in, na.rm=TRUE)
