@@ -1,16 +1,51 @@
 # Annual MAMSON SWE ----
 var = "MAMSON.SWE"
-DF.hist <- data.frame()
-DF.fut <- data.frame()
+DF = data.frame()
+
+cropped_st_grid <- readRDS(paste(data.dir,"cropped_st_Daymet_ws",sep="/"))
+
+grid_var <- list()
+
+for(F in 1:length(cropped_st_grid)){
+  s = cropped_st_grid[[F]]
+  s = select(s, SWE)
+  if (is.na(summary(s$SWE)[4])) {
+    grid_var[[F]] = grid_var[[F-1]]
+    st_dimensions(grid_var[[F]])[3] = st_dimensions(s)[3]
+  } else{
+    grid_var[[F]] = s[,,,c(3:5,9:11)] #all months
+  }
+}
+
+grid_var_stars <- Reduce(c, grid_var)
+grid_var_stars$SWE <- drop_units(grid_var_stars$SWE)
+grid_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> grid_var_stars
+
+# st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
+by_t = "1 year"
+grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
+grid1 <- split(grid, "time")
+
+
+df<-data.frame(year=daymet.period,mean=NA)
+for (i in 1:length(daymet.period)){
+  t <-st_apply(grid1[i],1:2,mean)
+  df$mean[i] <- mean(t$mean,na.rm=TRUE)
+}
+df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
+DF <- rbind(DF, df)
+
+# mean_grid <- st_apply(grid, c("x", "y"), mean)
+# saveRDS(mean_grid, file = paste0(data.dir,"/",var,gcm))
 
 for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-  model.dir <- paste0(data.dir,"/",GCMs[G])
+  # model.dir <- paste0(data.dir,"/",GCMs[G])
   # stars objs
-  cropped_st_hist <- readRDS(paste(model.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
-  cropped_st_fut <- readRDS(paste(model.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
+  cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
+  cropped_st_fut <- readRDS(paste(data.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
 
   hist_var <- list()
   
@@ -47,18 +82,18 @@ for (G in 1:length(GCMs)){
   fut_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> fut_var_stars
 
   by_t = "1 year"
-  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) mean(x)) #Don't need to divide by #yrs b/c by year
+  hist <- aggregate(hist_var_stars, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
   hist <- hist[,2:51,,]
-  hist1 <- split(hist, "time")
-  
-  
-  df<-data.frame(year=historical.period,mean=NA)
-  for (i in 1:length(historical.period)){
-    t <-st_apply(hist1[i],1:2,mean)
-    df$mean[i] <- mean(t$mean,na.rm=TRUE)
-  }
-  df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.hist<-rbind(DF.hist,df)
+  # hist1 <- split(hist, "time")
+  # 
+  # 
+  # df<-data.frame(year=historical.period,mean=NA)
+  # for (i in 1:length(historical.period)){
+  #   t <-st_apply(hist1[i],1:2,mean)
+  #   df$mean[i] <- mean(t$mean,na.rm=TRUE)
+  # }
+  # df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
+  # DF.hist<-rbind(DF.hist,df)
 
   
   fut <- aggregate(fut_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
@@ -71,58 +106,17 @@ for (G in 1:length(GCMs)){
     df$mean[i] <- mean(t$mean,na.rm=TRUE)
   }
   df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
-  DF.fut<-rbind(DF.fut,df)
+  DF<-rbind(DF,df)
 
   
   mean_hist <- st_apply(hist, c("x", "y"), mean) # find mean
   mean_fut <- st_apply(fut, c("x", "y"), mean)
   delta <- mean_fut - mean_hist
-  saveRDS(delta, file = paste(model.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
 
 }
-# Baseline_Annual <- merge(Baseline_Annual,DF.hist,by=c("GCM","Year"),all=TRUE)
-# Future_Annual <- merge(Future_Annual,DF.fut ,by=c("GCM","Year"),all=TRUE)
-write.csv(DF.hist,paste0(data.dir,"/Annual_hist",var,".csv"),row.names=FALSE)
-write.csv(DF.fut,paste0(data.dir,"/Annual_fut",var,".csv"),row.names=FALSE)
 
-model.dir <- paste0(data.dir,"/", "Daymet")
-cropped_st_grid <- readRDS(paste(model.dir,"cropped_st_Daymet_ws",sep="/"))
+write.csv(DF,paste0(data.dir,"/",var,"_ANN.csv"),row.names=FALSE)
 
-grid_var <- list()
-
-for(F in 1:length(cropped_st_grid)){
-  s = cropped_st_grid[[F]]
-  s = select(s, SWE)
-  if (is.na(summary(s$SWE)[4])) {
-    grid_var[[F]] = grid_var[[F-1]]
-    st_dimensions(grid_var[[F]])[3] = st_dimensions(s)[3]
-  } else{
-    grid_var[[F]] = s[,,,c(3:5,9:11)] #all months
-  }
-}
-
-grid_var_stars <- Reduce(c, grid_var)
-grid_var_stars$SWE <- drop_units(grid_var_stars$SWE)
-grid_var_stars %>% mutate(SWEf = SWE / 25.4) %>% select(SWEf) -> grid_var_stars
-
-# st_get_dimension_values(grid_var_stars,"time") #how get time dimension values
-
-grid <- aggregate(grid_var_stars, by = by_t, FUN = function(x) mean(x)) # Doesn't work in lat/long. Must be projected. Removes units from tmax. Also aggregates to a lower resolution.
-grid1 <- split(grid, "time")
-
-
-df<-data.frame(year=daymet.period,mean=NA)
-for (i in 1:length(daymet.period)){
-t <-st_apply(grid1[i],1:2,mean)
-df$mean[i] <- mean(t$mean,na.rm=TRUE)
-}
-df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-# Daymet_Annual <- merge(Daymet_Annual,df,by=c("GCM","Year"),all=TRUE)
-
-# test2 <- split(test, "time") # ggplot will not work if time is a dimension, so switching to an attribute. Should not matter since time is aggregated here. 
-mean_grid <- st_apply(grid, c("x", "y"), mean)
-saveRDS(mean_grid, file = paste0(model.dir,"/",var,gcm))
-write.csv(df,paste0(data.dir,"/Annual_daymet",var,".csv"),row.names=FALSE)
-
-rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist1,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
+rm(grid_var,grid_var_stars,grid,grid1,hist,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
 gc()
