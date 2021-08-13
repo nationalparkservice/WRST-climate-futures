@@ -55,33 +55,6 @@ shp <- st_transform(shp, 3338)
 
 ```
 
-## Create empty dataframes that will store climate summaries for each GCM.rcp as loop through data
-
-```{r Create empty dataframes}
-
-monthly.variables <- c("Annual.tmeanF","Annual.precipIn","DJF.tmeanF", "MAM.tmeanF", "JJA.tmeanF", "SON.tmeanF","DJF.tmaxF", "MAM.tmaxF", "JJA.tmaxF", "SON.tmaxF","DJF.tminF", "MAM.tminF", "JJA.tminF", "SON.tminF", "DJF.precipIn", "MAM.precipIn", "JJA.precipIn","SON.precipIn")
-
-# annual.variables <- c("freeze.thaw","GDD","freq.hot.days","days.below32","days.below0","WSF,below0","W.days.over0","precip.over99","max.SWE","MAMSON.SWE","SWE.precip","water.balance","max.runoff","mean.soil.moisture","yday.SWE0","mean.soil.temp")
-
-seasons <- factor(c("DJF","MAM","JJA","SON"),levels=c("DJF","MAM","JJA","SON"))
-
-Baseline_Monthly<-CF_GCM[,1:2]
-
-Future_Monthly <- Baseline_Monthly
-
-Daymet_Monthly <- data.frame(CF = "Historical",GCM = "Daymet")
-
-# Baseline_Annual <- expand.grid(GCMs,historical.period); names(Baseline_Annual) <- c("GCM","Year")
-# Baseline_Annual <- merge(Baseline_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
-
-# Future_Annual <- expand.grid(GCMs,future.period); names(Future_Annual) <- c("GCM","Year")
-# Future_Annual <- merge(Future_Annual,CF_GCM[,c("GCM","CF")],by="GCM")
-
-# Daymet_Annual <- expand.grid("Daymet",daymet.period); names(Daymet_Annual) <- c("GCM","Year")
-# Daymet_Annual$CF <- "Historical"
-
-```
-
 ## Met monthly parse and variable creation
 Loop through met GCM.rcp and summarize each variable
 
