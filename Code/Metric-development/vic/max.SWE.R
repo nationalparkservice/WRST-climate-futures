@@ -33,7 +33,7 @@ for (i in 1:length(daymet.period)){
   df$mean[i] <- mean(t$mean,na.rm=TRUE)
 }
 df$GCM <- "Daymet"; names(df) <- c("Year", var, "GCM")
-DF <- rbind(DF.df)
+DF <- rbind(DF,df)
 
 # mean_grid <- st_apply(grid, c("x", "y"), mean)
 # saveRDS(mean_grid, file = paste0(data.dir,"/",var,gcm))
@@ -42,7 +42,6 @@ for (G in 1:length(GCMs)){
   gcm = sub("\\..*", "", GCMs[G])
   rcp = sub('.*\\.', '', GCMs[G])
   # cf = CF_GCM$CF[match(gcm, CF_GCM$GCM)]
-   <- paste0(data.dir,"/",GCMs[G])
   # stars objs
   cropped_st_hist <- readRDS(paste(data.dir,paste0("cropped_st_hist_ws_",gcm,"_",rcp),sep="/"))
   cropped_st_fut <- readRDS(paste(data.dir,paste0("cropped_st_fut_ws_",gcm,"_",rcp),sep="/"))
@@ -118,5 +117,5 @@ for (G in 1:length(GCMs)){
 
 write.csv(DF,paste0(data.dir,"/",var,"_ANN.csv"),row.names=FALSE)
 
-rm(grid_var,grid_var_stars,grid,grid1,mean_grid,hist,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
+rm(grid_var,grid_var_stars,grid,grid1,hist,hist_var,hist_var_stars,mean_hist,fut,fut1,fut_var,fut_var_stars,mean_fut)
 gc()
