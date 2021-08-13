@@ -20,6 +20,8 @@ rm(list = ls())
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units)
 
 working.dir <- "C:/Users/achildress/Documents/wrst_temp"
+data.dir = paste0(working.dir,"/Data")
+plot.dir = paste0(working.dir, "/Plots")
 
 # data.dir <- paste(working.dir, "Data", area, sep="/")
 # plot.dir 
@@ -43,19 +45,11 @@ CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
 
 Plausible climate futures for Wrangell-St. Elias National Park & Preserve (WRST) are expressed in terms of future (2025-2055) change relative to late 20-th-century conditions (1950-1999). The climate information summarized here is from projected, gridded data, downscaled at 15km (BCSD; <citation from Andy to come>). Due to the size and complex geography of the park, climate future data are presented spatially, with timeseries aggregations performed across four geographic areas representing distinct climate and ecological zones in WRST (Figure 1).
 
-```{park area map, echo=FALSE, message=FALSE, warning=FALSE}
-source(here::here("Code", "Plots", "area-map.R"),echo = FALSE) 
-```
-
-[Figure 1. Map of park with 4 geographies goes here]
+![Geographic areas in WRST used for climate analysis](images/WRST_area_map.png){width="431"}
 
 Climate futures are from ten GCM projections, run under two emissions scenarios (RCP4.5 and RCP8.5), selected for their model performance in Alaska. They represent a range fo plausible ways that climate change could play out in the park over the coming decades.Three divergent climate futures were chosen by selecting the projections that characterized the broadest extent of uncertainty for metrics that park and subject-matter experts expressed as the most consequential for resources at WRST (Figure 2). The consequential climate metrics are listed in Table 1, below. See [insert reference for WICA report] for details on model selection methodology.
 
-```{scatterplot, echo=FALSE, message=FALSE, warning=FALSE}
-source(here::here("Code", "Plots", "scatterplot-final.R"),echo = FALSE) 
-```
-
-[Figure 2. Scatterplot with 3 models selected goes here]
+**[Figure 2. Scatterplot with 3 models selected goes here]**
 
 | Metric                                              |
 |-----------------------------------------------------|
@@ -91,8 +85,8 @@ Park and subject matter experts identified the following metrics as sensitivitie
 
 [Insert figures with captions for Annual and seasonal temp and precip]
 
-```{general climate metrics, echo=FALSE, message=FALSE, warning=FALSE}
-source(here::here("Code", "Plots", "scatterplot-final.R"),echo = FALSE) 
+```{r general climate metrics, echo=FALSE, message=FALSE, warning=FALSE,eval=FALSE}
+source(here::here("Code", "Plots", "xxx.R"),echo = FALSE) 
 ```
 
 ### Soils and permafrost metrics
