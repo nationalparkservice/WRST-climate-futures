@@ -105,7 +105,7 @@ for (a in 1:length(areas)) {
 ```{r daily plots, include=FALSE,results=hide, eval=TRUE}
 areas <- c('wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
 
-for (a in 1:length(areas)) {
+for (a in 2:length(areas)) {
   area=areas[a]
   dir = paste0(data.dir,"/", area, "/")
   runoff = read.csv(paste0(dir,"/runoff_DAY.csv"))
