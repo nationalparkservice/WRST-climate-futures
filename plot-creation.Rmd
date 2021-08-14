@@ -17,6 +17,7 @@ library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis
 base.dir = "C:/Users/achildress/Documents/wrst_temp"
 data.dir = paste0(base.dir,"/Data")
 plot.dir = paste0(base.dir, "/Plots")
+plot.dir = "./Data/Plots"
 
 wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
 wrst <- st_transform(wrst, 3338)
@@ -70,5 +71,9 @@ df.fut = subset(DF, Period=="Future" & GCM %in% GCMs)
 delta = df.hist[,1:4]
 delta[,5:8] = df.fut[,5:8] - df.hist[,5:8]
 
-# source(here::here("Code", "Plots", "seasonal-tmax.R"),echo = FALSE)
+source(here::here("Code", "Plots", "map_monthly_dotplots_tmax.R"),echo = FALSE)
+source(here::here("Code", "Plots", "map_monthly_dotplots_tmin.R"),echo = FALSE)
+source(here::here("Code", "Plots", "map_monthly_dotplots_tmean.R"),echo = FALSE)
+source(here::here("Code", "Plots", "map_monthly_dotplots_pcp.R"),echo = FALSE)
+
 ```
