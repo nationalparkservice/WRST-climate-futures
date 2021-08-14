@@ -14,7 +14,7 @@ rm(list = ls())
 
 area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
 
-library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr)
 
 base.dir = "C:/Users/achildress/Documents/wrst_temp"
 data.dir = paste0(base.dir,"/Data")
@@ -30,6 +30,27 @@ source(here::here("Code", "Plots", "area-map.R"),echo = FALSE)
 source(here::here("Code", "Plots", "scatterplot.R"),echo = FALSE) 
 ```
 
-```{r run plots, include=FALSE,results=hide, eval=TRUE}
+```{r seasonal plots, include=FALSE,results=hide, eval=TRUE}
+dir = paste0(data.dir,"/WRST_simple/")
+df = read.csv(paste0("Monthly_met.csv"))
+
+tmax = cbind(df[,1:3],df[grep("tmax",  colnames(df))]);names(tmax)[4:7] = gsub("\\..*","",names(tmax[,4:7]))
+tmax.long = gather(tmax, season, var, -c("CF","GCM","Period")); names(tmax.long)[5]="tmax"
+
+tmin = cbind(df[,1:3],df[grep("tmin",  colnames(df))]);names(tmin)[4:7] = gsub("\\..*","",names(tmin[,4:7]))
+tmin.long = gather(tmin, season, var, -c("CF","GCM","Period")); names(tmin.long)[5]="tmin"
+
+DF = merge(tmax.long,tmin.long,by=c("CF","GCM","Period","season"));rm(tmax,tmax.long,tmin,tmin.long)
+
+tmean = cbind(df[,1:3],df[grep("tmean",  colnames(df))]);names(tmean)[4:7] = gsub("\\..*","",names(tmean[,4:7]))
+tmean.long = gather(tmean, season, var, -c("CF","GCM","Period")); names(tmean.long)[5]="tmean"
+
+DF = merge(DF, tmean.long,by=c("CF","GCM","Period","season"));rm(tmean,tmean.long)
+
+pcp = cbind(df[,1:3],df[grep("precip",  colnames(df))]);names(pcp)[4:7] = gsub("\\..*","",names(pcp[,4:7]))
+pcp.long = gather(pcp, season, var, -c("CF","GCM","Period")); names(tmax.long)[5]="pcp"
+
+DF = merge(DF, pcp.long,by=c("CF","GCM","Period","season"));rm(pcp,pcp.long)
+
 source(here::here("Code", "Plots", "seasonal-tmax.R"),echo = FALSE)
 ```
