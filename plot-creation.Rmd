@@ -12,13 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r set directories, include=FALSE, results=hide, eval=TRUE}
 rm(list = ls())
 
-library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr); library(lemon);library(ggpubr);library(gridExtra);library(grid)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr); library(lemon);library(ggpubr);library(gridExtra);library(grid); library(gtable); library(lubridate)
 
 base.dir = "C:/Users/achildress/Documents/wrst_temp"
 data.dir = paste0(base.dir,"/Data")
-plot.dir = paste0(base.dir, "/Plots")
-plot.dir = "./Data/Plots"
+plot.dir = "./Data/figures"
 
+boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/3.0 Climate futures development (Summer 2021)/Data/Boundary_shapefiles/"
 wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
 wrst <- st_transform(wrst, 3338)
 
@@ -75,5 +75,42 @@ source(here::here("Code", "Plots", "map_monthly_dotplots_tmax.R"),echo = FALSE)
 source(here::here("Code", "Plots", "map_monthly_dotplots_tmin.R"),echo = FALSE)
 source(here::here("Code", "Plots", "map_monthly_dotplots_tmean.R"),echo = FALSE)
 source(here::here("Code", "Plots", "map_monthly_dotplots_pcp.R"),echo = FALSE)
+
+```
+
+```{r annual map-timeseries plots, include=FALSE,results=hide, eval=TRUE}
+dir = paste0(data.dir,"/WRST_simple/")
+source(here::here("Code", "Plots", "maps_ts_plots_tmean.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_pcp.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_water.balance.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_SWE.precip.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_max.SWE.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_MAMSON.SWE.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_soil.temp.R"),echo = FALSE)
+
+```
+
+``` {r timeseries stack, include=FALSE,results=hide, eval=TRUE}
+areas <- c('wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+
+for (a in 1:length(areas)) {
+  area=areas[1]
+  dir = paste0(data.dir,"/", area, "/")
+  DF = read.csv(paste0(dir,"/Daily_met.csv"))
+  source(here::here("Code", "Plots", "daily_ts_stack.R"),echo = FALSE)
+}
+
+```
+
+```{r daily plots, include=FALSE,results=hide, eval=TRUE}
+areas <- c('wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+
+for (a in 1:length(areas)) {
+  area=areas[a]
+  dir = paste0(data.dir,"/", area, "/")
+  runoff = read.csv(paste0(dir,"/runoff_DAY.csv"))
+  SWE = read.csv(paste0(dir,"/SWE_DAY.csv"))
+  source(here::here("Code", "Plots", "SWE-runoff-plots.R"),echo = FALSE)
+}
 
 ```
