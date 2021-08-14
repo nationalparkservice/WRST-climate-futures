@@ -48,9 +48,27 @@ Plausible climate futures for Wrangell-St. Elias National Park & Preserve (WRST)
 
 ![Geographic areas in WRST used for climate analysis](Data/Plots/WRST_area_map.png){width="431"}
 
+
+
 Climate futures are from ten GCM projections, run under two emissions scenarios (RCP4.5 and RCP8.5), selected for their model performance in Alaska. They represent a range fo plausible ways that climate change could play out in the park over the coming decades.Three divergent climate futures were chosen by selecting the projections that characterized the broadest extent of uncertainty for metrics that park and subject-matter experts expressed as the most consequential for resources at WRST (Figure 2). The consequential climate metrics are listed in Table 1, below. See [insert reference for WICA report] for details on model selection methodology.
 
-**[Figure 2. Scatterplot with 3 models selected goes here]**
+
+
+![Figure 2. Seasonal change in TmaxF](Data/Plots/Scatterplot-TvsP.png)
+
+
+
+
+```{r CF color table,eval=TRUE,echo=FALSE}
+writeLines("td, th { padding : 6px } th { background-color : brown ; color : white; border : 1px solid white; } td { color : brown ; border : 1px solid brown }", con = "mystyle.css")
+knitr::kable(CF_GCM[,1:2], format="markdown")
+
+# colorSub=nameVector(rainbow(10), c(letters[1:5], LETTERS[1:5])),
+# row_color_by="B")
+```
+
+
+
 
 | Metric                                              |
 |-----------------------------------------------------|
@@ -61,6 +79,9 @@ Climate futures are from ten GCM projections, run under two emissions scenarios 
 | Water balance                                       |
 
 : Table 1. Climate metrics representing most challenging climate sensitivities for resources at WRST
+
+
+
 
 ## Vegetation
 
@@ -85,12 +106,17 @@ Park and subject matter experts identified the following metrics as sensitivitie
 ### Fundamental climate metrics
 The following figures illustrate seasonal change (1950-1999 vs 2025-2055) in basic climate metrics. Seasons are characterized as yearly quarters: DJF = December, January, February; MAM = March, April, May; JJA = June, July, August; SON = Septemper, October, November. 
 
+Unless specified, average values displayed as change values in dotplots or annual averages in timeseries plots are averaged across all grid cells in the geographies represented in each map. 
+
 
 ![Figure XX. Seasonal change in TmaxF](Data/Plots/seasonal_tmaxF.png)
 ![Figure XX. Seasonal change in TminF](Data/Plots/seasonal_tminF.png)
 
 ![Figure XX. Seasonal change in Pcp](Data/Plots/seasonal_precipIn.png)
+![Figure XX. Annual tmean](Data/Plots/Annual.tmeanF_ANN.png)
 
+![Figure XX. Annual precip](Data/Plots/Annual.precipIn_ANN.png)
+![Figure XX. Annual water balance (precip-ET)](Data/Plots/water.balance_ANN.png)
 
 ### Soils and permafrost metrics
 
