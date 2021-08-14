@@ -8,8 +8,6 @@ print("extracting Daymet")
 
 # model.dir <- paste0(vic.dir,"/daily/daymet")
 # dir.create(model.dir,showWarnings=FALSE)
-DF.grid <- data.frame()
-
 grid_filelist = list.files(path = paste0(vic.dir,"/daily/daymet"), pattern= '.nc', full.names = TRUE)
 wf_grid_filelist <- grid_filelist[grep("wf", grid_filelist)]
 ws_grid_filelist <- grid_filelist[grep("ws", grid_filelist)]
@@ -35,11 +33,9 @@ grid_crop_ws = drop_units(grid_crop_ws)
 rm(grid_star_wf, grid_star_ws)
 
 # add Imperial units
-grid_crop_wf %>% mutate(RUNOFF_in = RUNOFF / 25.4) %>%
-  # mutate(PCP_in = PRCP / 25.4) %>%
-  select(c(RUNOFF_in)) -> wf_imperial
+grid_crop_wf %>% mutate(RUNOFF_in = RUNOFF / 25.4)  -> wf_imperial
 
-grid_crop_ws %>% mutate(SWE_in = SWE / 25.4) %>% select(SWE_in) -> ws_imperial
+grid_crop_ws %>% mutate(SWE_in = SWE / 25.4) -> ws_imperial
 
 # Daily mean values
 runoff.mean <- st_apply((wf_imperial %>% dplyr::select(RUNOFF_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
@@ -54,7 +50,7 @@ df2$GCM = "Daymet"
 DF1 <- rbind(DF1,df1)
 DF2 <- rbind(DF2, df2)
 }
-rm(runoff.mean,SWE.mean,grid_crop_ws,imperial_ws,grid_crop_wf)
+rm(runoff.mean,SWE.mean,grid_crop_ws,grid_crop_wf)
 gc()
 
 # FUTURE ----
@@ -90,11 +86,9 @@ for (G in 1:length(GCMs)){
   rm(fut_star_wf, fut_star_ws)
   
   # add Imperial units
-  fut_crop_wf %>% mutate(RUNOFF_in = RUNOFF / 25.4) %>%
-    # mutate(PCP_in = PRCP / 25.4) %>%
-    select(c(RUNOFF_in)) -> wf_imperial
+  fut_crop_wf %>% mutate(RUNOFF_in = RUNOFF / 25.4)  -> wf_imperial
   
-  fut_crop_ws %>% mutate(SWE_in = SWE / 25.4) %>% select(SWE_in) -> ws_imperial
+  fut_crop_ws %>% mutate(SWE_in = SWE / 25.4)  -> ws_imperial
   
   # Daily mean values
   runoff.mean <- st_apply((wf_imperial %>% dplyr::select(RUNOFF_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
