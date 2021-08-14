@@ -12,27 +12,34 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r set directories, include=FALSE, results=hide, eval=TRUE}
 rm(list = ls())
 
-area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, WRST_simple
-
-library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr)
+library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr); library(lemon);library(ggpubr);library(gridExtra);library(grid)
 
 base.dir = "C:/Users/achildress/Documents/wrst_temp"
 data.dir = paste0(base.dir,"/Data")
 plot.dir = paste0(base.dir, "/Plots")
+
+wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
+wrst <- st_transform(wrst, 3338)
+
+GCMs <- c("inmcm4.rcp85","ACCESS1-3.rcp45","CanESM2.rcp85")
+CFs <- c("Climate Future 1", "Climate Future 2", "Climate Future 3")
+cols <- c("#12045C","#ffcccc","#E10720")
+
+CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
 ```
 
 ```{r area map, include=FALSE,results=hide, eval=FALSE}
-source(here::here("Code", "Plots", "area-map.R"),echo = FALSE)
+# source(here::here("Code", "Plots", "area-map.R"),echo = FALSE)
 # holding off on script - using ArcGIS plot for now
 ```
 
-```{r scatterplot, echo=FALSE, message=FALSE, warning=FALSE}
-source(here::here("Code", "Plots", "scatterplot.R"),echo = FALSE) 
+```{r scatterplot, echo=FALSE, message=FALSE, warning=FALSE,eval=FALSE}
+# source(here::here("Code", "Plots", "scatterplot.R"),echo = FALSE) 
 ```
 
 ```{r seasonal plots, include=FALSE,results=hide, eval=TRUE}
 dir = paste0(data.dir,"/WRST_simple/")
-df = read.csv(paste0("Monthly_met.csv"))
+df = read.csv(paste0(dir,"/Monthly_met.csv"))
 
 tmax = cbind(df[,1:3],df[grep("tmax",  colnames(df))]);names(tmax)[4:7] = gsub("\\..*","",names(tmax[,4:7]))
 tmax.long = gather(tmax, season, var, -c("CF","GCM","Period")); names(tmax.long)[5]="tmax"
@@ -48,9 +55,20 @@ tmean.long = gather(tmean, season, var, -c("CF","GCM","Period")); names(tmean.lo
 DF = merge(DF, tmean.long,by=c("CF","GCM","Period","season"));rm(tmean,tmean.long)
 
 pcp = cbind(df[,1:3],df[grep("precip",  colnames(df))]);names(pcp)[4:7] = gsub("\\..*","",names(pcp[,4:7]))
-pcp.long = gather(pcp, season, var, -c("CF","GCM","Period")); names(tmax.long)[5]="pcp"
+pcp.long = gather(pcp, season, var, -c("CF","GCM","Period")); names(pcp.long)[5]="pcp"
 
 DF = merge(DF, pcp.long,by=c("CF","GCM","Period","season"));rm(pcp,pcp.long)
 
-source(here::here("Code", "Plots", "seasonal-tmax.R"),echo = FALSE)
+# factors
+DF$CF = factor(DF$CF, levels=CFs)
+DF$GCM = factor(DF$GCM, levels=GCMs)
+DF$season <- factor(DF$season, levels=c("DJF","MAM","JJA","SON"))
+
+# create delta df
+df.hist = subset(DF, Period=="Historical" & GCM %in% GCMs)
+df.fut = subset(DF, Period=="Future" & GCM %in% GCMs)
+delta = df.hist[,1:4]
+delta[,5:8] = df.fut[,5:8] - df.hist[,5:8]
+
+# source(here::here("Code", "Plots", "seasonal-tmax.R"),echo = FALSE)
 ```
