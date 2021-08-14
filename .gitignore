@@ -28,7 +28,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 data
-Plots
+figures
 Data
 WRST-climate-futures.Rproj
 output
