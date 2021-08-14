@@ -93,5 +93,7 @@ memory.limit(60000)
 source(here::here("Code", "Metric-development", "met","met-daily-stars_by_year.R"),echo = FALSE) 
 source(here::here("Code", "Metric-development", "vic","SWE-runoff-Pr99.R"),echo = FALSE)
 
+source(here::here("Code", "Metric-development","daily-all-geographies.R"),echo = FALSE,eval=FALSE)
+
 ```
 
