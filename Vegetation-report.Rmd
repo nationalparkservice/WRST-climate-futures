@@ -46,7 +46,7 @@ CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
 
 Plausible climate futures for Wrangell-St. Elias National Park & Preserve (WRST) are expressed in terms of future (2025-2055) change relative to late 20-th-century conditions (1950-1999). The climate information summarized here is from projected, gridded data, downscaled at 15km (BCSD; *citation from A. Newman to come*). Due to the size and complex geography of the park, climate future data are presented spatially, with timeseries aggregations performed across four geographic areas representing distinct climate and ecological zones in WRST (Figure 1).
 
-![Geographic areas in WRST used for climate analysis](Data/Plots/WRST_area_map.png){width="431"}
+![Geographic areas in WRST used for climate analysis](Data/figures/WRST_area_map.png){width="431"}
 
 
 
@@ -54,7 +54,7 @@ Climate futures are from ten GCM projections, run under two emissions scenarios 
 
 
 
-![Figure 2. Seasonal change in TmaxF](Data/Plots/Scatterplot-TvsP.png)
+![Figure 2. Seasonal change in TmaxF](Data/figures/Scatterplot-TvsP.png)
 
 
 
@@ -87,7 +87,7 @@ knitr::kable(CF_GCM[,1:2], format="markdown")
 
 Park and subject matter experts identified the following metrics as sensitivities for vegetation in WRST (Table 2). These metrics are evaluated for the three climate futures in the subsequent sections of this packet. Use this table when determining implications of each of the climate futures on each resource component to identify metrics to review.
 
-![Table 2. Vegetation climate sensitivities](Data/Plots/Veg-metrics-table.png "Vegetation climate sensitivities")
+![Table 2. Vegetation climate sensitivities](Data/figures/Veg-metrics-table.png "Vegetation climate sensitivities")
 
 ### Climate futures summary
 
@@ -109,24 +109,30 @@ The following figures illustrate seasonal change (1950-1999 vs 2025-2055) in bas
 Unless specified, average values displayed as change values in dotplots or annual averages in timeseries plots are averaged across all grid cells in the geographies represented in each map. 
 
 
-![Figure XX. Seasonal change in TmaxF](Data/Plots/seasonal_tmaxF.png)
-![Figure XX. Seasonal change in TminF](Data/Plots/seasonal_tminF.png)
+![Figure XX. Seasonal change in TmaxF](Data/figures/seasonal_tmaxF.png)
+![Figure XX. Seasonal change in TminF](Data/figures/seasonal_tminF.png)
 
-![Figure XX. Seasonal change in Pcp](Data/Plots/seasonal_precipIn.png)
-![Figure XX. Annual tmean](Data/Plots/Annual.tmeanF_ANN.png)
+![Figure XX. Seasonal change in Pcp](Data/figures/seasonal_precipIn.png)
+![Figure XX. Annual tmean](Data/figures/Annual.tmeanF_ANN.png)
 
-![Figure XX. Annual precip](Data/Plots/Annual.precipIn_ANN.png)
-![Figure XX. Annual water balance (precip-ET)](Data/Plots/water.balance_ANN.png)
-
-### Soils and permafrost metrics
+![Figure XX. Annual precip](Data/figures/Annual.precipIn_ANN.png)
+![Figure XX. Annual water balance (precip-ET)](Data/figures/water.balance_ANN.png)
 
 ### Threshold metrics
 
-[This will be four panels, one for each area in the park]
+The following plots represent annual averages for threshold exceedance metrics in different regions of WRST (see Figure 1).
+![Figure XX. wrst_mtns threshold exceedance](Data/figures/wrst_mtns_ts-stack.png)
+![Figure XX. wrst_mtns threshold exceedance](Data/figures/copper_plateau_ts-stack.png)
+![Figure XX. wrst_mtns threshold exceedance](Data/figures/coastal_mtns_ts-stack.png)
+![Figure XX. wrst_mtns threshold exceedance](Data/figures/eastern_coast_ts-stack.png)
 
 ### Snow metrics
+![Figure XX. Annual water balance (precip-ET)](Data/figures/SWE.precip_ANN.png)
+![Figure XX. Annual water balance (precip-ET)](Data/figures/max.SWE_ANN.png)
+![Figure XX. Annual water balance (precip-ET)](Data/figures/MAMSON.SWE_ANN.png)
 
 ### Soils and permafrost metrics
+![Figure XX. Soil temperature](Data/figures/soil.temp_ANN.png)
 
 <!-- Figure out how to center -->
 
