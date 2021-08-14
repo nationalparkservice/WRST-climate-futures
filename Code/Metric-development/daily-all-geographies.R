@@ -21,7 +21,7 @@ cols <- c("#12045C","#ffcccc","#E10720")
 
 CF_GCM <- data.frame(CF=CFs,GCM=GCMs,CF_col=cols)
                      
-for (a in 2:length(areas)){
+for (a in 1:length(areas)){
   area = areas[a]
   
   shp <- st_read(paste0(boundary.dir, area, ".shp")) # Wrangell Mountains
