@@ -40,7 +40,7 @@ map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
     geom_stars(data = data, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis(direction=1, option = scale, 
+    scale_fill_viridis(direction=-1, option = scale, 
                        limits = c(scale.min, scale.max), oob = scales::squish) + 
     labs(title = title) +
     theme_map() +

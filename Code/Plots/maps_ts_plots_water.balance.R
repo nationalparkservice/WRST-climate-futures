@@ -36,7 +36,7 @@ map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
     geom_stars(data = data, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis(direction=1, option = scale,
+    scale_fill_viridis(direction=-1, option = scale,
                        guide = guide_colorbar(title.position = "top", title.hjust = 0.5),
                        limits = c(scale.min, scale.max), oob = scales::squish) + #mako for WB delta
     labs(title = title) +
