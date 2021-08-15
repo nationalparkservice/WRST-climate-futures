@@ -1,7 +1,7 @@
 var = "water.balance"
 long.title = "total annual water balance (in/year)" 
 scale="viridis"
-ratio= 50 #aspect ratio for ts
+ratio= 0.3 #aspect ratio for ts
 
 shp = wrst # area is wrst
 
@@ -17,18 +17,28 @@ df = merge(df, CF_GCM,by="GCM",all=TRUE)
 df$CF[which(is.na((df$CF)))] = "Historical"
 df$CF_col[which(is.na((df$CF_col)))] = "grey"
 df$CF = factor(df$CF, levels=c(CFs,"Historical"))
+df = subset(df, Year != 1980)
 
 means <- df %>% group_by(CF) %>%
   summarize(var = mean(eval(parse(text=var)))) 
 
+
+# read in RDS for setting scale limits
+cf1 <- readRDS(CF1.ls)
+cf2 <- readRDS(CF2.ls)
+cf3 <- readRDS(CF3.ls)
+
+scale.min = min(c(cf1$mean,cf2$mean,cf3$mean),na.rm=TRUE)
+scale.max = max(c(cf1$mean,cf2$mean,cf3$mean),na.rm=TRUE)
 
 # ggplot
 map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
     geom_stars(data = data, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis(direction=-1, option = scale,
-                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + #mako for WB delta
+    scale_fill_viridis(direction=1, option = scale,
+                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5),
+                       limits = c(scale.min, scale.max), oob = scales::squish) + #mako for WB delta
     labs(title = title) +
     theme_map() +
     theme(legend.position = "bottom",
@@ -40,12 +50,12 @@ map.plot <- function(data, title,xaxis,metric,col){
     labs(fill = paste0("Change in ",metric))
 }
 
-cf1 <- map.plot(data=readRDS(CF1.ls),title=CFs[1],metric=long.title,col=cols[1])
-cf2 <- map.plot(data=readRDS(CF2.ls),title=CFs[2],metric=long.title,col=cols[2])
-cf3 <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=cols[3])
+cf1.plot <- map.plot(data=readRDS(CF1.ls),title=CFs[1],metric=long.title,col=cols[1])
+cf2.plot <- map.plot(data=readRDS(CF2.ls),title=CFs[2],metric=long.title,col=cols[2])
+cf3.plot <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=cols[3])
 
 ts <- ggplot(df, aes(x=Year, y=(eval(parse(text=var))), group=CF, colour = CF)) +
- 
+  
   geom_line(colour = "black",size=2.5, stat = "identity") +
   geom_line(size = 2, stat = "identity") +
   geom_point(colour= "black", size=4, aes(fill = factor(CF), shape = factor(CF))) +
@@ -60,12 +70,13 @@ ts <- ggplot(df, aes(x=Year, y=(eval(parse(text=var))), group=CF, colour = CF)) 
        x = "Year", y = long.title) +
   scale_color_manual(name="",values = c(cols,"grey")) +
   scale_fill_manual(name="",values = c(cols,"grey")) +
-  scale_shape_manual(name="",values = c(21,22,23, 24)) 
+  scale_shape_manual(name="",values = c(21,22,23, 24)) +
+  coord_fixed(ratio = ratio) 
 ts
 
 
 #### Just maps and ts plot
-maps <- grid_arrange_shared_legend(cf1, cf2, cf3, ncol = 3, nrow = 1, position = "bottom", 
+maps <- grid_arrange_shared_legend(cf1.plot, cf2.plot, cf3.plot, ncol = 3, nrow = 1, position = "bottom", 
                                    top = textGrob(paste0("Change in ",long.title),
                                                   gp=gpar(fontface="bold", col="black", fontsize=16)))
 # g <- ggarrange(maps,ts, nrow=2)
