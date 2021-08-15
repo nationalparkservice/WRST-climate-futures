@@ -130,6 +130,10 @@ The following plots represent annual averages for threshold exceedance metrics i
 ![Figure XX. Annual water balance (precip-ET)](Data/figures/SWE.precip_ANN.png)
 ![Figure XX. Annual water balance (precip-ET)](Data/figures/max.SWE_ANN.png)
 ![Figure XX. Annual water balance (precip-ET)](Data/figures/MAMSON.SWE_ANN.png)
+![Figure XX. Soil temperature](Data/figures/wrst_mtns_SWE-runoff.png)
+![Figure XX. Soil temperature](Data/figures/copper_plateau_SWE-runoff.png)
+![Figure XX. Soil temperature](Data/figures/coastal_mtns_SWE-runoff.png)
+![Figure XX. Soil temperature](Data/figures/eastern_coast_SWE-runoff.png)
 
 ### Soils and permafrost metrics
 ![Figure XX. Soil temperature](Data/figures/soil.temp_ANN.png)
