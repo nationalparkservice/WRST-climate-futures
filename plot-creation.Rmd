@@ -91,10 +91,12 @@ source(here::here("Code", "Plots", "maps_ts_plots_soil.temp.R"),echo = FALSE)
 ```
 
 ``` {r timeseries stack, include=FALSE,results=hide, eval=TRUE}
-areas <- c('wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+areas <- c("wrst_simple", 'wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+area_names = ("WRST", "WRST mountains", "Copper plateau", "Coastal mountains", "eastern coast")
 
 for (a in 1:length(areas)) {
-  area=areas[1]
+  area=areas[a]
+  area_name = area_names[a]
   dir = paste0(data.dir,"/", area, "/")
   DF = read.csv(paste0(dir,"/Daily_met.csv"))
   source(here::here("Code", "Plots", "daily_ts_stack.R"),echo = FALSE)
