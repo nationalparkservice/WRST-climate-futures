@@ -38,6 +38,7 @@ scale.max = max(c(DJF.cf1$pcp_in,MAM.cf1$pcp_in,JJA.cf1$pcp_in,SON.cf1$pcp_in,
 # ggplot
 map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
+    geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W.1), show.legend=FALSE) +
     geom_stars(data = data, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
     scale_fill_viridis(direction=-1, option = scale, 
