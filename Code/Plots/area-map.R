@@ -8,7 +8,7 @@ copper_pleatau <- st_read(paste0(boundary.dir, "copper_plateau.shp")); copper_pl
 coastal_mtns <- st_read(paste0(boundary.dir, "coastal_mtns.shp")); coastal_mtns <- st_transform(coastal_mtns, 3338)
 eastern_coast <- st_read(paste0(boundary.dir, "eastern_coast.shp")); eastern_coast <- st_transform(eastern_coast, 3338)
 
-topo <- stack('C:/Users/achildress/Documents/wrst_temp/HYP_HR_SR_W/HYP_HR_SR_W.tif') # read in as stack so can see RBG layers
+topo <- stack(paste0(boundary.dir, 'HYP_HR_SR_W/HYP_HR_SR_W.tif')) # read in as stack so can see RBG layers
 ext <- extent(-147, -139, 59.3, 63) # extent defined by lat/long
 ak <- crop(topo, ext)
 # plotRGB(ak)
@@ -20,11 +20,11 @@ grid <- readRDS(paste0(data.dir,"/WRST_simple/Annual.precipIn_ACCESS1-3_rcp45"))
 
 ggplot() +
   geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W.1), show.legend=FALSE) + #it's a multiband raster so alpha is band I wanted to use
-  # geom_stars(data = d45, alpha = 0.4) + # the WB layer I was plotting - alpha is transparency
+  geom_stars(data = readRDS(paste0(boundary.dir,'r.rds')), alpha = 0.4) + # the WB layer I was plotting - alpha is transparency
   geom_sf(data = wrst, aes(), fill = NA,lwd=2,colour="black") + # shapefile outlining the part of the park I'm plotting
-  geom_sf(data = wrst_mtns, aes(), fill = "blue",lwd=1,colour="black") +
-  scale_fill_viridis(direction=-1, option = "C", #begin = .5, end = 1,
-                     guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # I don't actually love this palette, but good enough for now
+  # geom_sf(data = wrst_mtns, aes(), fill = "blue",lwd=1,colour="black") +
+  # scale_fill_viridis(direction=-1, option = "C", #begin = .5, end = 1,
+                     # guide = guide_colorbar(title.position = "top", title.hjust = 0.5)) + # I don't actually love this palette, but good enough for now
   labs(title = "ACCESS1-3 RCP 4.5") +
   theme_map() +
   theme(legend.position = "bottom",
@@ -33,4 +33,5 @@ ggplot() +
         legend.justification = "center",
         plot.title=element_text(size=12,face="bold",hjust=0.5)) +
   # plot.background = element_rect(colour = col, fill=NA, size=5)) +
-  labs(fill = "Water Balance")
+  # labs(fill = "Water Balance") +
+  scale_colour_manual(values = c(rgb(207, 31, 46, maxColorValue = 255)), "#ffda85")
