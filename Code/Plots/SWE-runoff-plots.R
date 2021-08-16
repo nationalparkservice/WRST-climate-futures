@@ -14,6 +14,10 @@ df$yday = yday(df$date)
 runoff.plot <- function(data, col,CF){  
 ggplot() +
   geom_line(data=data,aes(x=yday,y=RUNOFF_in,group=Year),colour=col,size=.7) +
+    geom_vline(xintercept=91, linetype="dashed", color = "black") +
+    geom_text(aes(x=91, label="Apr 1\n", y=max(df$RUNOFF)), colour="black", angle=90, text=element_text(size=11),hjust=1) +
+    geom_vline(xintercept=274, linetype="dashed", color = "black") +
+    geom_text(aes(x=274, label="\nOct 1", y=max(df$RUNOFF)), colour="black", angle=90, text=element_text(size=11),hjust=1) +
   theme(axis.text=element_text(size=16),
         # axis.text.x=element_blank(),
         axis.title.x=element_text(size=16,vjust=1.0),
@@ -28,6 +32,7 @@ ggplot() +
 }
 
 CF1.runoff = runoff.plot(data=subset(df, CF == CFs[1]),col=cols[1],CF=CFs[1])
+CF1.runoff
 CF2.runoff = runoff.plot(data=subset(df, CF == CFs[2]),col=cols[2],CF=CFs[2])
 CF3.runoff = runoff.plot(data=subset(df, CF == CFs[3]),col=cols[3],CF=CFs[3])
 Hist.runoff = runoff.plot(data=subset(df, CF == "Historical"),col="grey",CF="Historical")
@@ -37,6 +42,10 @@ Hist.runoff = runoff.plot(data=subset(df, CF == "Historical"),col="grey",CF="His
 SWE.plot <- function(data, col,CF){  
   ggplot() +
     geom_line(data=data,aes(x=yday,y=SWE_in,group=Year),colour=col,size=.7) +
+    geom_vline(xintercept=91, linetype="dashed", color = "black") +
+    geom_text(aes(x=91, label="Apr 1\n", y=max(df$SWE_in)), colour="black", angle=90, text=element_text(size=11),hjust=1) +
+    geom_vline(xintercept=274, linetype="dashed", color = "black") +
+    geom_text(aes(x=274, label="\nOct 1", y=max(df$SWE_in)), colour="black", angle=90, text=element_text(size=11),hjust=1) +
     theme(axis.text=element_text(size=16),
           # axis.text.x=element_blank(),
           axis.title.x=element_text(size=16,vjust=1.0),
@@ -61,18 +70,18 @@ grid1 <- ggarrange(Hist.runoff, CF1.runoff, CF2.runoff, CF3.runoff, ncol = 1, nr
 
 grid1 = annotate_figure(grid1, left = textGrob("Runoff (in)", rot = 90, vjust = 1, gp = gpar(cex = 1.3)),
                         bottom = textGrob("Julian day", gp = gpar(cex = 1.3)),
-                        top = textGrob("Average daily runoff",
+                        top = textGrob("Daily runoff for each climate future",
                                        gp=gpar(fontface="bold", col="black", fontsize=16)))
 
 grid2 <- ggarrange(Hist.SWE, CF1.SWE, CF2.SWE, CF3.SWE, ncol = 1, nrow = 4)
 
 grid2 =  annotate_figure(grid2, left = textGrob("SWE (in)", rot = 90, vjust = 1, gp = gpar(cex = 1.3)),
                 bottom = textGrob("Julian day", gp = gpar(cex = 1.3)),
-                top = textGrob("Average daily SWE",
+                top = textGrob("Daily SWE for each climate future",
                                gp=gpar(fontface="bold", col="black", fontsize=16)))
 
 grid = ggarrange(grid1,grid2,nrow=1,ncol=2) 
-annotate_figure(grid, top = textGrob(area,
+annotate_figure(grid, top = textGrob(area_name,
                                       gp=gpar(fontface="bold", col="black", fontsize=20)))
 
 ggsave(paste0(area,"_SWE-runoff.png"), width = 15, height = 9, path = plot.dir)
