@@ -92,7 +92,7 @@ source(here::here("Code", "Plots", "maps_ts_plots_soil.temp.R"),echo = FALSE)
 
 ``` {r timeseries stack, include=FALSE,results=hide, eval=TRUE}
 areas <- c("wrst_simple", 'wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
-area_names = ("WRST", "WRST mountains", "Copper plateau", "Coastal mountains", "eastern coast")
+area_names = c("WRST", "WRST mountains", "Copper plateau", "Coastal mountains", "eastern coast")
 
 for (a in 1:length(areas)) {
   area=areas[a]
@@ -105,10 +105,12 @@ for (a in 1:length(areas)) {
 ```
 
 ```{r daily plots, include=FALSE,results=hide, eval=TRUE}
-areas <- c('wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+areas <- c('wrst_simple', 'wrst_mtns', 'copper_plateau', 'coastal_mtns', 'eastern_coast')
+area_names = c("WRST", "WRST mountains", "Copper plateau", "Coastal mountains", "eastern coast")
 
-for (a in 2:length(areas)) {
+for (a in 1:length(areas)) {
   area=areas[a]
+  area_name = area_names[a]
   dir = paste0(data.dir,"/", area, "/")
   runoff = read.csv(paste0(dir,"/runoff_DAY.csv"))
   SWE = read.csv(paste0(dir,"/SWE_DAY.csv"))
