@@ -18,14 +18,14 @@ This script...
 
 This script...
 
-**3. Calculate climate metrics for selected climate futures**
+**3. Plot climate metrics for selected geographies**
 [*Script: plot-creation.Rmd*](https://github.com/nationalparkservice/WRST-climate-futures/blob/main/plot-creation.Rmd.Rmd)
 
 
 This script...
 
 
-**4. Calculate climate metrics for selected climate futures**
+**4. Create reports for park resources. Separate report generated for each of the eight resource groups**
 [*e.g. sccript: Vegetation-report.Rmd*](https://github.com/nationalparkservice/WRST-climate-futures/blob/main/Vegetation-report.Rmd)
 
 This script...
