@@ -1,4 +1,4 @@
-library(raster)
+library(raster); library(tidyr)
 vic.dir <- "D:/NCAR_AK/vic_hydro"
 
 working.dir <- "C:/Users/achildress/Documents/wrst_temp"
@@ -96,11 +96,29 @@ cf3.plot <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=col
 as.data.frame(cat) -> c
 c$Year = "2000"
 c %>% drop_na() -> c
-c %>% group_by(Year) %>% summarise(c2 = sum(categories)) -> c
+c2 <- c; c2$Year = "2001"
+c = rbind(c,c2)
+
+head(c)
+
+c2 = data.frame(Year = rep(2000:2001,each=3), category = rep(seq(0.1,0.3,.1),2),proportion=(rnorm(6,.4,.3)))
+
+# for (i in length(unique(c$categories))){
+  group = unique(c$categories)[i]
+
+c %>% group_by(Year) %>%
+  summarise_all(funs(sum(categories==0.1, na.rm = TRUE)/n()))
 
 
+c %>% 
+  drop_na() %>% 
+  group_by(categories, Year) %>% 
+  summarize(sum_cat = sum(categories)) %>%
+  group_by(Year) %>%
+  mutate(percent = sum_cat/sum(sum_cat)) %>%
+  arrange(Year) -> c2
 
-ggplot(cat,aes(x=1,y=categories,colour=categories)) +
+ggplot(c2,aes(x=Year,y=percent,colour=categories)) +
   geom_tile(aes(fill = categories))
 
 ggplot(ts.obj, aes(x=Year,y=cat,colour=cat)) +
