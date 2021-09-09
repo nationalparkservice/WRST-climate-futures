@@ -1,6 +1,3 @@
-library(raster); library(tidyr)
-vic.dir <- "D:/NCAR_AK/vic_hydro"
-
 working.dir <- "C:/Users/achildress/Documents/wrst_temp"
 
 area="WRST_simple"
@@ -10,12 +7,14 @@ data.dir <- paste(working.dir, "Data", area, sep="/")
 
 # read in WRST-simple SWE.precip abs
 # create CF file lists
-var="SWE.precip"
+var="SWE.precip_abs"
 rds.ls = list.files(path = data.dir, pattern = paste0(var,"_"), full.names = TRUE)
+Hist = Filter(function(x) grepl("daymet", x), rds.ls)
 CF1.ls = Filter(function(x) grepl(paste(GCMs[1], collapse = "|"), x), rds.ls)
 CF2.ls = Filter(function(x) grepl(paste(GCMs[2], collapse = "|"), x), rds.ls)
 CF3.ls = Filter(function(x) grepl(paste(GCMs[3], collapse = "|"), x), rds.ls)
 # read in RDS for setting scale limits
+hist <- readRDS(Hist)
 cf1 <- readRDS(CF1.ls)
 cf2 <- readRDS(CF2.ls)
 cf3 <- readRDS(CF3.ls)
@@ -30,8 +29,9 @@ wrst <- st_transform(wrst, 3338)
 
 # ak_df  <- as.data.frame(ak2, xy = TRUE) # this step is important to get it to plot in ggplot
 
+mean_grid<-st_apply(ratio, c("x", "y"), mean)
 
-cf1 %>% 
+mean_grid %>% 
   mutate(categories = case_when(
     mean < 0.1  ~ 0.1,
     mean > 0.1 & mean < 0.2 ~ 0.2,
@@ -44,7 +44,7 @@ cf1 %>%
     mean > 0.8 & mean < 0.9 ~ 0.9,
     mean > 0.9  ~ 1.0),
     cat_factor = factor(categories, levels=seq(0.1,1,0.1))
-  )   -> cat
+  )  %>% dplyr::select(cat_factor) -> cat
 
 # Split by geog, add in DEM, convert to df
 
@@ -52,8 +52,6 @@ cf1 %>%
 
 col.ramp = c("mediumseagreen","#fed976", "#fd8d3c", "#e31a1c", "#c6dbef",
              "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594")
-
-plot(cat,col=col.ramp)
 
 # ggplot
 # map.plot <- function(data, title,xaxis,metric,col){
@@ -64,13 +62,17 @@ plot(cat,col=col.ramp)
     labs(title = "snow:rain") +
     theme_map() +
     theme(legend.position = "bottom",
-          legend.key.width = unit(6, "cm"),
+          legend.key.width = unit(1, "cm"),
           legend.key.height = unit(.3, "cm"),
           legend.justification = "center",
+          legend.spacing = unit(0, "cm"),
           plot.title=element_text(size=12,face="bold",hjust=0.5),
           plot.background = element_rect(colour = "black", fill=NA, size=5)) + 
     labs(fill = paste0("snow:rain")) +
-    scale_fill_manual(values=col.ramp)
+    scale_fill_manual(values = col.ramp,
+                      limits = c("0.1", "0.2","0.3", "0.4","0.5", "0.6","0.7", "0.8", "0.9", "1.0")) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE,label.position="top",title.position = "top",title.hjust = 0.5))
+         
 # }
 
 cf1.plot <- map.plot(data=readRDS(CF1.ls),title=CFs[1],metric=long.title,col=cols[1])
