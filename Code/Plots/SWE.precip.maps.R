@@ -25,55 +25,86 @@ boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy 
 wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
 wrst <- st_transform(wrst, 3338)
 
-dem = raster(paste0(boundary.dir,"/DEM/dem_3338")) # crs = 'SR-ORG:80'
-projectRaster(dem,wrst)
+# dem = raster(paste0(boundary.dir,"/DEM/dem_3338")) # crs = 'SR-ORG:80'
+# projectRaster(dem,wrst)
 
-ak_df  <- as.data.frame(ak2, xy = TRUE) # this step is important to get it to plot in ggplot
+# ak_df  <- as.data.frame(ak2, xy = TRUE) # this step is important to get it to plot in ggplot
 
 
 cf1 %>% 
   mutate(categories = case_when(
-    air_temperature < 3.9  ~ "Snow",
-    air_temperature > 3.9 & air_temperature < 3.95 ~ "Mix",
-    air_temperature > 3.95  ~ "Precip"),
-    categories = factor(categories, levels=c("Snow","Mix","Precip"))
-  )  %>% select(categories) -> cat_crop
+    mean < 0.1  ~ 0.1,
+    mean > 0.1 & mean < 0.2 ~ 0.2,
+    mean > 0.2 & mean < 0.3 ~ 0.3,
+    mean > 0.3 & mean < 0.4 ~ 0.4,
+    mean > 0.4 & mean < 0.5 ~ 0.5,
+    mean > 0.5 & mean < 0.6 ~ 0.6,
+    mean > 0.6 & mean < 0.7 ~ 0.7,
+    mean > 0.7 & mean < 0.8 ~ 0.8,
+    mean > 0.8 & mean < 0.9 ~ 0.9,
+    mean > 0.9  ~ 1.0),
+    cat_factor = factor(categories, levels=seq(0.1,1,0.1))
+  )   -> cat
 
 # Split by geog, add in DEM, convert to df
 
 # fill plot (heatmap?) with aes(x=time,y=elev,fill=SWE.p)
 
+col.ramp = c("mediumseagreen","#fed976", "#fd8d3c", "#e31a1c", "#c6dbef",
+             "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594")
 
-
-
-
-
-scale.min = min(c(cf1$mean,cf2$mean,cf3$mean),na.rm=TRUE)
-scale.max = max(c(cf1$mean,cf2$mean,cf3$mean),na.rm=TRUE)
+plot(cat,col=col.ramp)
 
 # ggplot
-map.plot <- function(data, title,xaxis,metric,col){
+# map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
-    geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W.1), show.legend=FALSE) +
-    geom_stars(data = data, alpha = 0.8) + 
-    geom_sf(data = shp, aes(), fill = NA) + 
-    scale_fill_viridis(direction=1, option = scale,
-                       guide = guide_colorbar(title.position = "top", title.hjust = 0.5),
-                       limits = c(scale.min, scale.max), oob = scales::squish) + #mako for WB delta
-    labs(title = title) +
+    # geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W.1), show.legend=FALSE) +
+    geom_stars(data = cat, alpha = 0.8) + 
+    geom_sf(data = wrst, aes(), fill = NA) + 
+    labs(title = "snow:rain") +
     theme_map() +
     theme(legend.position = "bottom",
           legend.key.width = unit(6, "cm"),
           legend.key.height = unit(.3, "cm"),
           legend.justification = "center",
           plot.title=element_text(size=12,face="bold",hjust=0.5),
-          plot.background = element_rect(colour = col, fill=NA, size=5)) + 
-    labs(fill = paste0("Change in ",metric))
-}
+          plot.background = element_rect(colour = "black", fill=NA, size=5)) + 
+    labs(fill = paste0("snow:rain")) +
+    scale_fill_manual(values=col.ramp)
+# }
 
 cf1.plot <- map.plot(data=readRDS(CF1.ls),title=CFs[1],metric=long.title,col=cols[1])
 cf2.plot <- map.plot(data=readRDS(CF2.ls),title=CFs[2],metric=long.title,col=cols[2])
 cf3.plot <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=cols[3])
+
+# ts.obj = read.csv("C:/Users/achildress/Documents/wrst_temp/Data/WRST_simple/SWE.precip_ANN.csv")
+# ts.obj %>% 
+#   mutate(cat = case_when(
+#     SWE.precip < 0.1  ~ 0.1,
+#     SWE.precip > 0.1 & SWE.precip < 0.2 ~ 0.2,
+#     SWE.precip > 0.2 & SWE.precip < 0.3 ~ 0.3,
+#     SWE.precip > 0.3 & SWE.precip < 0.4 ~ 0.4,
+#     SWE.precip > 0.4 & SWE.precip < 0.5 ~ 0.5,
+#     SWE.precip > 0.5 & SWE.precip < 0.6 ~ 0.6,
+#     SWE.precip > 0.6 & SWE.precip < 0.7 ~ 0.7,
+#     SWE.precip > 0.7 & SWE.precip < 0.8 ~ 0.8,
+#     SWE.precip > 0.8 & SWE.precip < 0.9 ~ 0.9,
+#     SWE.precip > 0.9  ~ 1.0),
+#     cat = factor(cat, levels=seq(0.1,1,0.1))
+#   )  -> ts.obj
+
+as.data.frame(cat) -> c
+c$Year = "2000"
+c %>% drop_na() -> c
+c %>% group_by(Year) %>% summarise(c2 = sum(categories)) -> c
+
+
+
+ggplot(cat,aes(x=1,y=categories,colour=categories)) +
+  geom_tile(aes(fill = categories))
+
+ggplot(ts.obj, aes(x=Year,y=cat,colour=cat)) +
+  geom_tile(aes(fill = cat))
 
 ts <- ggplot(df, aes(x=Year, y=(eval(parse(text=var))), group=CF, colour = CF)) +
   
