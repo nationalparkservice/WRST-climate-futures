@@ -48,8 +48,8 @@ DF = data.frame()
   s <- aggregate(var_swe, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
   s1 <- split(s, "time")
   
-  ratio1 <- s1[2:38,,]/p1[2:38,,]
-  ratio  <- s[,2:38,,]/p[,2:38,,]
+  ratio1 <- s1[1:37,,]/p1[1:37,,]
+  ratio  <- s[,1:37,,]/p[,1:37,,]
 
   
   df<-data.frame(year=daymet.period,mean=NA)
@@ -62,6 +62,7 @@ DF = data.frame()
   
   mean_grid<-st_apply(ratio, c("x", "y"), mean)
   # saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(ratio, file = paste(data.dir,paste(var,"abs_daymet",sep="_"),sep="/"))
   
   rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,grid_var_ws,grid_var_wf,cropped_st_wf,cropped_st_ws)
   gc()
