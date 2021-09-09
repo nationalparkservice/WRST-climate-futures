@@ -32,19 +32,9 @@ wrst <- st_transform(wrst, 3338)
 mean_grid<-st_apply(ratio, c("x", "y"), mean)
 
 mean_grid %>% 
-  mutate(categories = case_when(
-    mean < 0.1  ~ 0.1,
-    mean > 0.1 & mean < 0.2 ~ 0.2,
-    mean > 0.2 & mean < 0.3 ~ 0.3,
-    mean > 0.3 & mean < 0.4 ~ 0.4,
-    mean > 0.4 & mean < 0.5 ~ 0.5,
-    mean > 0.5 & mean < 0.6 ~ 0.6,
-    mean > 0.6 & mean < 0.7 ~ 0.7,
-    mean > 0.7 & mean < 0.8 ~ 0.8,
-    mean > 0.8 & mean < 0.9 ~ 0.9,
-    mean > 0.9  ~ 1.0),
-    cat_factor = factor(categories, levels=seq(0.1,1,0.1))
-  )  %>% dplyr::select(cat_factor) -> cat
+  mutate(categories = round(mean,digits=1),
+    cat_factor = factor(categories, levels=seq(0.1,1,0.1))) %>% 
+    dplyr::select(cat_factor) -> cat
 
 # Split by geog, add in DEM, convert to df
 
@@ -79,53 +69,25 @@ cf1.plot <- map.plot(data=readRDS(CF1.ls),title=CFs[1],metric=long.title,col=col
 cf2.plot <- map.plot(data=readRDS(CF2.ls),title=CFs[2],metric=long.title,col=cols[2])
 cf3.plot <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=cols[3])
 
-# ts.obj = read.csv("C:/Users/achildress/Documents/wrst_temp/Data/WRST_simple/SWE.precip_ANN.csv")
-# ts.obj %>% 
-#   mutate(cat = case_when(
-#     SWE.precip < 0.1  ~ 0.1,
-#     SWE.precip > 0.1 & SWE.precip < 0.2 ~ 0.2,
-#     SWE.precip > 0.2 & SWE.precip < 0.3 ~ 0.3,
-#     SWE.precip > 0.3 & SWE.precip < 0.4 ~ 0.4,
-#     SWE.precip > 0.4 & SWE.precip < 0.5 ~ 0.5,
-#     SWE.precip > 0.5 & SWE.precip < 0.6 ~ 0.6,
-#     SWE.precip > 0.6 & SWE.precip < 0.7 ~ 0.7,
-#     SWE.precip > 0.7 & SWE.precip < 0.8 ~ 0.8,
-#     SWE.precip > 0.8 & SWE.precip < 0.9 ~ 0.9,
-#     SWE.precip > 0.9  ~ 1.0),
-#     cat = factor(cat, levels=seq(0.1,1,0.1))
-#   )  -> ts.obj
-
-as.data.frame(cat) -> c
-c$Year = "2000"
-c %>% drop_na() -> c
-c2 <- c; c2$Year = "2001"
-c = rbind(c,c2)
-
-head(c)
-
-c2 = data.frame(Year = rep(2000:2001,each=3), category = rep(seq(0.1,0.3,.1),2),proportion=(rnorm(6,.4,.3)))
-
-# for (i in length(unique(c$categories))){
-  group = unique(c$categories)[i]
-
-c %>% group_by(Year) %>%
-  summarise_all(funs(sum(categories==0.1, na.rm = TRUE)/n()))
-
-
-c %>% 
+############## ts plots
+as.data.frame(ratio1) -> c
+c2 <- gather(c,year,val,X1980.01.01:X2016.01.01) %>% 
   drop_na() %>% 
+  mutate(Year = substr(year, 2, 5),
+         categories = round(val,digits=1),
+         categories = ifelse(categories < 0.1, 0.1,ifelse(categories>1,1,categories)),
+         ) %>% 
   group_by(categories, Year) %>% 
   summarize(sum_cat = sum(categories)) %>%
   group_by(Year) %>%
   mutate(percent = sum_cat/sum(sum_cat)) %>%
-  arrange(Year) -> c2
+  mutate(cat_factor = factor(categories, levels=seq(0.1,1,0.1))) %>% 
+  arrange(Year)
 
-ggplot(c2,aes(x=Year,y=percent,colour=categories)) +
-  geom_tile(aes(fill = categories))
-
-ggplot(ts.obj, aes(x=Year,y=cat,colour=cat)) +
-  geom_tile(aes(fill = cat))
-
+ggplot(c2, aes(fill=cat_factor, y=percent, x=Year)) + 
+  geom_bar(position="fill", stat="identity") +
+  scale_fill_manual(values = col.ramp)
+                    
 ts <- ggplot(df, aes(x=Year, y=(eval(parse(text=var))), group=CF, colour = CF)) +
   
   geom_line(colour = "black",size=2.5, stat = "identity") +
