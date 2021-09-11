@@ -1,6 +1,6 @@
 ## MET MONTHLY
+var = Pr99v2
 print("extracting Daymet")
-DF = data.frame()
 
 grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc', full.names = TRUE)
 
@@ -11,58 +11,45 @@ yr = as.POSIXct(sub('.*\\met_', '', sub("\\..*", "", grid_filelist[i])),format="
 print(yr)
 invisible(capture.output(
   suppressWarnings(
-    (grid_star = read_stars(grid_filelist[i], sub=c("tmax","tmin","pcp") ,curvilinear = c("longitude", "latitude"))))))
+    (grid_star = read_stars(grid_filelist[i], sub=c("pcp") ,curvilinear = c("longitude", "latitude"))))))
 grid_star = st_transform(grid_star, st_crs(shp))
 grid_crop = grid_star[shp]
+names(grid_crop) = "pcp"
 grid_crop = drop_units(grid_crop)
 rm(grid_star)
 
 # add Imperial units
-grid_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
-  mutate(tmin_f = tmin * 9/5 + 32) %>% 
-  mutate(pcp_in = pcp / 25.4) -> grid_crop
+
+grid_crop %>% mutate(pcp_in = pcp / 25.4) -> grid_crop
 
 # add threshold var
-grid_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
-  mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
-  mutate(under32 = tmin < 0) %>%
-  mutate(over20 = tmax > 20) %>%
-  mutate(pcp.over.5 = pcp_in > 0.5) -> grid_threshold
-  # mutate(month = as.numeric(format(st_get_dimension_values(grid_crop, 'time'),"%m"))) 
-  # mutate(hot.pctl = quantile(tmax_f,.99,na.rm=TRUE)) 
+grid_crop %>% mutate(pctl = quantile(pcp_in,.99, na.rm=TRUE)) -> grid_crop
 
-freeze.thaw.sum <- st_apply((grid_threshold %>% dplyr::select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
-GDD.sum <- st_apply((grid_threshold %>% dplyr::select(GDD)), c("x", "y"), sum,rename=FALSE)
-under32.sum <- st_apply((grid_threshold %>% dplyr::select(under32)), c("x", "y"), sum,rename=FALSE)
-over20.sum <- st_apply((grid_threshold %>% dplyr::select(over20)), c("x", "y"), sum,rename=FALSE)
-pcp.over.5.sum <- st_apply((grid_threshold %>% dplyr::select(pcp.over.5)), c("x", "y"), sum,rename=FALSE)
-# Don't know how to add/retain time dimension for year
+pr.99 <- st_apply((grid_crop %>% dplyr::select(pcp_in)), c("x","y"), FUN=function(x) quantile((x),0.99,na.rm=TRUE))
+assign(paste0("pr",i),pr.99)
+rm(pr.99,grid_crop)
+}
 
-by_t = "1 month"
-under32.month = aggregate((grid_threshold %>% dplyr::select(under32)), by = by_t, FUN = sum)
-# under32.split <- split(under32.month, "time")
+pr.list = list()
+yrs = as.POSIXct(daymet.period,format="%Y")
+for (j in 1:length(daymet.period)){
+ pr.list[[j]] = eval(parse(text=paste0("pr",j)))
+}
 
-WSF.below32 <- st_apply(under32.month[,c(1:5,9:12)],c("x", "y"),sum,rename=FALSE)
-names(WSF.below32) <- "WSF.below32"
-W.under32 <- st_apply(under32.month[,c(1:2,12)],c("x", "y"),sum,rename=FALSE)
-names(W.under32) <- "W.under32"
+## NOTE: for redimension MUST use stars 0.5-4 or greater, as of 9/11/21, install using "devtools::install_github("r-spatial/stars")"
+r = do.call("c", pr.list)  
+st_redimension(r) %>%
+  st_set_dimensions(3, values=yrs, names = "time") %>%
+  setNames("pcp_in") -> r
 
-annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32,pcp.over.5.sum)
-
-## timeseries df
-df<-data.frame(GCM = "Daymet",year = yr)
-s <- st_apply(annual_thresholds,1:2,mean)
-df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
-df$GDD = mean(s$GDD,na.rm=TRUE)
-df$under32 = mean(s$under32,na.rm=TRUE)
-df$over20 = mean(s$over20,na.rm=TRUE)
-df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
-df$W.under32 = mean(s$W.under32,na.rm=TRUE)
-df$pcp.over.5 = mean(s$pcp.over.5,na.rm=TRUE)
-
-DF = rbind(DF, df)
-rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32,pcp.over.5.sum,
-   grid_threshold,grid_crop)
+  pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
+ 
+  df1 <- data.frame(pcp.year)
+  df1$GCM = "Daymet"
+  
+write.csv(df1,paste0(data.dir,"/", var, "_DAY.csv"),row.names = TRUE)  
+ 
+rm(pr.list,)
 gc()
 }
 
