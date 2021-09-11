@@ -29,7 +29,7 @@ wrst <- st_transform(wrst, 3338)
 
 # ak_df  <- as.data.frame(ak2, xy = TRUE) # this step is important to get it to plot in ggplot
 
-mean_grid<-st_apply(ratio, c("x", "y"), mean)
+mean_grid<-st_apply(Hist, c("x", "y"), mean)
 
 mean_grid %>% 
   mutate(categories = round(mean,digits=1),
@@ -70,7 +70,9 @@ cf2.plot <- map.plot(data=readRDS(CF2.ls),title=CFs[2],metric=long.title,col=col
 cf3.plot <- map.plot(data=readRDS(CF3.ls),title=CFs[3],metric=long.title,col=cols[3])
 
 ############## ts plots
-as.data.frame(ratio1) -> c
+Hist1 = split(Hist, "time")
+
+as.data.frame(Hist1) -> c
 c2 <- gather(c,year,val,X1980.01.01:X2016.01.01) %>% 
   drop_na() %>% 
   mutate(Year = substr(year, 2, 5),
