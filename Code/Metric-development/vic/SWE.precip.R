@@ -117,8 +117,8 @@ for (G in 1:length(GCMs)){
   s <- aggregate(var_swe, by = by_t, FUN = function(x) max(x)) #Don't need to divide by #yrs b/c by year
   s1 <- split(s, "time")
   
-  ratio1 <- s1[2:32,,]/p1[2:32,,]
-  ratio  <- s[,2:32,,]/p[,2:32,,]
+  ratio1 <- s1[1:31,,]/p1[1:31,,]
+  ratio  <- s[,1:31,,]/p[,1:31,,]
   mean_fut<-st_apply(ratio, c("x", "y"), mean)
   
   df<-data.frame(year=future.period,mean=NA)
@@ -130,6 +130,7 @@ for (G in 1:length(GCMs)){
   DF<-rbind(DF,df)
   delta = mean_fut - mean_grid
   saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+  saveRDS(ratio, file = paste(data.dir,paste(var,"abs",gcm,rcp,sep="_"),sep="/"))
 
 rm(ratio,ratio1,s,s1,p,p1,ws_var,wf_var,fut_var_ws,fut_var_wf,cropped_st_wf,cropped_st_ws)
 gc()
