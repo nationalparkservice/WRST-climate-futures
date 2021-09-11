@@ -20,8 +20,8 @@ area <- 'WRST_simple' #wrst_mtns, copper_plateau, coastal_mtns, eastern_coast, W
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units)
 
-met.dir <- "D:/NCAR_AK/met" 
-vic.dir <- "D:/NCAR_AK/vic_hydro"
+met.dir <- "E:/NCAR_AK/met" 
+vic.dir <- "E:/NCAR_AK/vic_hydro"
 
 working.dir <- "C:/Users/achildress/Documents/wrst_temp"
 
