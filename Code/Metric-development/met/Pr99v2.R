@@ -42,16 +42,19 @@ st_redimension(r) %>%
   st_set_dimensions(3, values=yrs, names = "time") %>%
   setNames("pcp_in") -> r
 
+saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+
   pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
  
   df1 <- data.frame(pcp.year)
   df1$GCM = "Daymet"
   
-write.csv(df1,paste0(data.dir,"/", var, "_DAY.csv"),row.names = TRUE)  
+write.csv(df1,paste0(data.dir,"/", var, "_DAY.csv"),row.names = TRUE)
+
  
-rm(pr.list,)
+rm(pr.list)
 gc()
-}
+
 
 for (G in 1:length(GCMs)){
   # setting variables ----
