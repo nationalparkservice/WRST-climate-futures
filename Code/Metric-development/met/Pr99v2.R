@@ -1,6 +1,7 @@
 ## MET MONTHLY
-var = Pr99v2
+var = "Pr99v2"
 print("extracting Daymet")
+DF = data.frame()
 
 grid_filelist = list.files(path = paste(met.dir,"daymet",sep='/'), pattern= '.nc', full.names = TRUE)
 
@@ -42,16 +43,14 @@ st_redimension(r) %>%
   st_set_dimensions(3, values=yrs, names = "time") %>%
   setNames("pcp_in") -> r
 
-saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+saveRDS(r, file = paste(data.dir,paste(var,"daymet",sep="_"),sep="/"))
 
   pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
  
-  df1 <- data.frame(pcp.year)
-  df1$GCM = "Daymet"
+  df <- data.frame(pcp.time)
+  df$GCM = "Daymet"; names(df) <- c("Year", var, "GCM")
+  DF = rbind(DF, df)  
   
-write.csv(df1,paste0(data.dir,"/", var, "_DAY.csv"),row.names = TRUE)
-
- 
 rm(pr.list)
 gc()
 
@@ -78,62 +77,49 @@ for (G in 1:length(GCMs)){
       print(yr)
       invisible(capture.output(
         suppressWarnings(
-      (fut_star = read_ncdf(fut_filelist[i], var=c("tmax","tmin","pcp"), curvilinear = c("longitude", "latitude"))))))
+      (fut_star = read_ncdf(fut_filelist[i], var=c("pcp"), curvilinear = c("longitude", "latitude"))))))
       fut_star = st_transform(fut_star, st_crs(shp))
       fut_crop = fut_star[shp]
       fut_crop = drop_units(fut_crop)
       rm(fut_star)
       
       # add Imperial units
-      fut_crop %>% mutate(tmax_f = tmax * 9/5 + 32) %>%
-        mutate(tmin_f = tmin * 9/5 + 32) %>% 
-        mutate(pcp_in = pcp / 25.4) -> fut_crop
+      fut_crop %>% mutate(pcp_in = pcp / 25.4) -> fut_crop
     
       # add threshold var
-      fut_crop %>% mutate(freeze.thaw = tmax_f > 34 & tmin_f < 28) %>%
-        mutate(GDD = (tmax_f + tmin_f)/2 - 0 ) %>%
-        mutate(under32 = tmin < 0) %>%
-        mutate(over20 = tmax > 20) %>%
-        mutate(pcp.over.5 = pcp_in > 0.5) -> fut_threshold
-
-      freeze.thaw.sum <- st_apply((fut_threshold %>% dplyr::select(freeze.thaw)), c("x", "y"), sum, rename=FALSE) 
-      GDD.sum <- st_apply((fut_threshold %>% dplyr::select(GDD)), c("x", "y"), sum,rename=FALSE)
-      under32.sum <- st_apply((fut_threshold %>% dplyr::select(under32)), c("x", "y"), sum,rename=FALSE)
-      over20.sum <- st_apply((fut_threshold %>% dplyr::select(over20)), c("x", "y"), sum,rename=FALSE)
-      pcp.over.5.sum <- st_apply((fut_threshold %>% dplyr::select(pcp.over.5)), c("x", "y"), sum,rename=FALSE)
+      fut_crop %>% mutate(pctl = quantile(pcp_in,.99, na.rm=TRUE)) -> fut_crop
       
-      # Don't know how to add/retain time dimension for year
-      
-      by_t = "1 month"
-      under32.month = aggregate((fut_threshold %>% dplyr::select(under32)), by = by_t, FUN = sum)
-      # under32.split <- split(under32.month, "time")
-      
-      WSF.below32 <- st_apply(under32.month[,c(1:5,9:12)],c("x", "y"),sum,rename=FALSE)
-      names(WSF.below32) <- "WSF.below32"
-      W.under32 <- st_apply(under32.month[,c(1:2,12)],c("x", "y"),sum,rename=FALSE)
-      names(W.under32) <- "W.under32"
-      
-      annual_thresholds <- c(freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32,pcp.over.5.sum )
-      
-      ## timeseries df
-      df<-data.frame(GCM = GCMs[G],year = yr)
-      s <- st_apply(annual_thresholds,1:2,mean)
-      df$freeze.thaw = mean(s$freeze.thaw,na.rm=TRUE)
-      df$GDD = mean(s$GDD,na.rm=TRUE)
-      df$under32 = mean(s$under32,na.rm=TRUE)
-      df$over20 = mean(s$over20,na.rm=TRUE)
-      df$WSF.below32 = mean(s$WSF.below32,na.rm=TRUE)
-      df$W.under32 = mean(s$W.under32,na.rm=TRUE)
-      df$pcp.over.5 = mean(s$pcp.over.5,na.rm=TRUE)
+      pr.99 <- st_apply((fut_crop %>% dplyr::select(pcp_in)), c("x","y"), FUN=function(x) quantile((x),0.99,na.rm=TRUE))
+      assign(paste0("pr",i),pr.99)
+      rm(pr.99,fut_crop)
+    }
+    
+    pr.list = list()
+    yrs = as.POSIXct(future.period,format="%Y")
+    for (j in 1:length(future.period)){
+      pr.list[[j]] = eval(parse(text=paste0("pr",j)))
+    }
+    
+    ## NOTE: for redimension MUST use stars 0.5-4 or greater, as of 9/11/21, install using "devtools::install_github("r-spatial/stars")"
+    r = do.call("c", pr.list)  
+    st_redimension(r) %>%
+      st_set_dimensions(3, values=yrs, names = "time") %>%
+      setNames("pcp_in") -> r
+    
+    saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    
+    pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
+    
+    df <- data.frame(pcp.time)
+    df$GCM <- GCMs[G]; names(df) <- c("Year", var, "GCM")
 
       DF <- rbind(DF,df)
       
-      rm(annual_thresholds,freeze.thaw.sum, GDD.sum,under32.sum,over20.sum,WSF.below32,W.under32,pcp.over.5.sum,
-         fut_threshold,fut_crop)
+      rm(pr.list)
       gc()
       # )
 }
-}
 
-write.csv(DF,paste0(data.dir,"/Daily_met.csv"),row.names=FALSE)
+
+write.csv(DF,paste0(data.dir,"/",var,"_ANN.csv"),row.names=FALSE)
 
