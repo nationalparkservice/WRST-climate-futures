@@ -128,3 +128,7 @@ for (a in 1:length(areas)) {
 }
 
 ```
+
+```{r SWE.precip.maps, include=FALSE, results=hide, eval=TRUE}
+source(here::here("Code", "Plots", "SWE.precip.maps.R"),echo = FALSE)
+```
