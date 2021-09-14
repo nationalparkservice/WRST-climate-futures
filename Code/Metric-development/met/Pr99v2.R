@@ -43,7 +43,8 @@ st_redimension(r) %>%
   st_set_dimensions(3, values=yrs, names = "time") %>%
   setNames("pcp_in") -> r
 
-saveRDS(r, file = paste(data.dir,paste(var,"daymet",sep="_"),sep="/"))
+# saveRDS(r, file = paste(data.dir,paste(var,"daymet",sep="_"),sep="/"))
+mean_hist <- st_apply(r, c("x", "y"), mean) # find mean
 
   pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
  
@@ -106,7 +107,10 @@ for (G in 1:length(GCMs)){
       st_set_dimensions(3, values=yrs, names = "time") %>%
       setNames("pcp_in") -> r
     
-    saveRDS(r, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
+    mean_fut <- st_apply(r, c("x", "y"), mean)
+    delta <- mean_fut - mean_hist
+    
+    saveRDS(delta, file = paste(data.dir,paste(var,gcm,rcp,sep="_"),sep="/"))
     
     pcp.time <- st_apply((r %>% dplyr::select(pcp_in)), c("time"),mean,na.rm=TRUE, rename=FALSE)
     

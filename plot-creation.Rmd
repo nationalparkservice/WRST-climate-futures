@@ -97,6 +97,7 @@ source(here::here("Code", "Plots", "maps_ts_plots_SWE.precip.R"),echo = FALSE)
 source(here::here("Code", "Plots", "maps_ts_plots_max.SWE.R"),echo = FALSE)
 source(here::here("Code", "Plots", "maps_ts_plots_MAMSON.SWE.R"),echo = FALSE)
 source(here::here("Code", "Plots", "maps_ts_plots_soil.temp.R"),echo = FALSE)
+source(here::here("Code", "Plots", "maps_ts_plots_Pr99v2.R"),echo = FALSE)
 
 ```
 
