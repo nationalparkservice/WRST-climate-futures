@@ -14,11 +14,11 @@ rm(list = ls())
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr); library(lemon);library(ggpubr);library(gridExtra);library(grid); library(gtable); library(lubridate);library(raster)
 
-base.dir = "C:/Users/achildress/Documents/wrst_temp"
+base.dir = "C:/Users/achildress/DOI/Climate Change Scenario Planning - WRST RSS/3.0 Climate futures development (Summer 2021)/Data"
 data.dir = paste0(base.dir,"/Data")
 plot.dir = "./Data/figures"
 
-boundary.dir <- "C:/Users/achildress/DOI/NPS-WRST-Resource Stewardship Strategy - Climate/3.0 Climate futures development (Summer 2021)/Data/Boundary_shapefiles/"
+boundary.dir <- "C:/Users/achildress/DOI/Climate Change Scenario Planning - WRST RSS/3.0 Climate futures development (Summer 2021)/Data/Boundary_shapefiles/"
 wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
 wrst <- st_transform(wrst, 3338)
 
