@@ -14,16 +14,16 @@ rm(list = ls())
 
 library(stars);library(dplyr);library(ggplot2);library(ggthemes);library(viridis);library(here);library(ggrepel);library(rlang);library(units); library(tidyr); library(lemon);library(ggpubr);library(gridExtra);library(grid); library(gtable); library(lubridate);library(raster)
 
-base.dir = "C:/Users/achildress/DOI/Climate Change Scenario Planning - WRST RSS/3.0 Climate futures development (Summer 2021)/Data"
-data.dir = paste0(base.dir,"/Data")
+base.dir = "C:/Users/arunyon/DOI/Climate Change Scenario Planning - Data"
+data.dir = paste0(base.dir)
 plot.dir = "./Data/figures"
 
-boundary.dir <- "C:/Users/achildress/DOI/Climate Change Scenario Planning - WRST RSS/3.0 Climate futures development (Summer 2021)/Data/Boundary_shapefiles/"
+boundary.dir <- paste0(base.dir,"/Boundary_shapefiles/")
 wrst <- st_read(paste0(boundary.dir, "wrst_simple.shp")) # Wrangell Mountains
 wrst <- st_transform(wrst, 3338)
 
 # insert topo
-topo <- stack(paste0(boundary.dir, 'HYP_HR_SR_W/HYP_HR_SR_W.tif')) # read in as stack so can see RBG layers
+topo <- raster::stack(paste0(boundary.dir, 'HYP_HR_SR_W/HYP_HR_SR_W.tif')) # read in as stack so can see RBG layers
 ext <- extent(-147, -139, 59.3, 63) # extent defined by lat/long
 ak <- crop(topo, ext)
 # plotRGB(ak)
