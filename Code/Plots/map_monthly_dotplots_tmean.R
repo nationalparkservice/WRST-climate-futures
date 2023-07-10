@@ -38,7 +38,7 @@ scale.max = max(c(DJF.cf1$mean,MAM.cf1$mean,JJA.cf1$mean,SON.cf1$mean,
 # ggplot
 map.plot <- function(data, title,xaxis,metric,col){
   ggplot() + 
-    geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W.1), show.legend=FALSE) +
+    geom_raster(data = ak_df ,aes(x = x, y = y,alpha=HYP_HR_SR_W_1), show.legend=FALSE) +
     geom_stars(data = data, alpha = 0.8) + 
     geom_sf(data = shp, aes(), fill = NA) + 
     scale_fill_viridis(direction=1, option = scale, 
@@ -51,7 +51,7 @@ map.plot <- function(data, title,xaxis,metric,col){
           legend.justification = "center",
           # plot.title=element_blank(),
           plot.title=element_text(size=12,face="bold",hjust=0.5),
-          plot.background = element_rect(colour = col, fill=NA, size=5),
+          plot.background = element_rect(colour = col, fill=NA, linewidth=5),
           plot.margin = unit(c(.5,0,0,0), "cm")) + 
     labs(fill = metric)
 }
@@ -120,4 +120,4 @@ g <- grid.arrange(maps, dotplot,ncol = 2, widths = c(6, 4), clip = FALSE)
 annotate_figure(g, top = text_grob(paste0("Change in seasonal average ",long.title, "; 1950-1999 vs 2025-2055"), 
                                       face = "bold", size = 20))
 
-ggsave(paste0("seasonal_",var,".png"), width = 15, height = 9, path = plot.dir)
+ggsave(paste0("seasonal_",var,".png"), width = 18, height = 9, path = plot.dir,bg="white")
