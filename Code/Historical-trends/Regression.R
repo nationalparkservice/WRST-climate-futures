@@ -273,12 +273,12 @@ TitleSize = theme_get()$plot.title$size  ##Needed for cowplot layouts
 ############  Running average plots   #############
 #-------------------------------------------------#
 
-# Gulf
+# Link to Historical/Timeseries/Interior/ for csvs
 
-tave<-read.csv("./output/csvs/tave_int.csv")
-prcp<-read.csv("./output/csvs/pr_int.csv")
-tmax<-read.csv("./output/csvs/tmax_int.csv")
-tmin<-read.csv("./output/csvs/tmin_int.csv")
+tave<-read.csv("C:/Users/arunyon/Downloads/CSVs/CSVs/tave_int.csv")
+prcp<-read.csv("C:/Users/arunyon/Downloads/CSVs/CSVs/pr_int.csv")
+tmax<-read.csv("C:/Users/arunyon/Downloads/CSVs/CSVs/tmax_int.csv")
+tmin<-read.csv("C:/Users/arunyon/Downloads/CSVs/CSVs/tmin_int.csv")
 
 tave$tave <- tave$temp_int
 tmin$tmin <- tmin$temp_int
@@ -313,7 +313,7 @@ a <- ggplot(aes(x=cYr), data=yrAvgs) +
   ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y=29, label="A")) +
   geom_smooth(method="lm", aes(y=tmax, group=2, col="Regression trend"), na.rm=TRUE)+ 
-  geom_line(aes(y=rTmax, group=3, col=paste(rollLen, "-yr running mean", sep="")), size=1.5, na.rm=TRUE) +
+  geom_line(aes(y=rTmax, group=3, col=paste(rollLen, "-yr running mean", sep="")), linewidth=1.5, na.rm=TRUE) +
   RMColors +
   scale_x_continuous(breaks=c(1930, 1950, 1970, 1990, 2010))
 a
@@ -496,7 +496,7 @@ if(doP2 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP2), na.rm=TRUE,
 b
 
 c <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tave), na.rm=TRUE) + geom_point(aes(cYr, tave), na.rm=TRUE) +
-  ylab(expression(paste(Tavg, ~({}^o*F)))) + xlab("") +
+  ylab(expression(paste("Avg Temp", ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y= 13.5, label = "B")) +
   geom_smooth(aes(cYr, tave), method="lm", na.rm=TRUE,linetype=if(summary(lmTmean)$coefficients[2,4]<0.1) {
     1
@@ -532,7 +532,7 @@ rm(regsTmax, regsTmin, regsTmean, regsPpt, lmTable)
 
 #4-panel plot		
 p1 = plot_grid(a, b, c, d, nrow=4, align="v")
-title = ggdraw() + draw_label(paste(site, " - Trends for Reference and Recent \nHistorical Periods", sep=""), 
+title = ggdraw() + draw_label("Trends for Reference and Recent \nHistorical Periods", 
                               fontface="bold", size=TitleSize, vjust=0.5)
 p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.07, 1)) 
 p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard error of predicted y's \nReference period: ", beginRefYr, "-", endRefYr, "; Recent period: ", endRefYr+1, "-", EndYr, "; Overall period: ", BeginYr, "-", EndYr, sep=""),
@@ -559,8 +559,8 @@ p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard erro
              y=.5, hjust=0.5, vjust=0.5, size=12)
 ggdraw(p3)
 
-OFName <- paste(plotDir, PlotName, " Tmean Precip ", site, ".png", sep = "")
-ggsave(OFName, width=6.5, height=6.5, dpi=dpi)
+OFName <- paste("C:/Users/arunyon/Downloads/", PlotName, " Tmean Precip ", site, ".png", sep = "")
+ggsave(OFName, width=6.5, height=6.5, dpi=dpi,bg="white")
 
 
 
